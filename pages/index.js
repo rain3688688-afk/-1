@@ -10,18 +10,27 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-// 延时函数，用于控制动画节奏
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // ==========================================
-// 2. 核心内容数据 (完整录入)
+// 2. 核心数据
 // ==========================================
 
-// 阶段性引导语 (每12题出现一次)
+const DIMENSIONS = [
+  { id: 1, label: "确定性" },
+  { id: 2, label: "价值感" },
+  { id: 3, label: "掌控力" },
+  { id: 4, label: "偏爱度" },
+  { id: 5, label: "共鸣度" },
+  { id: 6, label: "空间感" },
+  { id: 7, label: "防御值" },
+  { id: 8, label: "秩序感" },
+];
+
 const INTERSTITIALS = {
-  12: "您的情感轮廓正在浮现...",
-  24: "正在潜入潜意识的更深处...",
-  36: "即将触达您最核心的渴望...",
+  12: "表层意识正在剥离...\n准备进入更深的情感海域",
+  24: "正在穿越心理防御机制...\n触摸那些未曾开口的渴望",
+  36: "即将抵达核心...\n真实的自我轮廓正在浮现",
 };
 
 const QUESTIONS = [
@@ -80,7 +89,7 @@ const RESULTS = {
     title: "确定感",
     keyword: "稳固基石",
     quote: "我是你的，只属于你，永远都是。",
-    theme: { bg: "#F5F5F4", accent: "#57534E", gradient: "linear-gradient(135deg, #78716C 0%, #44403C 100%)" },
+    accent: "#E7E5E4",
     sections: [
       { t: "你的底色", c: "我不需要你时时拥抱我，但我需要知道——你站在我这边。\n\n对你来说，亲密关系的核心，是能不能让你心里有一个稳稳落脚的地方。你不追求持续的惊喜，也不需要夸张的浪漫，你真正看重的是——对方的态度是否一致、回应是否连贯、靠近是否可靠。" },
       { t: "你的优势", c: "1. 稳定情绪场：你在关系里自带“基线”作用，你的稳定让对方更容易放松。\n2. 愿意承担：只要确认对方是对的人，你会持续投入，不轻易退缩。\n3. 长期主义：你擅长经营长期关系，而不是追求短暂的激情。" },
@@ -94,7 +103,7 @@ const RESULTS = {
     title: "被需要感",
     keyword: "价值确认",
     quote: "没有你，我只是一片废墟。",
-    theme: { bg: "#FFF7ED", accent: "#EA580C", gradient: "linear-gradient(135deg, #F97316 0%, #C2410C 100%)" },
+    accent: "#FB923C",
     sections: [
       { t: "你的底色", c: "我愿意付出，但我希望你能让我看见，我的存在让你生活得更轻松一点。\n\n你享受的是那种“我能帮到你”“你愿意依赖我”的感觉，它让你确认自己不是一个可替代的角色。最伤你的不是不浪漫，而是“有你没你，好像都差不多”。" },
       { t: "你的优势", c: "1. 真实减压：你能真实地为对方减轻生活压力，提供落地的支持。\n2. 爱的具象化：对方能从你身上感受到“我不是一个人在扛”。\n3. 黏性与温度：你的在场会让对方觉得“我被照顾，也愿意被照顾”。" },
@@ -108,7 +117,7 @@ const RESULTS = {
     title: "掌控感",
     keyword: "同频共振",
     quote: "我抛开了所有理智，只求你结束我的痛苦。",
-    theme: { bg: "#F8FAFC", accent: "#475569", gradient: "linear-gradient(135deg, #64748B 0%, #334155 100%)" },
+    accent: "#94A3B8",
     sections: [
       { t: "你的底色", c: "我不是要掌控你，我是要确保我们走在同一条路上。\n\n对你来说，亲密更像一条需要共同维护的航道。你关注方向是否一致、节奏是否协调。你不是想“控制对方”，而是希望关系是有逻辑、有成长空间的。" },
       { t: "你的优势", c: "1. 关系管理：你能抓住问题核心，不会让误会无限扩大。\n2. 清晰沟通：无论是界限还是期待，你都能推动双方达成共识。\n3. 提供方向：和你在一起，对方会觉得关系是往前走的。" },
@@ -122,7 +131,7 @@ const RESULTS = {
     title: "被偏爱感",
     keyword: "独特例外",
     quote: "你要永远为你驯服的东西负责。",
-    theme: { bg: "#FFF1F2", accent: "#E11D48", gradient: "linear-gradient(135deg, #F43F5E 0%, #9F1239 100%)" },
+    accent: "#FB7185",
     sections: [
       { t: "你的底色", c: "我不需要世界偏爱我，但我希望你会。\n\n你真正需要的是一种“在你心里，我是例外”的确认。你会从微妙的细节里，辨认自己是否拥有独一份的意义。你比大多数人更能感受到感情里的温度变化。" },
       { t: "你的优势", c: "1. 深情专注：一旦认定，你会给对方非常明确、稳定的爱意。\n2. 敏锐体贴：你能察觉到别人察觉不到的细节。\n3. 独特经营：你会用心经营“你们之间的独特性”，让关系更动人。" },
@@ -136,7 +145,7 @@ const RESULTS = {
     title: "精神共鸣",
     keyword: "灵魂契合",
     quote: "我们相遇在精神的旷野，无需言语便已相通。",
-    theme: { bg: "#EEF2FF", accent: "#4F46E5", gradient: "linear-gradient(135deg, #6366F1 0%, #312E81 100%)" },
+    accent: "#818CF8",
     sections: [
       { t: "你的底色", c: "亲密不只是靠近，而是被理解、被看见、被思想牵引。\n\n你渴望一种能与你一起思考、一起成长、一起对世界提出问题的关系。没有精神交流，你会觉得亲密关系像缺了核心。你追求的是“你一句话我就懂”的心灵接触。" },
       { t: "你的优势", c: "1. 思想活力：你不是在谈恋爱，而是在共同扩展世界。\n2. 深度理解：你真正会听、会理解，让对方有“被懂了”的体验。\n3. 持续焕新：和你在一起，关系不会陷入重复和枯燥。" },
@@ -150,7 +159,7 @@ const RESULTS = {
     title: "空间感",
     keyword: "自由呼吸",
     quote: "我爱你，却不愿用爱束缚你。",
-    theme: { bg: "#F0F9FF", accent: "#0284C7", gradient: "linear-gradient(135deg, #0EA5E9 0%, #0369A1 100%)" },
+    accent: "#38BDF8",
     sections: [
       { t: "你的底色", c: "靠近你不难，难的是用不吞没、不束缚的方式靠近。\n\n你对亲密的理解是在爱里保持自我完整。你愿意靠近，但必须保留足够的空间呼吸。只要这种空间被尊重，你的爱就会流得轻盈而稳定。" },
       { t: "你的优势", c: "1. 保持自我：你能让对方在关系里觉得“和你在一起，我还是我”。\n2. 尊重界限：你不会越界，也不会让别人轻易越界。\n3. 轻盈亲密：你不戏剧化、不过度要求，使关系保持舒展。" },
@@ -164,7 +173,7 @@ const RESULTS = {
     title: "安全距离",
     keyword: "审慎靠近",
     quote: "待人如执烛，太近灼手，太远暗生。",
-    theme: { bg: "#ECFDF5", accent: "#059669", gradient: "linear-gradient(135deg, #10B981 0%, #065F46 100%)" },
+    accent: "#34D399",
     sections: [
       { t: "你的底色", c: "我不是不愿意靠近，我只是想安全地靠近。\n\n你的亲密节奏里有一种审慎，你需要在靠近前先确认值得托付。你不是冷淡，只是有自己的节奏：观察、确认、再靠近。一旦确认，你会比大多数人都长情。" },
       { t: "你的优势", c: "1. 慎重稳定：你不会轻易进入关系，但只要进入，就非常可靠。\n2. 分寸感：和你相处“刚刚好”，不被吞没，也不被忽略。\n3. 情绪保护：你不把情绪甩给别人，避免双方受伤。" },
@@ -178,7 +187,7 @@ const RESULTS = {
     title: "秩序感",
     keyword: "清晰结构",
     quote: "爱情是一种本能，要么生下来就会，要么永远都不会。",
-    theme: { bg: "#EFF6FF", accent: "#2563EB", gradient: "linear-gradient(135deg, #3B82F6 0%, #1E3A8A 100%)" },
+    accent: "#60A5FA",
     sections: [
       { t: "你的底色", c: "亲密不是混乱的流动，而是共同打造的一种秩序。\n\n你对亲密关系的核心需求是清晰、结构和共同决策。你希望知道关系的位置、节奏和未来方向。这不是理性过度，而是一种成熟的互赖感。" },
       { t: "你的优势", c: "1. 建立结构：你擅长把混乱变成有序，把模糊变成明确。\n2. 解决问题：当关系不顺时，你不是逃避，而是想要一起找到答案。\n3. 安全踏实：在你这里，亲密是可以依赖的现实支持。" },
@@ -191,91 +200,122 @@ const RESULTS = {
 };
 
 // ==========================================
-// 3. 逻辑组件 & 页面视图
+// 3. 视觉组件
+// ==========================================
+
+const RadarChart = ({ scores }) => {
+  const size = 220;
+  const center = size / 2;
+  const radius = 80;
+  
+  const points = DIMENSIONS.map((dim, i) => {
+    const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2;
+    const val = Math.min((scores[dim.id] || 0) * 1.5, 12) / 12; // 放大比例
+    const r = radius * (0.2 + 0.8 * val);
+    const x = center + r * Math.cos(angle);
+    const y = center + r * Math.sin(angle);
+    return `${x},${y}`;
+  }).join(' ');
+
+  return (
+    <div className="radar-wrapper">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {/* 网格 */}
+        {[0.25, 0.5, 0.75, 1].map(level => (
+          <polygon key={level}
+            points={DIMENSIONS.map((_, i) => {
+              const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2;
+              const r = radius * level;
+              return `${center + r * Math.cos(angle)},${center + r * Math.sin(angle)}`;
+            }).join(' ')}
+            fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1"
+          />
+        ))}
+        {/* 数据层 */}
+        <polygon points={points} fill="rgba(255, 255, 255, 0.15)" stroke="rgba(255, 255, 255, 0.9)" strokeWidth="2" />
+        {/* 标签 */}
+        {DIMENSIONS.map((dim, i) => {
+          const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2;
+          const x = center + (radius + 20) * Math.cos(angle);
+          const y = center + (radius + 20) * Math.sin(angle);
+          return (
+            <text key={i} x={x} y={y} fill="rgba(255,255,255,0.6)" fontSize="10" textAnchor="middle" alignmentBaseline="middle">
+              {dim.label}
+            </text>
+          );
+        })}
+      </svg>
+    </div>
+  );
+};
+
+const AbstractTotem = ({ id }) => {
+  return (
+    <div className={`totem type-${id}`}>
+      <div className="t-circle-main"></div>
+      <div className="t-circle-ripple"></div>
+      <div className="t-particles"></div>
+    </div>
+  )
+}
+
+// ==========================================
+// 4. 主程序
 // ==========================================
 
 export default function App() {
-  const [view, setView] = useState('welcome'); // 状态：welcome, verify_loading, quiz, interstitial, calculating, result
+  const [view, setView] = useState('welcome'); 
   const [code, setCode] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [scores, setScores] = useState({ 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0 });
   const [finalResultId, setFinalResultId] = useState(null);
-  const [fadeKey, setFadeKey] = useState(0); // 用于触发题目切换动画
+  const [fadeKey, setFadeKey] = useState(0);
   const [interstitialMsg, setInterstitialMsg] = useState('');
 
-  // --- 动作：验证码逻辑 ---
+  // 验证
   const handleVerify = async () => {
     if (!code.trim()) return;
-    setView('verify_loading');
+    setView('loading_verify');
     setErrorMsg('');
-
     try {
-      const { data, error } = await supabase
-        .from('codes')
-        .select('*')
-        .eq('code', code.trim())
-        .single();
-
-      if (error || !data) {
-        setErrorMsg('无效的兑换码，请检查输入');
-        setView('welcome');
-        return;
-      }
-
-      if (data.is_used) {
-        setErrorMsg('该兑换码已被使用');
-        setView('welcome');
-        return;
-      }
-
-      // 验证通过，标记使用
+      const { data, error } = await supabase.from('codes').select('*').eq('code', code.trim()).single();
+      if (error || !data) throw new Error('无效的兑换码');
+      if (data.is_used) throw new Error('该兑换码已被使用');
       await supabase.from('codes').update({ is_used: true }).eq('id', data.id);
-      
-      // 平滑进入答题
-      await wait(800);
+      await wait(1500);
       setView('quiz');
-
     } catch (err) {
-      setErrorMsg('网络异常，请重试');
+      setErrorMsg(err.message || '网络异常');
       setView('welcome');
     }
   };
 
-  // --- 动作：答题逻辑 ---
+  // 答题
   const handleAnswer = async (value) => {
-    // 1. 记录分数
     const newScores = { ...scores, [value]: scores[value] + 1 };
     setScores(newScores);
-
-    // 2. 检查是否需要插入“深潜”引导页 (每12题)
     const nextIndex = currentQIndex + 1;
+    
     if (INTERSTITIALS[nextIndex] && nextIndex < QUESTIONS.length) {
       setInterstitialMsg(INTERSTITIALS[nextIndex]);
       setView('interstitial');
-      await wait(3000); // 停留3秒让用户沉浸
-      setView('quiz');
+      await wait(3500);
       setCurrentQIndex(nextIndex);
-      setFadeKey(k => k + 1); // 触发新题目淡入
-    } 
-    // 3. 正常切题
-    else if (nextIndex < QUESTIONS.length) {
-      // 短暂延迟让点击动画播放完
+      setView('quiz');
+      setFadeKey(k => k + 1);
+    } else if (nextIndex < QUESTIONS.length) {
       await wait(250);
       setCurrentQIndex(nextIndex);
       setFadeKey(k => k + 1);
-    } 
-    // 4. 答题结束
-    else {
+    } else {
       finishQuiz(newScores);
     }
   };
 
-  // --- 动作：结算逻辑 ---
+  // 结算
   const finishQuiz = async (finalScores) => {
     setView('calculating');
-    
-    // 简单算分：取最高分
     let maxScore = -1;
     let maxId = 1;
     Object.entries(finalScores).forEach(([id, score]) => {
@@ -285,86 +325,110 @@ export default function App() {
       }
     });
     setFinalResultId(maxId);
-
-    // 假装深度分析中... (3秒动画)
     await wait(3500);
     setView('result');
   };
 
-  // ==========================================
-  // 4. 视图渲染 (JSX)
-  // ==========================================
+  // 滚动引导
+  const scrollRef = useRef(null);
+  const scrollToInput = () => {
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }
+
   return (
-    <div className="main-container">
+    <div className="app-root">
       <Head>
-        <title>情感欲望深层测试</title>
+        <title>深度情感欲望测试</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;500;700&family=Inter:wght@200;400;600&display=swap" rel="stylesheet" />
       </Head>
 
-      {/* --- 场景：欢迎页 --- */}
+      <div className="stars-bg"></div>
+
+      {/* --- 长滚动首页 --- */}
       {view === 'welcome' && (
-        <div className="scene-welcome fade-in">
-          <div className="glass-card">
-            <h1 className="brand-title">内在情感欲望</h1>
-            <p className="brand-subtitle">EMOTIONAL DESIRE TEST</p>
-            <div className="divider"></div>
-            <p className="poetic-intro">
-              “我们并不总是知道自己渴望什么，<br/>直到被真正看见的那一刻。”
-            </p>
-            <div className="input-box">
-              <input 
-                type="text" 
-                value={code}
-                onChange={e => setCode(e.target.value)}
-                placeholder="请输入您的专属兑换码"
-                className="minimal-input"
-              />
-              <button onClick={handleVerify} className="cta-button">开启旅程</button>
-              {errorMsg && <p className="error-text">{errorMsg}</p>}
+        <div className="view-welcome fade-in">
+          {/* 第一屏：Hero */}
+          <section className="hero-section">
+            <div className="hero-content">
+              <div className="logo-mark">INNER ECHO</div>
+              <h1 className="main-title">内在情感欲望</h1>
+              <p className="sub-title">DEEP PSYCHOLOGY TEST</p>
             </div>
-          </div>
+            <div className="scroll-indicator" onClick={scrollToInput}>
+              <span className="scroll-text">SCROLL TO DISCOVER</span>
+              <div className="scroll-line"></div>
+            </div>
+          </section>
+
+          {/* 第二屏：Concept */}
+          <section className="concept-section">
+            <div className="concept-block">
+              <p className="poetic-line">“我们并不总是知道自己渴望什么，<br/>直到被真正看见的那一刻。”</p>
+              <div className="features">
+                <div className="feat-item">
+                  <span className="f-num">48</span>
+                  <span className="f-label">深度探针</span>
+                </div>
+                <div className="feat-item">
+                  <span className="f-num">08</span>
+                  <span className="f-label">情感维度</span>
+                </div>
+                <div className="feat-item">
+                  <span className="f-num">15</span>
+                  <span className="f-label">分钟旅程</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* 第三屏：Login */}
+          <section className="login-section" ref={scrollRef}>
+            <div className="login-card glass-panel">
+              <h2 className="login-title">开启潜意识之门</h2>
+              <div className="input-wrap">
+                <input 
+                  type="text" 
+                  value={code}
+                  onChange={e => setCode(e.target.value)}
+                  placeholder="请输入专属兑换码"
+                  className="access-input"
+                />
+                <button onClick={handleVerify} className="btn-start">
+                  进入
+                </button>
+              </div>
+              {errorMsg && <p className="err-msg">{errorMsg}</p>}
+            </div>
+          </section>
         </div>
       )}
 
-      {/* --- 场景：验证加载中 --- */}
-      {view === 'verify_loading' && (
-        <div className="scene-loading fade-in">
-          <div className="breathing-circle"></div>
-          <p className="loading-caption">正在连接潜意识...</p>
+      {/* --- 验证加载 --- */}
+      {view === 'loading_verify' && (
+        <div className="view-fullscreen flex-center">
+          <div className="loader-ring"></div>
+          <p className="status-text">正在建立神经链接...</p>
         </div>
       )}
 
-      {/* --- 场景：答题页 --- */}
+      {/* --- 答题页 --- */}
       {view === 'quiz' && (
-        <div className="scene-quiz fade-in">
-          {/* 顶部进度 */}
-          <div className="progress-header">
-            <div className="progress-track">
-              <div 
-                className="progress-fill" 
-                style={{ width: `${((currentQIndex + 1) / QUESTIONS.length) * 100}%` }}
-              ></div>
+        <div className="view-quiz fade-in">
+          <div className="quiz-header">
+            <div className="progress-num">{String(currentQIndex + 1).padStart(2,'0')} <span className="dim">/ 48</span></div>
+            <div className="progress-bar-track">
+              <div className="progress-bar-fill" style={{width: `${(currentQIndex+1)/QUESTIONS.length*100}%`}}></div>
             </div>
-            <span className="progress-text">{currentQIndex + 1} / {QUESTIONS.length}</span>
           </div>
 
-          {/* 题目卡片 (带切换动画) */}
           <div key={fadeKey} className="question-card slide-up">
-            <div className="question-meta">Q.{String(currentQIndex + 1).padStart(2,'0')}</div>
-            <h2 className="question-text">{QUESTIONS[currentQIndex].text}</h2>
-            
-            <div className="options-container">
+            <h2 className="q-text">{QUESTIONS[currentQIndex].text}</h2>
+            <div className="opts-list">
               {QUESTIONS[currentQIndex].options.map((opt, idx) => (
-                <button 
-                  key={idx} 
-                  onClick={() => handleAnswer(opt.v)} 
-                  className="option-item"
-                >
-                  <span className="option-label">{['A','B','C','D'][idx]}</span>
-                  <span className="option-content">{opt.t}</span>
+                <button key={idx} onClick={() => handleAnswer(opt.v)} className="opt-item">
+                  <span className="opt-idx">{['A','B','C','D'][idx]}</span>
+                  <span className="opt-txt">{opt.t}</span>
                 </button>
               ))}
             </div>
@@ -372,484 +436,240 @@ export default function App() {
         </div>
       )}
 
-      {/* --- 场景：中场休息 (Interstitial) --- */}
+      {/* --- 深潜引导 --- */}
       {view === 'interstitial' && (
-        <div className="scene-interstitial fade-in-slow">
-          <p className="interstitial-text">{interstitialMsg}</p>
-          <div className="loading-line"></div>
+        <div className="view-fullscreen flex-center fade-in-slow">
+          <div className="deep-text">{interstitialMsg}</div>
+          <div className="deep-line"></div>
         </div>
       )}
 
-      {/* --- 场景：动态分析中 --- */}
+      {/* --- 结算分析 --- */}
       {view === 'calculating' && (
-        <div className="scene-calculating fade-in">
-          <div className="radar-scanner">
-            <div className="radar-circle c1"></div>
-            <div className="radar-circle c2"></div>
-            <div className="radar-circle c3"></div>
-            <div className="radar-sweep"></div>
-          </div>
-          <p className="calc-text">正在构建您的欲望模型...</p>
-          <div className="calc-steps">
-            <span className="step s1">分析情感维度...</span>
-            <span className="step s2">匹配核心渴望...</span>
-            <span className="step s3">生成专属画像...</span>
+        <div className="view-fullscreen flex-center">
+          <div className="radar-scan-anim"></div>
+          <p className="status-text">正在构建欲望模型...</p>
+          <div className="status-steps">
+            <span>分析情感维度...</span>
+            <span>匹配核心渴望...</span>
           </div>
         </div>
       )}
 
-      {/* --- 场景：结果展示 (海报级) --- */}
+      {/* --- 结果页 --- */}
       {view === 'result' && finalResultId && (
-        <div 
-          className="scene-result fade-in-slow"
-          style={{ '--theme-color': RESULTS[finalResultId].theme.accent }}
-        >
-          <div className="poster-card">
-            {/* 顶部视觉区 */}
-            <div 
-              className="poster-hero"
-              style={{ background: RESULTS[finalResultId].theme.gradient }}
-            >
-              <div className="hero-content">
-                <p className="hero-tag">YOUR CORE DESIRE</p>
-                <h1 className="hero-title">{RESULTS[finalResultId].title}</h1>
-                <div className="hero-line"></div>
-                <p className="hero-quote">“{RESULTS[finalResultId].quote}”</p>
+        <div className="view-result fade-in-slow">
+          <div className="result-container">
+            
+            {/* 顶部动态图腾 */}
+            <div className="totem-header">
+              <AbstractTotem id={finalResultId} />
+              <div className="totem-meta">
+                <p className="meta-code">TYPE-0{finalResultId}</p>
+                <h1 className="meta-title" style={{color: RESULTS[finalResultId].accent}}>
+                  {RESULTS[finalResultId].title}
+                </h1>
+                <p className="meta-quote">“{RESULTS[finalResultId].quote}”</p>
               </div>
-              <div className="hero-noise"></div>
             </div>
 
-            {/* 内容详情区 */}
-            <div className="poster-body">
-              <div className="keyword-box">
-                <span className="kb-label">KEYWORD</span>
-                <span className="kb-val">{RESULTS[finalResultId].keyword}</span>
-              </div>
+            {/* 专业雷达图 */}
+            <div className="radar-section glass-panel">
+              <h3 className="section-head">情感维度分布</h3>
+              <RadarChart scores={scores} />
+            </div>
 
+            {/* 核心关键词 */}
+            <div className="keyword-section glass-panel">
+              <span className="kw-label">CORE KEYWORD</span>
+              <span className="kw-value" style={{color: RESULTS[finalResultId].accent}}>
+                {RESULTS[finalResultId].keyword}
+              </span>
+            </div>
+
+            {/* 深度分析文本 */}
+            <div className="analysis-section">
               {RESULTS[finalResultId].sections.map((sec, idx) => (
-                <div key={idx} className="analysis-block">
-                  <h3 className="block-head">
-                    <span className="block-dot"></span>
+                <div key={idx} className="text-card glass-panel">
+                  <h4 className="tc-title" style={{color: RESULTS[finalResultId].accent}}>
                     {sec.t}
-                  </h3>
-                  <p className="block-p">{sec.c}</p>
+                  </h4>
+                  <p className="tc-content">{sec.c}</p>
                 </div>
               ))}
+            </div>
 
-              <div className="poster-footer">
-                <div className="footer-logo">EMOTIONAL DESIRE TEST</div>
-                <p className="footer-note">愿你所有的渴望，终被温柔回应</p>
-              </div>
+            <div className="footer-brand">
+              INNER ECHO · DEEP PSYCHOLOGY
             </div>
           </div>
         </div>
       )}
 
       {/* ==========================================
-          5. 样式表 (CSS in JS)
+          5. 极简 CSS 引擎 (Deep Space Theme)
          ========================================== */}
       <style jsx global>{`
         :root {
-          --bg-paper: #FDFBF7;
-          --text-primary: #2C2926;
-          --text-secondary: #57534E;
-          --text-light: #9CA3AF;
-          --font-main: "Noto Serif SC", serif;
-          --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.08);
-          --glass-bg: rgba(255, 255, 255, 0.8);
+          --bg: #0B0E14;
+          --text: #F3F4F6;
+          --text-dim: #9CA3AF;
+          --glass: rgba(255, 255, 255, 0.03);
+          --glass-border: rgba(255, 255, 255, 0.08);
+          --accent: #fff;
+          --font-serif: "Noto Serif SC", serif;
+          --font-sans: "Inter", sans-serif;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
         body {
           margin: 0;
-          font-family: var(--font-main);
-          background-color: var(--bg-paper);
-          color: var(--text-primary);
-          line-height: 1.6;
+          background: var(--bg);
+          color: var(--text);
+          font-family: var(--font-sans);
           overflow-x: hidden;
         }
 
-        .main-container {
-          min-height: 100vh;
-          width: 100%;
-          position: relative;
+        /* 动态星空背景 */
+        .stars-bg {
+          position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+          background: 
+            radial-gradient(circle at 15% 50%, rgba(76, 29, 149, 0.15), transparent 25%),
+            radial-gradient(circle at 85% 30%, rgba(14, 165, 233, 0.1), transparent 25%);
+          z-index: -1;
         }
 
-        /* 动画定义 */
+        /* 动画类 */
+        .fade-in { animation: fadeIn 1s ease-out forwards; }
+        .fade-in-slow { animation: fadeIn 2s ease-out forwards; }
+        .slide-up { animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes breathe { 0% { transform: scale(0.95); opacity: 0.6; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.6; } }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes widthGrow { from { width: 0; } to { width: 100%; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .fade-in { animation: fadeIn 0.8s ease-out forwards; }
-        .fade-in-slow { animation: fadeIn 1.5s ease-out forwards; }
-        .slide-up { animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-
-        /* --- 欢迎页 --- */
-        .scene-welcome {
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 24px;
-          background: radial-gradient(circle at center, #fff 0%, #fdfbf7 100%);
+        /* 通用布局 */
+        .view-fullscreen {
+          height: 100vh; width: 100vw; display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
         }
-        .glass-card {
-          width: 100%;
-          max-width: 400px;
-          text-align: center;
-          padding: 48px 32px;
-          background: rgba(255,255,255,0.6);
+        .flex-center { display: flex; align-items: center; justify-content: center; }
+        .glass-panel {
+          background: var(--glass);
           backdrop-filter: blur(12px);
-          border-radius: 2px;
-          box-shadow: var(--shadow-soft);
-          border: 1px solid rgba(255,255,255,0.5);
+          border: 1px solid var(--glass-border);
+          border-radius: 16px;
+          padding: 24px;
         }
-        .brand-title {
-          font-size: 28px;
-          font-weight: 700;
-          letter-spacing: 2px;
-          margin: 0 0 8px;
-        }
-        .brand-subtitle {
-          font-size: 10px;
-          letter-spacing: 4px;
-          color: var(--text-light);
-          margin-bottom: 32px;
-        }
-        .divider {
-          width: 32px;
-          height: 2px;
-          background: #E5E5E5;
-          margin: 0 auto 32px;
-        }
-        .poetic-intro {
-          font-size: 15px;
-          color: var(--text-secondary);
-          font-style: italic;
-          margin-bottom: 48px;
-          line-height: 1.8;
-        }
-        .input-box { display: flex; flex-direction: column; gap: 16px; }
-        .minimal-input {
-          width: 100%;
-          padding: 16px;
-          border: none;
-          border-bottom: 1px solid #D1D5DB;
-          background: transparent;
-          text-align: center;
-          font-family: inherit;
-          font-size: 16px;
-          transition: border 0.3s;
-          border-radius: 0;
-        }
-        .minimal-input:focus { outline: none; border-bottom-color: var(--text-primary); }
-        .cta-button {
-          width: 100%;
-          padding: 18px;
-          background: var(--text-primary);
-          color: #fff;
-          border: none;
-          font-size: 14px;
-          letter-spacing: 3px;
-          cursor: pointer;
-          transition: transform 0.2s, opacity 0.2s;
-        }
-        .cta-button:active { transform: scale(0.98); }
-        .error-text { color: #B91C1C; font-size: 12px; margin-top: 8px; }
 
-        /* --- Loading --- */
-        .scene-loading {
-          height: 100vh;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
+        /* --- 首页 (长滚动) --- */
+        .view-welcome { overflow-y: auto; height: 100vh; scroll-behavior: smooth; }
+        
+        .hero-section {
+          height: 100vh; display: flex; flex-direction: column;
+          align-items: center; justify-content: center; position: relative;
         }
-        .breathing-circle {
-          width: 60px;
-          height: 60px;
-          border-radius: 50%;
-          background: #E5E5E5;
-          animation: breathe 2s infinite ease-in-out;
-          margin-bottom: 24px;
+        .logo-mark { font-size: 12px; letter-spacing: 6px; opacity: 0.5; margin-bottom: 24px; }
+        .main-title {
+          font-family: var(--font-serif); font-size: 42px; font-weight: 300;
+          letter-spacing: 2px; text-align: center; margin: 0 0 16px;
+          background: linear-gradient(to bottom, #fff, #94a3b8);
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-        .loading-caption {
-          font-size: 12px;
-          letter-spacing: 2px;
-          color: var(--text-light);
+        .sub-title { font-size: 10px; letter-spacing: 4px; color: var(--text-dim); }
+        
+        .scroll-indicator {
+          position: absolute; bottom: 40px; display: flex; flex-direction: column;
+          align-items: center; gap: 12px; cursor: pointer; opacity: 0.6;
+          animation: pulse 2s infinite;
         }
+        .scroll-text { font-size: 9px; letter-spacing: 2px; }
+        .scroll-line { width: 1px; height: 40px; background: linear-gradient(to bottom, #fff, transparent); }
+
+        .concept-section {
+          min-height: 60vh; display: flex; align-items: center; justify-content: center;
+          padding: 60px 24px; text-align: center;
+        }
+        .poetic-line { font-family: var(--font-serif); font-size: 18px; line-height: 1.8; opacity: 0.8; margin-bottom: 60px; }
+        .features { display: flex; gap: 40px; justify-content: center; }
+        .feat-item { display: flex; flex-direction: column; gap: 8px; }
+        .f-num { font-size: 32px; font-family: var(--font-serif); font-weight: 300; }
+        .f-label { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; }
+
+        .login-section {
+          min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+        }
+        .login-card { width: 100%; max-width: 360px; text-align: center; padding: 48px 32px; }
+        .login-title { font-family: var(--font-serif); font-weight: 300; margin-bottom: 32px; font-size: 24px; }
+        .input-wrap { display: flex; flex-direction: column; gap: 16px; }
+        .access-input {
+          width: 100%; padding: 16px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border);
+          color: #fff; text-align: center; font-size: 16px; letter-spacing: 2px; border-radius: 4px;
+          outline: none; transition: border 0.3s;
+        }
+        .access-input:focus { border-color: #fff; }
+        .btn-start {
+          width: 100%; padding: 16px; background: #fff; color: #000; border: none;
+          font-size: 14px; letter-spacing: 4px; cursor: pointer; border-radius: 4px;
+          transition: transform 0.2s;
+        }
+        .btn-start:active { transform: scale(0.98); }
+        .err-msg { color: #ef4444; font-size: 12px; margin-top: 12px; }
 
         /* --- 答题页 --- */
-        .scene-quiz {
-          max-width: 640px;
-          margin: 0 auto;
-          min-height: 100vh;
-          padding: 40px 24px;
-          display: flex;
-          flex-direction: column;
+        .view-quiz { max-width: 600px; margin: 0 auto; min-height: 100vh; padding: 40px 24px; display: flex; flex-direction: column; }
+        .quiz-header { display: flex; align-items: center; gap: 20px; margin-bottom: 60px; }
+        .progress-num { font-family: monospace; font-size: 14px; }
+        .dim { opacity: 0.3; }
+        .progress-bar-track { flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
+        .progress-bar-fill { height: 100%; background: #fff; transition: width 0.5s; }
+        
+        .q-text { font-family: var(--font-serif); font-size: 24px; line-height: 1.5; margin: 0 0 48px; font-weight: 300; }
+        .opts-list { display: flex; flex-direction: column; gap: 12px; }
+        .opt-item {
+          text-align: left; padding: 20px; background: var(--glass);
+          border: 1px solid var(--glass-border); color: var(--text);
+          cursor: pointer; transition: all 0.2s; display: flex; gap: 16px;
+          border-radius: 8px;
         }
-        .progress-header {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          margin-bottom: 48px;
-        }
-        .progress-track {
-          flex: 1;
-          height: 2px;
-          background: #E5E5E5;
-          position: relative;
-        }
-        .progress-fill {
-          height: 100%;
-          background: var(--text-primary);
-          transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-        .progress-text {
-          font-size: 12px;
-          color: var(--text-light);
-          font-family: sans-serif;
-        }
-        .question-meta {
-          font-size: 12px;
-          letter-spacing: 2px;
-          color: var(--text-light);
-          margin-bottom: 16px;
-          text-transform: uppercase;
-        }
-        .question-text {
-          font-size: 22px;
-          line-height: 1.6;
-          margin: 0 0 40px;
-          font-weight: 600;
-        }
-        .option-item {
-          display: flex;
-          width: 100%;
-          padding: 20px 24px;
-          background: #fff;
-          border: 1px solid transparent;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-          margin-bottom: 12px;
-          cursor: pointer;
-          transition: all 0.3s;
-          text-align: left;
-          align-items: baseline;
-        }
-        .option-item:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-        }
-        .option-label {
-          font-family: sans-serif;
-          font-size: 12px;
-          color: var(--text-light);
-          margin-right: 16px;
-          width: 16px;
-        }
-        .option-content {
-          font-size: 15px;
-          color: var(--text-secondary);
-          line-height: 1.6;
-        }
+        .opt-item:active { background: rgba(255,255,255,0.1); transform: scale(0.99); }
+        .opt-idx { font-size: 10px; opacity: 0.5; margin-top: 4px; }
+        .opt-txt { font-size: 15px; line-height: 1.5; opacity: 0.9; }
 
-        /* --- 中场休息 Interstitial --- */
-        .scene-interstitial {
-          height: 100vh;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          background: #1C1917; /* 深色沉浸 */
-          color: #fff;
+        /* --- 过渡页 --- */
+        .deep-text { font-family: var(--font-serif); font-size: 20px; line-height: 2; text-align: center; margin-bottom: 40px; }
+        .deep-line { width: 1px; height: 60px; background: linear-gradient(to bottom, transparent, #fff, transparent); animation: pulse 1.5s infinite; }
+        
+        .loader-ring, .radar-scan-anim {
+          width: 48px; height: 48px; border: 1px solid rgba(255,255,255,0.2);
+          border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 24px;
         }
-        .interstitial-text {
-          font-size: 20px;
-          letter-spacing: 2px;
-          font-weight: 300;
-          margin-bottom: 32px;
-          opacity: 0.9;
-        }
-        .loading-line {
-          width: 40px;
-          height: 1px;
-          background: rgba(255,255,255,0.3);
-          position: relative;
-          overflow: hidden;
-        }
-        .loading-line::after {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 0;
-          height: 100%;
-          width: 100%;
-          background: #fff;
-          animation: widthGrow 3s linear;
-        }
+        .status-text { letter-spacing: 2px; font-size: 12px; opacity: 0.7; }
+        .status-steps { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; font-size: 10px; opacity: 0.4; text-align: center; }
 
-        /* --- 计算分析中 --- */
-        .scene-calculating {
-          height: 100vh;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          background: #FDFBF7;
-        }
-        .radar-scanner {
-          width: 200px;
-          height: 200px;
-          position: relative;
-          margin-bottom: 40px;
-        }
-        .radar-circle {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          border: 1px solid #E5E5E5;
-          border-radius: 50%;
-        }
-        .c1 { width: 100%; height: 100%; }
-        .c2 { width: 66%; height: 66%; }
-        .c3 { width: 33%; height: 33%; background: var(--text-primary); opacity: 0.1; }
-        .radar-sweep {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: conic-gradient(transparent 0deg, rgba(44, 41, 38, 0.1) 360deg);
-          border-radius: 50%;
-          animation: spin 2s linear infinite;
-        }
-        .calc-text {
-          font-size: 14px;
-          letter-spacing: 2px;
-          color: var(--text-primary);
-          margin-bottom: 16px;
-        }
-        .calc-steps {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          align-items: center;
-        }
-        .step {
-          font-size: 10px;
-          color: var(--text-light);
-          opacity: 0;
-          animation: fadeInUp 0.5s forwards;
-        }
-        .s1 { animation-delay: 0.5s; }
-        .s2 { animation-delay: 1.5s; }
-        .s3 { animation-delay: 2.5s; }
+        /* --- 结果页 --- */
+        .view-result { padding: 40px 20px 80px; min-height: 100vh; }
+        .result-container { max-width: 600px; margin: 0 auto; }
+        
+        .totem-header { text-align: center; margin-bottom: 60px; padding-top: 40px; }
+        .totem { width: 120px; height: 120px; margin: 0 auto 32px; position: relative; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; }
+        .t-circle-main { width: 60px; height: 60px; background: #fff; border-radius: 50%; filter: blur(20px); opacity: 0.2; animation: pulse 3s infinite; }
+        
+        .meta-code { font-size: 10px; letter-spacing: 4px; opacity: 0.5; margin-bottom: 12px; }
+        .meta-title { font-family: var(--font-serif); font-size: 36px; margin: 0 0 16px; font-weight: 300; }
+        .meta-quote { font-style: italic; font-size: 14px; opacity: 0.7; }
 
-        /* --- 结果页 (海报) --- */
-        .scene-result {
-          min-height: 100vh;
-          width: 100%;
-          background-color: #F5F5F4;
-          padding-bottom: 40px;
-        }
-        .poster-card {
-          background: #fff;
-          max-width: 600px;
-          margin: 0 auto;
-          min-height: 100vh;
-          box-shadow: 0 0 60px rgba(0,0,0,0.05);
-          overflow: hidden;
-        }
-        .poster-hero {
-          padding: 80px 40px 60px;
-          color: #fff;
-          position: relative;
-        }
-        .hero-content { position: relative; z-index: 10; }
-        .hero-tag {
-          font-size: 10px;
-          letter-spacing: 4px;
-          opacity: 0.8;
-          margin-bottom: 16px;
-        }
-        .hero-title {
-          font-size: 48px;
-          font-weight: 400;
-          margin: 0 0 24px;
-          letter-spacing: -1px;
-        }
-        .hero-line {
-          width: 40px;
-          height: 1px;
-          background: rgba(255,255,255,0.4);
-          margin-bottom: 32px;
-        }
-        .hero-quote {
-          font-size: 18px;
-          font-style: italic;
-          opacity: 0.9;
-          line-height: 1.6;
-          font-weight: 300;
-        }
-        .poster-body { padding: 56px 40px; }
-        .keyword-box {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding-bottom: 32px;
-          border-bottom: 1px solid #F3F4F6;
-          margin-bottom: 56px;
-        }
-        .kb-label { font-size: 10px; letter-spacing: 2px; color: #9CA3AF; }
-        .kb-val { 
-          font-size: 28px; 
-          font-weight: 700; 
-          color: var(--theme-color);
-        }
-        .analysis-block { margin-bottom: 48px; }
-        .block-head {
-          font-size: 14px;
-          margin: 0 0 16px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          color: #111;
-          letter-spacing: 1px;
-        }
-        .block-dot {
-          width: 6px;
-          height: 6px;
-          background: var(--theme-color);
-          border-radius: 50%;
-        }
-        .block-p {
-          font-size: 15px;
-          line-height: 1.8;
-          color: #4B5563;
-          text-align: justify;
-          white-space: pre-wrap;
-        }
-        .poster-footer {
-          margin-top: 80px;
-          text-align: center;
-          border-top: 1px solid #F3F4F6;
-          padding-top: 40px;
-        }
-        .footer-logo {
-          font-size: 10px;
-          letter-spacing: 4px;
-          color: #D1D5DB;
-          margin-bottom: 8px;
-        }
-        .footer-note {
-          font-size: 12px;
-          color: #9CA3AF;
-          font-style: italic;
-        }
+        .radar-section { margin-bottom: 24px; display: flex; flex-direction: column; align-items: center; }
+        .section-head { font-size: 10px; letter-spacing: 2px; opacity: 0.5; margin-bottom: 24px; text-transform: uppercase; }
+        
+        .keyword-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .kw-label { font-size: 10px; letter-spacing: 2px; opacity: 0.5; }
+        .kw-value { font-size: 24px; font-family: var(--font-serif); }
+
+        .text-card { margin-bottom: 16px; }
+        .tc-title { font-size: 14px; margin: 0 0 12px; letter-spacing: 1px; }
+        .tc-content { font-size: 14px; line-height: 1.8; opacity: 0.8; text-align: justify; margin: 0; }
+
+        .footer-brand { text-align: center; margin-top: 60px; font-size: 10px; letter-spacing: 4px; opacity: 0.3; }
       `}</style>
     </div>
   );
