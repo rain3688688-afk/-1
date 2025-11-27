@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import Head from 'next/head';
 
 // ==========================================
-// 1. 配置 & 工具
+// 1. 系统配置
 // ==========================================
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -13,18 +13,18 @@ const supabase = createClient(
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // ==========================================
-// 2. 核心数据
+// 2. 核心资料库
 // ==========================================
 
 const DIMENSIONS = [
-  { id: 1, label: "确定性" },
-  { id: 2, label: "价值感" },
-  { id: 3, label: "掌控力" },
-  { id: 4, label: "偏爱度" },
-  { id: 5, label: "共鸣度" },
-  { id: 6, label: "空间感" },
-  { id: 7, label: "防御值" },
-  { id: 8, label: "秩序感" },
+  { id: 1, label: "确定" },
+  { id: 2, label: "价值" },
+  { id: 3, label: "掌控" },
+  { id: 4, label: "偏爱" },
+  { id: 5, label: "共鸣" },
+  { id: 6, label: "空间" },
+  { id: 7, label: "防御" },
+  { id: 8, label: "秩序" },
 ];
 
 const INTERSTITIALS = {
@@ -33,6 +33,7 @@ const INTERSTITIALS = {
   36: "即将抵达核心...\n真实的自我轮廓正在浮现",
 };
 
+// 48题完整数据
 const QUESTIONS = [
   { id: 1, text: "在一段关系里，哪种“默认设定”最像你？", options: [{ t: "只要我能感觉到他是稳定的，我很多不安都可以自己消化掉。", v: 1 }, { t: "只要我对他来说是“有用的”，他遇事会想到我，我就很安心。", v: 2 }, { t: "只要相处的节奏大致在我能掌握的范围内，我就不会乱。", v: 3 }, { t: "只要我能明显感到自己是“被偏爱”的那个，我可以包容很多。", v: 4 }] },
   { id: 2, text: "如果要选一句“恋爱观”，你更认同哪一种？", options: [{ t: "我更在意的是，两个人能不能聊到心里那层东西。", v: 5 }, { t: "我希望恋爱里双方都有自己的空间，不需要时时刻刻黏在一起。", v: 6 }, { t: "我喜欢慢慢靠近，不急着给关系下定义。", v: 7 }, { t: "我希望很多事情可以提前说清楚、对齐期待，而不是凭感觉走。", v: 8 }] },
@@ -200,7 +201,7 @@ const RESULTS = {
 };
 
 // ==========================================
-// 3. 视觉组件
+// 3. 视觉组件 (雷达图 + 动态图腾)
 // ==========================================
 
 const RadarChart = ({ scores }) => {
