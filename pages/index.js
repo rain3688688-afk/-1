@@ -1,18 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import Head from 'next/head';
 
 // ==========================================
-// 1. 配置部分
+// 1. 配置 & 工具
 // ==========================================
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
+// 延时函数，用于控制动画节奏
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 // ==========================================
-// 2. 核心数据 (48题 + 8结果，完整收录)
+// 2. 核心内容数据 (完整录入)
 // ==========================================
+
+// 阶段性引导语 (每12题出现一次)
+const INTERSTITIALS = {
+  12: "您的情感轮廓正在浮现...",
+  24: "正在潜入潜意识的更深处...",
+  36: "即将触达您最核心的渴望...",
+};
+
 const QUESTIONS = [
   { id: 1, text: "在一段关系里，哪种“默认设定”最像你？", options: [{ t: "只要我能感觉到他是稳定的，我很多不安都可以自己消化掉。", v: 1 }, { t: "只要我对他来说是“有用的”，他遇事会想到我，我就很安心。", v: 2 }, { t: "只要相处的节奏大致在我能掌握的范围内，我就不会乱。", v: 3 }, { t: "只要我能明显感到自己是“被偏爱”的那个，我可以包容很多。", v: 4 }] },
   { id: 2, text: "如果要选一句“恋爱观”，你更认同哪一种？", options: [{ t: "我更在意的是，两个人能不能聊到心里那层东西。", v: 5 }, { t: "我希望恋爱里双方都有自己的空间，不需要时时刻刻黏在一起。", v: 6 }, { t: "我喜欢慢慢靠近，不急着给关系下定义。", v: 7 }, { t: "我希望很多事情可以提前说清楚、对齐期待，而不是凭感觉走。", v: 8 }] },
@@ -180,22 +191,23 @@ const RESULTS = {
 };
 
 // ==========================================
-// 3. 页面逻辑组件
+// 3. 逻辑组件 & 页面视图
 // ==========================================
+
 export default function App() {
-  const [view, setView] = useState('welcome'); // welcome, quiz, calculating, result
+  const [view, setView] = useState('welcome'); // 状态：welcome, verify_loading, quiz, interstitial, calculating, result
   const [code, setCode] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [scores, setScores] = useState({ 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0 });
   const [finalResultId, setFinalResultId] = useState(null);
+  const [fadeKey, setFadeKey] = useState(0); // 用于触发题目切换动画
+  const [interstitialMsg, setInterstitialMsg] = useState('');
 
-  // 验证码逻辑
+  // --- 动作：验证码逻辑 ---
   const handleVerify = async () => {
     if (!code.trim()) return;
-    setIsLoading(true);
+    setView('verify_loading');
     setErrorMsg('');
 
     try {
@@ -207,47 +219,65 @@ export default function App() {
 
       if (error || !data) {
         setErrorMsg('无效的兑换码，请检查输入');
-        setIsLoading(false);
+        setView('welcome');
         return;
       }
 
       if (data.is_used) {
         setErrorMsg('该兑换码已被使用');
-        setIsLoading(false);
+        setView('welcome');
         return;
       }
 
+      // 验证通过，标记使用
       await supabase.from('codes').update({ is_used: true }).eq('id', data.id);
       
-      setTimeout(() => {
-        setIsLoading(false);
-        setView('quiz');
-      }, 500);
+      // 平滑进入答题
+      await wait(800);
+      setView('quiz');
 
     } catch (err) {
       setErrorMsg('网络异常，请重试');
-      setIsLoading(false);
+      setView('welcome');
     }
   };
 
-  // 答题逻辑
-  const handleAnswer = (value) => {
+  // --- 动作：答题逻辑 ---
+  const handleAnswer = async (value) => {
+    // 1. 记录分数
     const newScores = { ...scores, [value]: scores[value] + 1 };
     setScores(newScores);
 
-    if (currentQIndex < QUESTIONS.length - 1) {
-      setTimeout(() => setCurrentQIndex(prev => prev + 1), 250);
-    } else {
+    // 2. 检查是否需要插入“深潜”引导页 (每12题)
+    const nextIndex = currentQIndex + 1;
+    if (INTERSTITIALS[nextIndex] && nextIndex < QUESTIONS.length) {
+      setInterstitialMsg(INTERSTITIALS[nextIndex]);
+      setView('interstitial');
+      await wait(3000); // 停留3秒让用户沉浸
+      setView('quiz');
+      setCurrentQIndex(nextIndex);
+      setFadeKey(k => k + 1); // 触发新题目淡入
+    } 
+    // 3. 正常切题
+    else if (nextIndex < QUESTIONS.length) {
+      // 短暂延迟让点击动画播放完
+      await wait(250);
+      setCurrentQIndex(nextIndex);
+      setFadeKey(k => k + 1);
+    } 
+    // 4. 答题结束
+    else {
       finishQuiz(newScores);
     }
   };
 
-  // 结算逻辑
-  const finishQuiz = (finalScores) => {
+  // --- 动作：结算逻辑 ---
+  const finishQuiz = async (finalScores) => {
     setView('calculating');
+    
+    // 简单算分：取最高分
     let maxScore = -1;
     let maxId = 1;
-    // 简单统计最高分
     Object.entries(finalScores).forEach(([id, score]) => {
       if (score > maxScore) {
         maxScore = score;
@@ -255,78 +285,86 @@ export default function App() {
       }
     });
     setFinalResultId(maxId);
-    setTimeout(() => {
-      setView('result');
-    }, 2000);
+
+    // 假装深度分析中... (3秒动画)
+    await wait(3500);
+    setView('result');
   };
 
   // ==========================================
-  // 4. 视图渲染
+  // 4. 视图渲染 (JSX)
   // ==========================================
   return (
-    <div className="container">
+    <div className="main-container">
       <Head>
-        <title>情感欲望测评</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700&display=swap" rel="stylesheet" />
+        <title>情感欲望深层测试</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&display=swap" rel="stylesheet" />
       </Head>
 
-      {/* 场景1：欢迎页 */}
+      {/* --- 场景：欢迎页 --- */}
       {view === 'welcome' && (
-        <div className="view-center fade-in">
-          <div className="welcome-card">
-            <h1 className="main-title">内在情感欲望测试</h1>
-            <p className="sub-title">DISCOVER YOUR INNER DESIRE</p>
-            
-            <div className="divider-line"></div>
-            
-            <p className="intro-text">
+        <div className="scene-welcome fade-in">
+          <div className="glass-card">
+            <h1 className="brand-title">内在情感欲望</h1>
+            <p className="brand-subtitle">EMOTIONAL DESIRE TEST</p>
+            <div className="divider"></div>
+            <p className="poetic-intro">
               “我们并不总是知道自己渴望什么，<br/>直到被真正看见的那一刻。”
             </p>
-
-            <div className="input-area">
-              <input
-                type="text"
+            <div className="input-box">
+              <input 
+                type="text" 
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
+                onChange={e => setCode(e.target.value)}
                 placeholder="请输入您的专属兑换码"
-                className="code-input"
+                className="minimal-input"
               />
-              <button
-                onClick={handleVerify}
-                disabled={isLoading}
-                className="primary-btn"
-              >
-                {isLoading ? '正在开启...' : '开始旅程'}
-              </button>
-              {errorMsg && <p className="error-msg">{errorMsg}</p>}
+              <button onClick={handleVerify} className="cta-button">开启旅程</button>
+              {errorMsg && <p className="error-text">{errorMsg}</p>}
             </div>
           </div>
         </div>
       )}
 
-      {/* 场景2：答题页 */}
+      {/* --- 场景：验证加载中 --- */}
+      {view === 'verify_loading' && (
+        <div className="scene-loading fade-in">
+          <div className="breathing-circle"></div>
+          <p className="loading-caption">正在连接潜意识...</p>
+        </div>
+      )}
+
+      {/* --- 场景：答题页 --- */}
       {view === 'quiz' && (
-        <div className="view-quiz fade-in">
-          <div className="progress-container">
-            <div 
-              className="progress-bar"
-              style={{ width: `${((currentQIndex + 1) / QUESTIONS.length) * 100}%` }}
-            ></div>
+        <div className="scene-quiz fade-in">
+          {/* 顶部进度 */}
+          <div className="progress-header">
+            <div className="progress-track">
+              <div 
+                className="progress-fill" 
+                style={{ width: `${((currentQIndex + 1) / QUESTIONS.length) * 100}%` }}
+              ></div>
+            </div>
+            <span className="progress-text">{currentQIndex + 1} / {QUESTIONS.length}</span>
           </div>
 
-          <div className="question-area">
-            <span className="q-number">QUESTION {String(currentQIndex + 1).padStart(2, '0')}</span>
-            <h2 className="q-title">{QUESTIONS[currentQIndex].text}</h2>
+          {/* 题目卡片 (带切换动画) */}
+          <div key={fadeKey} className="question-card slide-up">
+            <div className="question-meta">Q.{String(currentQIndex + 1).padStart(2,'0')}</div>
+            <h2 className="question-text">{QUESTIONS[currentQIndex].text}</h2>
             
-            <div className="options-group">
+            <div className="options-container">
               {QUESTIONS[currentQIndex].options.map((opt, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleAnswer(opt.v)}
-                  className="option-btn"
+                <button 
+                  key={idx} 
+                  onClick={() => handleAnswer(opt.v)} 
+                  className="option-item"
                 >
-                  {opt.t}
+                  <span className="option-label">{['A','B','C','D'][idx]}</span>
+                  <span className="option-content">{opt.t}</span>
                 </button>
               ))}
             </div>
@@ -334,64 +372,73 @@ export default function App() {
         </div>
       )}
 
-      {/* 场景3：计算中 */}
-      {view === 'calculating' && (
-        <div className="view-center">
-          <div className="loading-spinner"></div>
-          <p className="loading-text">正在生成您的心灵画像...</p>
+      {/* --- 场景：中场休息 (Interstitial) --- */}
+      {view === 'interstitial' && (
+        <div className="scene-interstitial fade-in-slow">
+          <p className="interstitial-text">{interstitialMsg}</p>
+          <div className="loading-line"></div>
         </div>
       )}
 
-      {/* 场景4：结果页 */}
+      {/* --- 场景：动态分析中 --- */}
+      {view === 'calculating' && (
+        <div className="scene-calculating fade-in">
+          <div className="radar-scanner">
+            <div className="radar-circle c1"></div>
+            <div className="radar-circle c2"></div>
+            <div className="radar-circle c3"></div>
+            <div className="radar-sweep"></div>
+          </div>
+          <p className="calc-text">正在构建您的欲望模型...</p>
+          <div className="calc-steps">
+            <span className="step s1">分析情感维度...</span>
+            <span className="step s2">匹配核心渴望...</span>
+            <span className="step s3">生成专属画像...</span>
+          </div>
+        </div>
+      )}
+
+      {/* --- 场景：结果展示 (海报级) --- */}
       {view === 'result' && finalResultId && (
         <div 
-          className="view-result fade-in"
-          style={{ backgroundColor: RESULTS[finalResultId].theme.bg }}
+          className="scene-result fade-in-slow"
+          style={{ '--theme-color': RESULTS[finalResultId].theme.accent }}
         >
-          <div className="result-poster">
+          <div className="poster-card">
             {/* 顶部视觉区 */}
             <div 
-              className="poster-header"
+              className="poster-hero"
               style={{ background: RESULTS[finalResultId].theme.gradient }}
             >
-              <div className="header-content">
-                <p className="poster-sub">YOUR CORE DESIRE</p>
-                <h1 className="poster-title">{RESULTS[finalResultId].title}</h1>
-                <div className="poster-line"></div>
-                <p className="poster-quote">“{RESULTS[finalResultId].quote}”</p>
+              <div className="hero-content">
+                <p className="hero-tag">YOUR CORE DESIRE</p>
+                <h1 className="hero-title">{RESULTS[finalResultId].title}</h1>
+                <div className="hero-line"></div>
+                <p className="hero-quote">“{RESULTS[finalResultId].quote}”</p>
               </div>
-              {/* 装饰光晕 */}
-              <div className="glow-circle"></div>
+              <div className="hero-noise"></div>
             </div>
 
-            {/* 内容区 */}
+            {/* 内容详情区 */}
             <div className="poster-body">
-              <div className="keyword-section">
-                <span className="label">KEYWORD</span>
-                <span 
-                  className="keyword"
-                  style={{ color: RESULTS[finalResultId].theme.accent }}
-                >
-                  {RESULTS[finalResultId].keyword}
-                </span>
+              <div className="keyword-box">
+                <span className="kb-label">KEYWORD</span>
+                <span className="kb-val">{RESULTS[finalResultId].keyword}</span>
               </div>
 
               {RESULTS[finalResultId].sections.map((sec, idx) => (
-                <div key={idx} className="content-block">
-                  <h3 className="block-title">
-                    <span 
-                      className="dot"
-                      style={{ backgroundColor: RESULTS[finalResultId].theme.accent }}
-                    ></span>
+                <div key={idx} className="analysis-block">
+                  <h3 className="block-head">
+                    <span className="block-dot"></span>
                     {sec.t}
                   </h3>
-                  <p className="block-text">{sec.c}</p>
+                  <p className="block-p">{sec.c}</p>
                 </div>
               ))}
 
               <div className="poster-footer">
-                <p>EMOTIONAL DESIRE TEST</p>
-                <div className="footer-dot"></div>
+                <div className="footer-logo">EMOTIONAL DESIRE TEST</div>
+                <p className="footer-note">愿你所有的渴望，终被温柔回应</p>
               </div>
             </div>
           </div>
@@ -399,110 +446,144 @@ export default function App() {
       )}
 
       {/* ==========================================
-          5. 原生 CSS 样式 (自带装修)
+          5. 样式表 (CSS in JS)
          ========================================== */}
       <style jsx global>{`
-        /* 全局重置 */
-        * { box-sizing: border-box; }
+        :root {
+          --bg-paper: #FDFBF7;
+          --text-primary: #2C2926;
+          --text-secondary: #57534E;
+          --text-light: #9CA3AF;
+          --font-main: "Noto Serif SC", serif;
+          --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.08);
+          --glass-bg: rgba(255, 255, 255, 0.8);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
         body {
           margin: 0;
-          padding: 0;
-          font-family: "Noto Serif SC", serif;
-          background-color: #FDFBF7; /* 米白纸张色 */
-          color: #4A4A4A;
-          -webkit-font-smoothing: antialiased;
+          font-family: var(--font-main);
+          background-color: var(--bg-paper);
+          color: var(--text-primary);
+          line-height: 1.6;
+          overflow-x: hidden;
         }
-        
-        /* 容器 */
-        .container {
+
+        .main-container {
           min-height: 100vh;
           width: 100%;
+          position: relative;
         }
 
-        /* 动画 */
+        /* 动画定义 */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes breathe { 0% { transform: scale(0.95); opacity: 0.6; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.6; } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes widthGrow { from { width: 0; } to { width: 100%; } }
+
         .fade-in { animation: fadeIn 0.8s ease-out forwards; }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
+        .fade-in-slow { animation: fadeIn 1.5s ease-out forwards; }
+        .slide-up { animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 
-        /* ------------------ 欢迎页 ------------------ */
-        .view-center {
+        /* --- 欢迎页 --- */
+        .scene-welcome {
           min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 24px;
+          background: radial-gradient(circle at center, #fff 0%, #fdfbf7 100%);
+        }
+        .glass-card {
+          width: 100%;
+          max-width: 400px;
+          text-align: center;
+          padding: 48px 32px;
+          background: rgba(255,255,255,0.6);
+          backdrop-filter: blur(12px);
+          border-radius: 2px;
+          box-shadow: var(--shadow-soft);
+          border: 1px solid rgba(255,255,255,0.5);
+        }
+        .brand-title {
+          font-size: 28px;
+          font-weight: 700;
+          letter-spacing: 2px;
+          margin: 0 0 8px;
+        }
+        .brand-subtitle {
+          font-size: 10px;
+          letter-spacing: 4px;
+          color: var(--text-light);
+          margin-bottom: 32px;
+        }
+        .divider {
+          width: 32px;
+          height: 2px;
+          background: #E5E5E5;
+          margin: 0 auto 32px;
+        }
+        .poetic-intro {
+          font-size: 15px;
+          color: var(--text-secondary);
+          font-style: italic;
+          margin-bottom: 48px;
+          line-height: 1.8;
+        }
+        .input-box { display: flex; flex-direction: column; gap: 16px; }
+        .minimal-input {
+          width: 100%;
+          padding: 16px;
+          border: none;
+          border-bottom: 1px solid #D1D5DB;
+          background: transparent;
+          text-align: center;
+          font-family: inherit;
+          font-size: 16px;
+          transition: border 0.3s;
+          border-radius: 0;
+        }
+        .minimal-input:focus { outline: none; border-bottom-color: var(--text-primary); }
+        .cta-button {
+          width: 100%;
+          padding: 18px;
+          background: var(--text-primary);
+          color: #fff;
+          border: none;
+          font-size: 14px;
+          letter-spacing: 3px;
+          cursor: pointer;
+          transition: transform 0.2s, opacity 0.2s;
+        }
+        .cta-button:active { transform: scale(0.98); }
+        .error-text { color: #B91C1C; font-size: 12px; margin-top: 8px; }
+
+        /* --- Loading --- */
+        .scene-loading {
+          height: 100vh;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          padding: 24px;
         }
-        .welcome-card {
-          max-width: 420px;
-          width: 100%;
-          text-align: center;
+        .breathing-circle {
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          background: #E5E5E5;
+          animation: breathe 2s infinite ease-in-out;
+          margin-bottom: 24px;
         }
-        .main-title {
-          font-size: 28px;
-          font-weight: 700;
-          color: #2C2926;
-          margin: 0 0 8px 0;
-          letter-spacing: 1px;
-        }
-        .sub-title {
-          font-size: 10px;
-          color: #9CA3AF;
-          letter-spacing: 3px;
-          text-transform: uppercase;
-          margin-bottom: 32px;
-        }
-        .divider-line {
-          width: 40px;
-          height: 1px;
-          background: #E5E7EB;
-          margin: 0 auto 32px auto;
-        }
-        .intro-text {
-          font-size: 15px;
-          line-height: 1.8;
-          color: #57534E;
-          font-style: italic;
-          margin-bottom: 48px;
-        }
-        .input-area {
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-        .code-input {
-          width: 100%;
-          padding: 16px;
-          border: 1px solid #E5E5E5;
-          background: #FFF;
-          font-family: inherit;
-          font-size: 14px;
-          text-align: center;
-          outline: none;
-          transition: border 0.3s;
-          border-radius: 2px;
-        }
-        .code-input:focus { border-color: #2C2926; }
-        .primary-btn {
-          width: 100%;
-          padding: 16px;
-          background: #2C2926;
-          color: #FFF;
-          font-size: 14px;
+        .loading-caption {
+          font-size: 12px;
           letter-spacing: 2px;
-          border: none;
-          cursor: pointer;
-          transition: opacity 0.3s, transform 0.1s;
-          border-radius: 2px;
+          color: var(--text-light);
         }
-        .primary-btn:hover { opacity: 0.9; }
-        .primary-btn:active { transform: scale(0.98); }
-        .error-msg { color: #BE123C; font-size: 12px; margin-top: 8px; }
 
-        /* ------------------ 答题页 ------------------ */
-        .view-quiz {
+        /* --- 答题页 --- */
+        .scene-quiz {
           max-width: 640px;
           margin: 0 auto;
           min-height: 100vh;
@@ -510,185 +591,264 @@ export default function App() {
           display: flex;
           flex-direction: column;
         }
-        .progress-container {
-          width: 100%;
-          height: 2px;
-          background: #E5E7EB;
+        .progress-header {
+          display: flex;
+          align-items: center;
+          gap: 16px;
           margin-bottom: 48px;
         }
-        .progress-bar {
-          height: 100%;
-          background: #2C2926;
-          transition: width 0.4s ease;
-        }
-        .question-area {
+        .progress-track {
           flex: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-        }
-        .q-number {
-          font-size: 10px;
-          letter-spacing: 2px;
-          color: #9CA3AF;
-          margin-bottom: 16px;
-          display: block;
-        }
-        .q-title {
-          font-size: 22px;
-          line-height: 1.5;
-          color: #2C2926;
-          margin: 0 0 40px 0;
-          font-weight: 700;
-        }
-        .options-group {
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-        .option-btn {
-          text-align: left;
-          padding: 20px 24px;
-          background: #FFF;
-          border: 1px solid #F3F4F6;
-          color: #57534E;
-          font-size: 15px;
-          line-height: 1.6;
-          font-family: inherit;
-          cursor: pointer;
-          transition: all 0.2s;
-          border-radius: 4px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-        }
-        .option-btn:hover {
-          border-color: #D1D5DB;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-
-        /* ------------------ 计算中 ------------------ */
-        .loading-spinner {
-          width: 40px;
-          height: 40px;
-          border: 2px solid #E5E7EB;
-          border-top-color: #2C2926;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-bottom: 24px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-text { font-size: 12px; letter-spacing: 1px; color: #6B7280; }
-
-        /* ------------------ 结果页 (海报) ------------------ */
-        .view-result {
-          width: 100%;
-          min-height: 100vh;
-          padding: 0;
-        }
-        .result-poster {
-          max-width: 600px;
-          margin: 0 auto;
-          background: #FFF;
-          min-height: 100vh;
-          box-shadow: 0 0 50px rgba(0,0,0,0.05);
-        }
-        .poster-header {
+          height: 2px;
+          background: #E5E5E5;
           position: relative;
-          padding: 80px 40px 60px 40px;
-          color: #FFF;
+        }
+        .progress-fill {
+          height: 100%;
+          background: var(--text-primary);
+          transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .progress-text {
+          font-size: 12px;
+          color: var(--text-light);
+          font-family: sans-serif;
+        }
+        .question-meta {
+          font-size: 12px;
+          letter-spacing: 2px;
+          color: var(--text-light);
+          margin-bottom: 16px;
+          text-transform: uppercase;
+        }
+        .question-text {
+          font-size: 22px;
+          line-height: 1.6;
+          margin: 0 0 40px;
+          font-weight: 600;
+        }
+        .option-item {
+          display: flex;
+          width: 100%;
+          padding: 20px 24px;
+          background: #fff;
+          border: 1px solid transparent;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+          margin-bottom: 12px;
+          cursor: pointer;
+          transition: all 0.3s;
+          text-align: left;
+          align-items: baseline;
+        }
+        .option-item:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        }
+        .option-label {
+          font-family: sans-serif;
+          font-size: 12px;
+          color: var(--text-light);
+          margin-right: 16px;
+          width: 16px;
+        }
+        .option-content {
+          font-size: 15px;
+          color: var(--text-secondary);
+          line-height: 1.6;
+        }
+
+        /* --- 中场休息 Interstitial --- */
+        .scene-interstitial {
+          height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: #1C1917; /* 深色沉浸 */
+          color: #fff;
+        }
+        .interstitial-text {
+          font-size: 20px;
+          letter-spacing: 2px;
+          font-weight: 300;
+          margin-bottom: 32px;
+          opacity: 0.9;
+        }
+        .loading-line {
+          width: 40px;
+          height: 1px;
+          background: rgba(255,255,255,0.3);
+          position: relative;
           overflow: hidden;
         }
-        .glow-circle {
+        .loading-line::after {
+          content: '';
           position: absolute;
-          top: -50px;
-          right: -50px;
+          left: 0;
+          top: 0;
+          height: 100%;
+          width: 100%;
+          background: #fff;
+          animation: widthGrow 3s linear;
+        }
+
+        /* --- 计算分析中 --- */
+        .scene-calculating {
+          height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: #FDFBF7;
+        }
+        .radar-scanner {
           width: 200px;
           height: 200px;
-          background: rgba(255,255,255,0.1);
+          position: relative;
+          margin-bottom: 40px;
+        }
+        .radar-circle {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          border: 1px solid #E5E5E5;
           border-radius: 50%;
-          filter: blur(40px);
         }
-        .header-content { position: relative; z-index: 10; }
-        .poster-sub {
+        .c1 { width: 100%; height: 100%; }
+        .c2 { width: 66%; height: 66%; }
+        .c3 { width: 33%; height: 33%; background: var(--text-primary); opacity: 0.1; }
+        .radar-sweep {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: conic-gradient(transparent 0deg, rgba(44, 41, 38, 0.1) 360deg);
+          border-radius: 50%;
+          animation: spin 2s linear infinite;
+        }
+        .calc-text {
+          font-size: 14px;
+          letter-spacing: 2px;
+          color: var(--text-primary);
+          margin-bottom: 16px;
+        }
+        .calc-steps {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          align-items: center;
+        }
+        .step {
           font-size: 10px;
-          letter-spacing: 3px;
+          color: var(--text-light);
+          opacity: 0;
+          animation: fadeInUp 0.5s forwards;
+        }
+        .s1 { animation-delay: 0.5s; }
+        .s2 { animation-delay: 1.5s; }
+        .s3 { animation-delay: 2.5s; }
+
+        /* --- 结果页 (海报) --- */
+        .scene-result {
+          min-height: 100vh;
+          width: 100%;
+          background-color: #F5F5F4;
+          padding-bottom: 40px;
+        }
+        .poster-card {
+          background: #fff;
+          max-width: 600px;
+          margin: 0 auto;
+          min-height: 100vh;
+          box-shadow: 0 0 60px rgba(0,0,0,0.05);
+          overflow: hidden;
+        }
+        .poster-hero {
+          padding: 80px 40px 60px;
+          color: #fff;
+          position: relative;
+        }
+        .hero-content { position: relative; z-index: 10; }
+        .hero-tag {
+          font-size: 10px;
+          letter-spacing: 4px;
           opacity: 0.8;
-          margin-bottom: 12px;
+          margin-bottom: 16px;
         }
-        .poster-title {
-          font-size: 40px;
+        .hero-title {
+          font-size: 48px;
           font-weight: 400;
-          margin: 0 0 24px 0;
+          margin: 0 0 24px;
+          letter-spacing: -1px;
         }
-        .poster-line {
+        .hero-line {
           width: 40px;
-          height: 4px;
-          background: rgba(255,255,255,0.3);
-          margin-bottom: 24px;
+          height: 1px;
+          background: rgba(255,255,255,0.4);
+          margin-bottom: 32px;
         }
-        .poster-quote {
-          font-size: 16px;
+        .hero-quote {
+          font-size: 18px;
           font-style: italic;
           opacity: 0.9;
           line-height: 1.6;
+          font-weight: 300;
         }
-        .poster-body {
-          padding: 48px 40px;
-        }
-        .keyword-section {
+        .poster-body { padding: 56px 40px; }
+        .keyword-box {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          padding-bottom: 32px;
           border-bottom: 1px solid #F3F4F6;
-          padding-bottom: 24px;
-          margin-bottom: 48px;
+          margin-bottom: 56px;
         }
-        .label {
-          font-size: 10px;
-          letter-spacing: 2px;
-          color: #9CA3AF;
+        .kb-label { font-size: 10px; letter-spacing: 2px; color: #9CA3AF; }
+        .kb-val { 
+          font-size: 28px; 
+          font-weight: 700; 
+          color: var(--theme-color);
         }
-        .keyword {
-          font-size: 24px;
-          font-weight: 700;
-        }
-        .content-block { margin-bottom: 40px; }
-        .block-title {
+        .analysis-block { margin-bottom: 48px; }
+        .block-head {
           font-size: 14px;
-          color: #2C2926;
-          margin-bottom: 12px;
+          margin: 0 0 16px;
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 12px;
+          color: #111;
           letter-spacing: 1px;
         }
-        .dot {
+        .block-dot {
           width: 6px;
           height: 6px;
+          background: var(--theme-color);
           border-radius: 50%;
         }
-        .block-text {
+        .block-p {
           font-size: 15px;
           line-height: 1.8;
-          color: #57534E;
+          color: #4B5563;
           text-align: justify;
           white-space: pre-wrap;
         }
         .poster-footer {
           margin-top: 80px;
-          padding-top: 40px;
-          border-top: 1px solid #F3F4F6;
           text-align: center;
-          color: #D1D5DB;
-          font-size: 10px;
-          letter-spacing: 2px;
+          border-top: 1px solid #F3F4F6;
+          padding-top: 40px;
         }
-        .footer-dot {
-          width: 4px;
-          height: 4px;
-          background: #E5E5E5;
-          border-radius: 50%;
-          margin: 12px auto 0;
+        .footer-logo {
+          font-size: 10px;
+          letter-spacing: 4px;
+          color: #D1D5DB;
+          margin-bottom: 8px;
+        }
+        .footer-note {
+          font-size: 12px;
+          color: #9CA3AF;
+          font-style: italic;
         }
       `}</style>
     </div>
