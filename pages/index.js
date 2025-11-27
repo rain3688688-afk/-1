@@ -1,20 +1,18 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import Head from 'next/head';
 
-// -----------------------------------------------------------------------------
-// 1. 初始化配置
-// -----------------------------------------------------------------------------
+// ==========================================
+// 1. 配置部分
+// ==========================================
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-// -----------------------------------------------------------------------------
-// 2. 核心数据 (48道题 & 8种结果)
-// -----------------------------------------------------------------------------
-
-// 映射逻辑：A=1, B=2, C=3, D=4 (第一题) ... 根据文档括号内的数字映射
+// ==========================================
+// 2. 核心数据 (48题 + 8结果，完整收录)
+// ==========================================
 const QUESTIONS = [
   { id: 1, text: "在一段关系里，哪种“默认设定”最像你？", options: [{ t: "只要我能感觉到他是稳定的，我很多不安都可以自己消化掉。", v: 1 }, { t: "只要我对他来说是“有用的”，他遇事会想到我，我就很安心。", v: 2 }, { t: "只要相处的节奏大致在我能掌握的范围内，我就不会乱。", v: 3 }, { t: "只要我能明显感到自己是“被偏爱”的那个，我可以包容很多。", v: 4 }] },
   { id: 2, text: "如果要选一句“恋爱观”，你更认同哪一种？", options: [{ t: "我更在意的是，两个人能不能聊到心里那层东西。", v: 5 }, { t: "我希望恋爱里双方都有自己的空间，不需要时时刻刻黏在一起。", v: 6 }, { t: "我喜欢慢慢靠近，不急着给关系下定义。", v: 7 }, { t: "我希望很多事情可以提前说清楚、对齐期待，而不是凭感觉走。", v: 8 }] },
@@ -66,14 +64,12 @@ const QUESTIONS = [
   { id: 48, text: "你希望自己在一段成熟的关系里，最终是怎样的人？", options: [{ t: "能在关系里给彼此情绪上的安全与力量。", v: 1 }, { t: "能被真诚地依靠，也能坦然地去依靠别人。", v: 2 }, { t: "能在亲密与独立之间切换自如，稳又不腻。", v: 6 }, { t: "能和对方一起成长，不被困在旧模式里。", v: 5 }] },
 ];
 
-// 结果数据 (8种类型完整版)
 const RESULTS = {
   1: {
     title: "确定感",
     keyword: "稳固基石",
     quote: "我是你的，只属于你，永远都是。",
-    color: "from-stone-600 to-stone-800",
-    bg: "bg-stone-50",
+    theme: { bg: "#F5F5F4", accent: "#57534E", gradient: "linear-gradient(135deg, #78716C 0%, #44403C 100%)" },
     sections: [
       { t: "你的底色", c: "我不需要你时时拥抱我，但我需要知道——你站在我这边。\n\n对你来说，亲密关系的核心，是能不能让你心里有一个稳稳落脚的地方。你不追求持续的惊喜，也不需要夸张的浪漫，你真正看重的是——对方的态度是否一致、回应是否连贯、靠近是否可靠。" },
       { t: "你的优势", c: "1. 稳定情绪场：你在关系里自带“基线”作用，你的稳定让对方更容易放松。\n2. 愿意承担：只要确认对方是对的人，你会持续投入，不轻易退缩。\n3. 长期主义：你擅长经营长期关系，而不是追求短暂的激情。" },
@@ -87,8 +83,7 @@ const RESULTS = {
     title: "被需要感",
     keyword: "价值确认",
     quote: "没有你，我只是一片废墟。",
-    color: "from-amber-600 to-orange-800",
-    bg: "bg-orange-50",
+    theme: { bg: "#FFF7ED", accent: "#EA580C", gradient: "linear-gradient(135deg, #F97316 0%, #C2410C 100%)" },
     sections: [
       { t: "你的底色", c: "我愿意付出，但我希望你能让我看见，我的存在让你生活得更轻松一点。\n\n你享受的是那种“我能帮到你”“你愿意依赖我”的感觉，它让你确认自己不是一个可替代的角色。最伤你的不是不浪漫，而是“有你没你，好像都差不多”。" },
       { t: "你的优势", c: "1. 真实减压：你能真实地为对方减轻生活压力，提供落地的支持。\n2. 爱的具象化：对方能从你身上感受到“我不是一个人在扛”。\n3. 黏性与温度：你的在场会让对方觉得“我被照顾，也愿意被照顾”。" },
@@ -102,8 +97,7 @@ const RESULTS = {
     title: "掌控感",
     keyword: "同频共振",
     quote: "我抛开了所有理智，只求你结束我的痛苦。",
-    color: "from-slate-600 to-slate-800",
-    bg: "bg-slate-50",
+    theme: { bg: "#F8FAFC", accent: "#475569", gradient: "linear-gradient(135deg, #64748B 0%, #334155 100%)" },
     sections: [
       { t: "你的底色", c: "我不是要掌控你，我是要确保我们走在同一条路上。\n\n对你来说，亲密更像一条需要共同维护的航道。你关注方向是否一致、节奏是否协调。你不是想“控制对方”，而是希望关系是有逻辑、有成长空间的。" },
       { t: "你的优势", c: "1. 关系管理：你能抓住问题核心，不会让误会无限扩大。\n2. 清晰沟通：无论是界限还是期待，你都能推动双方达成共识。\n3. 提供方向：和你在一起，对方会觉得关系是往前走的。" },
@@ -117,8 +111,7 @@ const RESULTS = {
     title: "被偏爱感",
     keyword: "独特例外",
     quote: "你要永远为你驯服的东西负责。",
-    color: "from-rose-600 to-rose-900",
-    bg: "bg-rose-50",
+    theme: { bg: "#FFF1F2", accent: "#E11D48", gradient: "linear-gradient(135deg, #F43F5E 0%, #9F1239 100%)" },
     sections: [
       { t: "你的底色", c: "我不需要世界偏爱我，但我希望你会。\n\n你真正需要的是一种“在你心里，我是例外”的确认。你会从微妙的细节里，辨认自己是否拥有独一份的意义。你比大多数人更能感受到感情里的温度变化。" },
       { t: "你的优势", c: "1. 深情专注：一旦认定，你会给对方非常明确、稳定的爱意。\n2. 敏锐体贴：你能察觉到别人察觉不到的细节。\n3. 独特经营：你会用心经营“你们之间的独特性”，让关系更动人。" },
@@ -132,8 +125,7 @@ const RESULTS = {
     title: "精神共鸣",
     keyword: "灵魂契合",
     quote: "我们相遇在精神的旷野，无需言语便已相通。",
-    color: "from-indigo-600 to-purple-900",
-    bg: "bg-indigo-50",
+    theme: { bg: "#EEF2FF", accent: "#4F46E5", gradient: "linear-gradient(135deg, #6366F1 0%, #312E81 100%)" },
     sections: [
       { t: "你的底色", c: "亲密不只是靠近，而是被理解、被看见、被思想牵引。\n\n你渴望一种能与你一起思考、一起成长、一起对世界提出问题的关系。没有精神交流，你会觉得亲密关系像缺了核心。你追求的是“你一句话我就懂”的心灵接触。" },
       { t: "你的优势", c: "1. 思想活力：你不是在谈恋爱，而是在共同扩展世界。\n2. 深度理解：你真正会听、会理解，让对方有“被懂了”的体验。\n3. 持续焕新：和你在一起，关系不会陷入重复和枯燥。" },
@@ -147,8 +139,7 @@ const RESULTS = {
     title: "空间感",
     keyword: "自由呼吸",
     quote: "我爱你，却不愿用爱束缚你。",
-    color: "from-sky-600 to-cyan-800",
-    bg: "bg-sky-50",
+    theme: { bg: "#F0F9FF", accent: "#0284C7", gradient: "linear-gradient(135deg, #0EA5E9 0%, #0369A1 100%)" },
     sections: [
       { t: "你的底色", c: "靠近你不难，难的是用不吞没、不束缚的方式靠近。\n\n你对亲密的理解是在爱里保持自我完整。你愿意靠近，但必须保留足够的空间呼吸。只要这种空间被尊重，你的爱就会流得轻盈而稳定。" },
       { t: "你的优势", c: "1. 保持自我：你能让对方在关系里觉得“和你在一起，我还是我”。\n2. 尊重界限：你不会越界，也不会让别人轻易越界。\n3. 轻盈亲密：你不戏剧化、不过度要求，使关系保持舒展。" },
@@ -162,8 +153,7 @@ const RESULTS = {
     title: "安全距离",
     keyword: "审慎靠近",
     quote: "待人如执烛，太近灼手，太远暗生。",
-    color: "from-emerald-600 to-teal-800",
-    bg: "bg-emerald-50",
+    theme: { bg: "#ECFDF5", accent: "#059669", gradient: "linear-gradient(135deg, #10B981 0%, #065F46 100%)" },
     sections: [
       { t: "你的底色", c: "我不是不愿意靠近，我只是想安全地靠近。\n\n你的亲密节奏里有一种审慎，你需要在靠近前先确认值得托付。你不是冷淡，只是有自己的节奏：观察、确认、再靠近。一旦确认，你会比大多数人都长情。" },
       { t: "你的优势", c: "1. 慎重稳定：你不会轻易进入关系，但只要进入，就非常可靠。\n2. 分寸感：和你相处“刚刚好”，不被吞没，也不被忽略。\n3. 情绪保护：你不把情绪甩给别人，避免双方受伤。" },
@@ -177,8 +167,7 @@ const RESULTS = {
     title: "秩序感",
     keyword: "清晰结构",
     quote: "爱情是一种本能，要么生下来就会，要么永远都不会。",
-    color: "from-blue-700 to-indigo-900",
-    bg: "bg-blue-50",
+    theme: { bg: "#EFF6FF", accent: "#2563EB", gradient: "linear-gradient(135deg, #3B82F6 0%, #1E3A8A 100%)" },
     sections: [
       { t: "你的底色", c: "亲密不是混乱的流动，而是共同打造的一种秩序。\n\n你对亲密关系的核心需求是清晰、结构和共同决策。你希望知道关系的位置、节奏和未来方向。这不是理性过度，而是一种成熟的互赖感。" },
       { t: "你的优势", c: "1. 建立结构：你擅长把混乱变成有序，把模糊变成明确。\n2. 解决问题：当关系不顺时，你不是逃避，而是想要一起找到答案。\n3. 安全踏实：在你这里，亲密是可以依赖的现实支持。" },
@@ -190,10 +179,9 @@ const RESULTS = {
   }
 };
 
-// -----------------------------------------------------------------------------
-// 3. 组件部分
-// -----------------------------------------------------------------------------
-
+// ==========================================
+// 3. 页面逻辑组件
+// ==========================================
 export default function App() {
   const [view, setView] = useState('welcome'); // welcome, quiz, calculating, result
   const [code, setCode] = useState('');
@@ -204,7 +192,7 @@ export default function App() {
   const [scores, setScores] = useState({ 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0 });
   const [finalResultId, setFinalResultId] = useState(null);
 
-  // 1. 验证逻辑
+  // 验证码逻辑
   const handleVerify = async () => {
     if (!code.trim()) return;
     setIsLoading(true);
@@ -229,10 +217,8 @@ export default function App() {
         return;
       }
 
-      // 验证通过，标记为已使用
       await supabase.from('codes').update({ is_used: true }).eq('id', data.id);
       
-      // 进入答题页
       setTimeout(() => {
         setIsLoading(false);
         setView('quiz');
@@ -244,129 +230,103 @@ export default function App() {
     }
   };
 
-  // 2. 答题逻辑
+  // 答题逻辑
   const handleAnswer = (value) => {
-    // 记录分数
     const newScores = { ...scores, [value]: scores[value] + 1 };
     setScores(newScores);
 
-    // 判断是否下一题
     if (currentQIndex < QUESTIONS.length - 1) {
-      // 稍微延迟一点点，让点击动效展示完
       setTimeout(() => setCurrentQIndex(prev => prev + 1), 250);
     } else {
-      // 答题结束，计算结果
       finishQuiz(newScores);
     }
   };
 
-  // 3. 结算逻辑
+  // 结算逻辑
   const finishQuiz = (finalScores) => {
     setView('calculating');
-    
-    // 找出得分最高的维度
     let maxScore = -1;
     let maxId = 1;
-    
+    // 简单统计最高分
     Object.entries(finalScores).forEach(([id, score]) => {
       if (score > maxScore) {
         maxScore = score;
         maxId = id;
       }
     });
-
     setFinalResultId(maxId);
-
-    // 假装计算2秒，增加仪式感
     setTimeout(() => {
       setView('result');
     }, 2000);
   };
 
-  // --- 渲染部分 ---
-
+  // ==========================================
+  // 4. 视图渲染
+  // ==========================================
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-[#4A4A4A] font-sans selection:bg-stone-200">
+    <div className="container">
       <Head>
         <title>情感欲望测评</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700&display=swap" rel="stylesheet" />
       </Head>
 
-      {/* 1. 欢迎页 (验证页) */}
+      {/* 场景1：欢迎页 */}
       {view === 'welcome' && (
-        <div className="flex flex-col items-center justify-center min-h-screen px-6 animate-fade-in">
-          <div className="max-w-md w-full text-center space-y-8">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-serif text-stone-800 tracking-wide">内在情感欲望测试</h1>
-              <p className="text-stone-500 text-sm font-light tracking-widest">DISCOVER YOUR INNER DESIRE</p>
-            </div>
+        <div className="view-center fade-in">
+          <div className="welcome-card">
+            <h1 className="main-title">内在情感欲望测试</h1>
+            <p className="sub-title">DISCOVER YOUR INNER DESIRE</p>
             
-            <div className="py-12 relative">
-              <div className="absolute inset-0 flex items-center justify-center opacity-10">
-                <div className="w-48 h-48 rounded-full border border-stone-800"></div>
-                <div className="absolute w-32 h-32 rounded-full border border-stone-800"></div>
-              </div>
-              <p className="text-stone-600 leading-relaxed relative z-10 font-serif italic">
-                “我们并不总是知道自己渴望什么，<br/>直到被真正看见的那一刻。”
-              </p>
-            </div>
+            <div className="divider-line"></div>
+            
+            <p className="intro-text">
+              “我们并不总是知道自己渴望什么，<br/>直到被真正看见的那一刻。”
+            </p>
 
-            <div className="space-y-4">
+            <div className="input-area">
               <input
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="请输入您的专属兑换码"
-                className="w-full px-4 py-3 text-center bg-white border border-stone-200 rounded-none focus:outline-none focus:border-stone-400 transition-colors placeholder:text-stone-300"
+                className="code-input"
               />
-              
               <button
                 onClick={handleVerify}
                 disabled={isLoading}
-                className="w-full py-3 bg-stone-800 text-stone-50 hover:bg-stone-700 transition-colors tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                className="primary-btn"
               >
                 {isLoading ? '正在开启...' : '开始旅程'}
               </button>
-              
-              {errorMsg && (
-                <p className="text-rose-800/80 text-xs animate-shake">{errorMsg}</p>
-              )}
+              {errorMsg && <p className="error-msg">{errorMsg}</p>}
             </div>
           </div>
         </div>
       )}
 
-      {/* 2. 答题页 */}
+      {/* 场景2：答题页 */}
       {view === 'quiz' && (
-        <div className="flex flex-col min-h-screen max-w-2xl mx-auto px-6 py-12">
-          {/* 进度条 */}
-          <div className="w-full h-0.5 bg-stone-200 mb-12">
+        <div className="view-quiz fade-in">
+          <div className="progress-container">
             <div 
-              className="h-full bg-stone-800 transition-all duration-500 ease-out"
+              className="progress-bar"
               style={{ width: `${((currentQIndex + 1) / QUESTIONS.length) * 100}%` }}
             ></div>
           </div>
 
-          <div className="flex-1 flex flex-col justify-center space-y-12 animate-slide-up">
-            <div className="space-y-4">
-              <span className="text-xs font-serif text-stone-400 tracking-widest">
-                QUESTION {String(currentQIndex + 1).padStart(2, '0')}
-              </span>
-              <h2 className="text-xl md:text-2xl font-serif leading-relaxed text-stone-800">
-                {QUESTIONS[currentQIndex].text}
-              </h2>
-            </div>
-
-            <div className="space-y-3">
+          <div className="question-area">
+            <span className="q-number">QUESTION {String(currentQIndex + 1).padStart(2, '0')}</span>
+            <h2 className="q-title">{QUESTIONS[currentQIndex].text}</h2>
+            
+            <div className="options-group">
               {QUESTIONS[currentQIndex].options.map((opt, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleAnswer(opt.v)}
-                  className="w-full text-left p-5 border border-stone-100 bg-white hover:border-stone-300 hover:bg-stone-50 transition-all duration-200 group"
+                  className="option-btn"
                 >
-                  <span className="text-stone-600 group-hover:text-stone-900 transition-colors text-sm md:text-base leading-relaxed">
-                    {opt.t}
-                  </span>
+                  {opt.t}
                 </button>
               ))}
             </div>
@@ -374,85 +334,362 @@ export default function App() {
         </div>
       )}
 
-      {/* 3. 计算中 */}
+      {/* 场景3：计算中 */}
       {view === 'calculating' && (
-        <div className="min-h-screen flex items-center justify-center bg-stone-50">
-          <div className="text-center space-y-4 animate-pulse">
-            <div className="w-12 h-12 border-2 border-stone-300 border-t-stone-800 rounded-full animate-spin mx-auto"></div>
-            <p className="text-stone-500 font-serif tracking-widest text-sm">正在生成您的心灵画像...</p>
-          </div>
+        <div className="view-center">
+          <div className="loading-spinner"></div>
+          <p className="loading-text">正在生成您的心灵画像...</p>
         </div>
       )}
 
-      {/* 4. 结果页 (长图海报风格) */}
+      {/* 场景4：结果页 */}
       {view === 'result' && finalResultId && (
-        <div className={`min-h-screen ${RESULTS[finalResultId].bg} transition-colors duration-1000`}>
-          <div className="max-w-2xl mx-auto bg-white shadow-2xl shadow-stone-200/50 min-h-screen animate-fade-in-slow">
-            
-            {/* 顶部主视觉 */}
-            <div className={`h-80 w-full bg-gradient-to-br ${RESULTS[finalResultId].color} p-8 flex flex-col justify-end text-white relative overflow-hidden`}>
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
-              <p className="text-white/60 text-xs tracking-[0.2em] mb-2 uppercase">Your Core Desire</p>
-              <h1 className="text-4xl md:text-5xl font-serif mb-4">{RESULTS[finalResultId].title}</h1>
-              <div className="w-12 h-1 bg-white/30 mb-6"></div>
-              <p className="text-white/90 font-serif italic text-lg leading-relaxed opacity-90">
-                “{RESULTS[finalResultId].quote}”
-              </p>
+        <div 
+          className="view-result fade-in"
+          style={{ backgroundColor: RESULTS[finalResultId].theme.bg }}
+        >
+          <div className="result-poster">
+            {/* 顶部视觉区 */}
+            <div 
+              className="poster-header"
+              style={{ background: RESULTS[finalResultId].theme.gradient }}
+            >
+              <div className="header-content">
+                <p className="poster-sub">YOUR CORE DESIRE</p>
+                <h1 className="poster-title">{RESULTS[finalResultId].title}</h1>
+                <div className="poster-line"></div>
+                <p className="poster-quote">“{RESULTS[finalResultId].quote}”</p>
+              </div>
+              {/* 装饰光晕 */}
+              <div className="glow-circle"></div>
             </div>
 
-            {/* 内容区域 */}
-            <div className="p-8 md:p-12 space-y-12">
-              
-              {/* 关键词 */}
-              <div className="flex items-center justify-between border-b border-stone-100 pb-8">
-                <span className="text-xs font-bold text-stone-400 tracking-widest uppercase">Keyword</span>
-                <span className={`text-xl font-serif font-bold bg-clip-text text-transparent bg-gradient-to-r ${RESULTS[finalResultId].color}`}>
+            {/* 内容区 */}
+            <div className="poster-body">
+              <div className="keyword-section">
+                <span className="label">KEYWORD</span>
+                <span 
+                  className="keyword"
+                  style={{ color: RESULTS[finalResultId].theme.accent }}
+                >
                   {RESULTS[finalResultId].keyword}
                 </span>
               </div>
 
-              {/* 循环渲染段落 */}
               {RESULTS[finalResultId].sections.map((sec, idx) => (
-                <div key={idx} className="space-y-4 group">
-                  <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2 uppercase tracking-wide">
-                    <span className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${RESULTS[finalResultId].color}`}></span>
+                <div key={idx} className="content-block">
+                  <h3 className="block-title">
+                    <span 
+                      className="dot"
+                      style={{ backgroundColor: RESULTS[finalResultId].theme.accent }}
+                    ></span>
                     {sec.t}
                   </h3>
-                  <p className="text-stone-600 leading-loose text-justify text-sm md:text-base whitespace-pre-wrap">
-                    {sec.c}
-                  </p>
+                  <p className="block-text">{sec.c}</p>
                 </div>
               ))}
 
-              {/* 底部版权 */}
-              <div className="pt-12 mt-12 border-t border-stone-100 text-center space-y-2">
-                <p className="text-stone-300 text-xs tracking-widest">EMOTIONAL DESIRE TEST</p>
-                <div className="w-3 h-3 rounded-full border border-stone-200 mx-auto"></div>
+              <div className="poster-footer">
+                <p>EMOTIONAL DESIRE TEST</p>
+                <div className="footer-dot"></div>
               </div>
             </div>
-
           </div>
         </div>
       )}
 
+      {/* ==========================================
+          5. 原生 CSS 样式 (自带装修)
+         ========================================== */}
       <style jsx global>{`
-        @keyframes fade-in {
+        /* 全局重置 */
+        * { box-sizing: border-box; }
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: "Noto Serif SC", serif;
+          background-color: #FDFBF7; /* 米白纸张色 */
+          color: #4A4A4A;
+          -webkit-font-smoothing: antialiased;
+        }
+        
+        /* 容器 */
+        .container {
+          min-height: 100vh;
+          width: 100%;
+        }
+
+        /* 动画 */
+        .fade-in { animation: fadeIn 0.8s ease-out forwards; }
+        @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes slide-up {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+
+        /* ------------------ 欢迎页 ------------------ */
+        .view-center {
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 24px;
         }
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
+        .welcome-card {
+          max-width: 420px;
+          width: 100%;
+          text-align: center;
         }
-        .animate-fade-in { animation: fade-in 0.8s ease-out forwards; }
-        .animate-fade-in-slow { animation: fade-in 1.2s ease-out forwards; }
-        .animate-slide-up { animation: slide-up 0.5s ease-out forwards; }
-        .animate-shake { animation: shake 0.3s ease-in-out; }
+        .main-title {
+          font-size: 28px;
+          font-weight: 700;
+          color: #2C2926;
+          margin: 0 0 8px 0;
+          letter-spacing: 1px;
+        }
+        .sub-title {
+          font-size: 10px;
+          color: #9CA3AF;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          margin-bottom: 32px;
+        }
+        .divider-line {
+          width: 40px;
+          height: 1px;
+          background: #E5E7EB;
+          margin: 0 auto 32px auto;
+        }
+        .intro-text {
+          font-size: 15px;
+          line-height: 1.8;
+          color: #57534E;
+          font-style: italic;
+          margin-bottom: 48px;
+        }
+        .input-area {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        .code-input {
+          width: 100%;
+          padding: 16px;
+          border: 1px solid #E5E5E5;
+          background: #FFF;
+          font-family: inherit;
+          font-size: 14px;
+          text-align: center;
+          outline: none;
+          transition: border 0.3s;
+          border-radius: 2px;
+        }
+        .code-input:focus { border-color: #2C2926; }
+        .primary-btn {
+          width: 100%;
+          padding: 16px;
+          background: #2C2926;
+          color: #FFF;
+          font-size: 14px;
+          letter-spacing: 2px;
+          border: none;
+          cursor: pointer;
+          transition: opacity 0.3s, transform 0.1s;
+          border-radius: 2px;
+        }
+        .primary-btn:hover { opacity: 0.9; }
+        .primary-btn:active { transform: scale(0.98); }
+        .error-msg { color: #BE123C; font-size: 12px; margin-top: 8px; }
+
+        /* ------------------ 答题页 ------------------ */
+        .view-quiz {
+          max-width: 640px;
+          margin: 0 auto;
+          min-height: 100vh;
+          padding: 40px 24px;
+          display: flex;
+          flex-direction: column;
+        }
+        .progress-container {
+          width: 100%;
+          height: 2px;
+          background: #E5E7EB;
+          margin-bottom: 48px;
+        }
+        .progress-bar {
+          height: 100%;
+          background: #2C2926;
+          transition: width 0.4s ease;
+        }
+        .question-area {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+        .q-number {
+          font-size: 10px;
+          letter-spacing: 2px;
+          color: #9CA3AF;
+          margin-bottom: 16px;
+          display: block;
+        }
+        .q-title {
+          font-size: 22px;
+          line-height: 1.5;
+          color: #2C2926;
+          margin: 0 0 40px 0;
+          font-weight: 700;
+        }
+        .options-group {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        .option-btn {
+          text-align: left;
+          padding: 20px 24px;
+          background: #FFF;
+          border: 1px solid #F3F4F6;
+          color: #57534E;
+          font-size: 15px;
+          line-height: 1.6;
+          font-family: inherit;
+          cursor: pointer;
+          transition: all 0.2s;
+          border-radius: 4px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .option-btn:hover {
+          border-color: #D1D5DB;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* ------------------ 计算中 ------------------ */
+        .loading-spinner {
+          width: 40px;
+          height: 40px;
+          border: 2px solid #E5E7EB;
+          border-top-color: #2C2926;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin-bottom: 24px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { font-size: 12px; letter-spacing: 1px; color: #6B7280; }
+
+        /* ------------------ 结果页 (海报) ------------------ */
+        .view-result {
+          width: 100%;
+          min-height: 100vh;
+          padding: 0;
+        }
+        .result-poster {
+          max-width: 600px;
+          margin: 0 auto;
+          background: #FFF;
+          min-height: 100vh;
+          box-shadow: 0 0 50px rgba(0,0,0,0.05);
+        }
+        .poster-header {
+          position: relative;
+          padding: 80px 40px 60px 40px;
+          color: #FFF;
+          overflow: hidden;
+        }
+        .glow-circle {
+          position: absolute;
+          top: -50px;
+          right: -50px;
+          width: 200px;
+          height: 200px;
+          background: rgba(255,255,255,0.1);
+          border-radius: 50%;
+          filter: blur(40px);
+        }
+        .header-content { position: relative; z-index: 10; }
+        .poster-sub {
+          font-size: 10px;
+          letter-spacing: 3px;
+          opacity: 0.8;
+          margin-bottom: 12px;
+        }
+        .poster-title {
+          font-size: 40px;
+          font-weight: 400;
+          margin: 0 0 24px 0;
+        }
+        .poster-line {
+          width: 40px;
+          height: 4px;
+          background: rgba(255,255,255,0.3);
+          margin-bottom: 24px;
+        }
+        .poster-quote {
+          font-size: 16px;
+          font-style: italic;
+          opacity: 0.9;
+          line-height: 1.6;
+        }
+        .poster-body {
+          padding: 48px 40px;
+        }
+        .keyword-section {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid #F3F4F6;
+          padding-bottom: 24px;
+          margin-bottom: 48px;
+        }
+        .label {
+          font-size: 10px;
+          letter-spacing: 2px;
+          color: #9CA3AF;
+        }
+        .keyword {
+          font-size: 24px;
+          font-weight: 700;
+        }
+        .content-block { margin-bottom: 40px; }
+        .block-title {
+          font-size: 14px;
+          color: #2C2926;
+          margin-bottom: 12px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          letter-spacing: 1px;
+        }
+        .dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+        }
+        .block-text {
+          font-size: 15px;
+          line-height: 1.8;
+          color: #57534E;
+          text-align: justify;
+          white-space: pre-wrap;
+        }
+        .poster-footer {
+          margin-top: 80px;
+          padding-top: 40px;
+          border-top: 1px solid #F3F4F6;
+          text-align: center;
+          color: #D1D5DB;
+          font-size: 10px;
+          letter-spacing: 2px;
+        }
+        .footer-dot {
+          width: 4px;
+          height: 4px;
+          background: #E5E5E5;
+          border-radius: 50%;
+          margin: 12px auto 0;
+        }
       `}</style>
     </div>
   );
