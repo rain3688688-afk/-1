@@ -1,31 +1,4 @@
-'use client';
 
-import { useState, useEffect, useRef } from 'react';
-// import { createClient } from '@supabase/supabase-js'; // ⚠️ 在真实项目中取消注释
-// import Head from 'next/head'; // ⚠️ 在真实项目中取消注释
-
-// ==========================================
-// 0. 配置与工具
-// ==========================================
-
-// --- 模拟 Supabase 客户端 (为了让预览版能直接运行) ---
-// 在你的真实 Next.js 项目中，请删除这个 mock 对象，并使用上面的 createClient
-const mockSupabase = {
-  from: (table) => ({
-    select: (cols) => ({
-      eq: (field, value) => ({
-        single: async () => {
-          await new Promise(r => setTimeout(r, 800)); // 模拟网络延迟
-          // 模拟有效码：VIP888 或 TEST666
-          if (['VIP888', 'TEST666'].includes(value)) {
-            return { data: { id: 1, is_used: false }, error: null };
-          }
-          return { data: null, error: { message: '兑换码无效 (测试请试用: VIP888)' } };
-        }
-      })
-    }),
-    update: (data) => ({
-      eq: (field, value) => Promise.resolve({ error: null })
     })
   })
 };
