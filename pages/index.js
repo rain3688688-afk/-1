@@ -1,4 +1,31 @@
+'use client';
 
+import { useState, useEffect, useRef } from 'react';
+// import { createClient } from '@supabase/supabase-js'; // ⚠️ 在真实项目中取消注释
+// import Head from 'next/head'; // ⚠️ 在真实项目中取消注释
+
+// ==========================================
+// 0. 配置与工具
+// ==========================================
+
+// --- 模拟 Supabase 客户端 (为了让预览版能直接运行) ---
+// 在你的真实 Next.js 项目中，请删除这个 mock 对象，并使用上面的 createClient
+const mockSupabase = {
+  from: (table) => ({
+    select: (cols) => ({
+      eq: (field, value) => ({
+        single: async () => {
+          await new Promise(r => setTimeout(r, 800)); // 模拟网络延迟
+          // 模拟有效码：VIP888 或 TEST666
+          if (['VIP888', 'TEST666'].includes(value)) {
+            return { data: { id: 1, is_used: false }, error: null };
+          }
+          return { data: null, error: { message: '兑换码无效 (测试请试用: VIP888)' } };
+        }
+      })
+    }),
+    update: (data) => ({
+      eq: (field, value) => Promise.resolve({ error: null })
     })
   })
 };
@@ -657,3 +684,48 @@ export default function InnerEchoApp() {
                   <h3 className="text-lg font-serif text-white/90 border-l-2 pl-4" style={{ borderColor: RESULTS[resultId].accent }}>
                     {section.t}
                   </h3>
+                  <div className="text-gray-400 font-light leading-relaxed whitespace-pre-wrap pl-4 text-sm md:text-base">
+                    {section.c}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="mt-24 pt-12 border-t border-white/5 text-center space-y-4">
+              <div className="w-8 h-8 mx-auto text-gray-600">
+                <Icons.Star />
+              </div>
+              <p className="text-xs text-gray-600 tracking-widest">
+                INNER ECHO · DEEP PSYCHOLOGY
+              </p>
+              <button 
+                onClick={() => window.location.reload()}
+                className="text-xs text-gray-500 hover:text-white transition-colors underline decoration-gray-700 underline-offset-4"
+              >
+                重测一次
+              </button>
+            </div>
+          </div>
+        )}
+
+      </main>
+
+      {/* Global Styles for Animations */}
+      <style jsx global>{`
+        @keyframes blob {
+          0% { transform: translate(0px, 0px) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+          100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob { animation: blob 7s infinite; }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animate-fade-in { animation: fadeIn 0.8s ease-out forwards; }
+        .animate-fade-in-slow { animation: fadeIn 2s ease-out forwards; }
+        .animate-spin-reverse { animation: spin 1s linear infinite reverse; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      `}</style>
+    </div>
+  );
+}
