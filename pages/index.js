@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
 // ==========================================
-// 1. 系统配置 & 视觉引擎
+// 1. 系统配置 & 艺术引擎
 // ==========================================
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -12,24 +12,28 @@ const supabase = createClient(
 );
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const STORAGE_KEY = 'inner_echo_progress_v3';
+const STORAGE_KEY = 'inner_echo_progress_v4_masterpiece';
 
-// 8种欲望的深度配色与关键词配置
-const DIMENSIONS = [
-  { id: 1, label: "确定感", color: "#E2E8F0", shadow: "rgba(226, 232, 240, 0.4)" }, // 银岩灰 - 稳固
-  { id: 2, label: "被需要", color: "#FDBA74", shadow: "rgba(253, 186, 116, 0.4)" }, // 暖阳橙 - 温暖
-  { id: 3, label: "掌控感", color: "#94A3B8", shadow: "rgba(148, 163, 184, 0.4)" }, // 钢铁蓝 - 冷静
-  { id: 4, label: "被偏爱", color: "#FDA4AF", shadow: "rgba(253, 164, 175, 0.5)" }, // 玫瑰粉 - 独特
-  { id: 5, label: "共鸣感", color: "#A5B4FC", shadow: "rgba(165, 180, 252, 0.5)" }, // 灵魂紫 - 深邃
-  { id: 6, label: "自由感", color: "#7DD3FC", shadow: "rgba(125, 211, 252, 0.4)" }, // 天空蓝 - 轻盈
-  { id: 7, label: "安全感", color: "#6EE7B7", shadow: "rgba(110, 231, 183, 0.4)" }, // 森林绿 - 治愈
-  { id: 8, label: "秩序感", color: "#93C5FD", shadow: "rgba(147, 197, 253, 0.4)" }, // 几何蓝 - 规整
+// 8种欲望的【灵魂形态】配置
+// color: 主色调 (低饱和高级灰调)
+// glow: 辉光色
+// shape: 对应的动态形态 CSS 类名
+const SOUL_TYPES = [
+  { id: 1, label: "确定感", color: "#E5E5E5", glow: "rgba(255,255,255,0.3)", shape: "shape-cube", keyword: "Anchor" }, // 磐石 - 稳固立方
+  { id: 2, label: "被需要", color: "#E09F7D", glow: "rgba(224, 159, 125, 0.4)", shape: "shape-sun", keyword: "Warmth" }, // 暖阳 - 扩散光晕
+  { id: 3, label: "掌控感", color: "#9CA3AF", glow: "rgba(156, 163, 175, 0.4)", shape: "shape-ring", keyword: "Orbit" }, // 轨道 - 精密圆环
+  { id: 4, label: "被偏爱", color: "#F4A4A4", glow: "rgba(244, 164, 164, 0.4)", shape: "shape-heart", keyword: "Rose" }, // 玫瑰 - 柔和搏动
+  { id: 5, label: "共鸣感", color: "#A78BFA", glow: "rgba(167, 139, 250, 0.4)", shape: "shape-wave", keyword: "Echo" }, // 声波 - 频率共振
+  { id: 6, label: "自由感", color: "#BAE6FD", glow: "rgba(186, 230, 253, 0.4)", shape: "shape-cloud", keyword: "Wind" }, // 风 - 流动云雾
+  { id: 7, label: "安全感", color: "#6EE7B7", glow: "rgba(110, 231, 183, 0.3)", shape: "shape-shield", keyword: "Sanctuary" }, // 结界 - 呼吸护盾
+  { id: 8, label: "秩序感", color: "#93C5FD", glow: "rgba(147, 197, 253, 0.4)", shape: "shape-grid", keyword: "Matrix" }, // 晶体 - 对称结构
 ];
 
 // ==========================================
-// 2. 核心数据 (题目 & 结果)
+// 2. 题目与文案数据
 // ==========================================
-
+// (此处保持题目数据逻辑不变，仅为了节省篇幅，实际部署时请确保 Q1-Q48 完整)
+// ... [请确保这里包含完整的 48 道 QUESTIONS 数组，与之前版本一致] ...
 const QUESTIONS = [
   // --- Part 1: 现实切片 (Q1-16) ---
   { id: 1, text: "周末下午，伴侣突然失联了3个小时，发消息也没回。那一刻，你最真实的反应是？", options: [{ t: "下意识地去翻之前的聊天记录，看是不是我说错话了？这种不知道发生什么的感觉最折磨人。", v: 1 }, { t: "挺好的，刚好没人管我。我可以专心做自己的事，不用一直切出去回消息。", v: 6 }, { t: "第一反应是推测原因，准备等联系上后，哪怕不吵架，也要问清楚去向，防止下次再这样。", v: 3 }, { t: "心里会有点堵得慌。也不是多大事，就是觉得如果他够在意我，怎么舍得让我空等这么久？", v: 4 }] },
@@ -90,7 +94,7 @@ const RESULTS = {
     title: "确定感",
     keyword: "稳固基石",
     quote: "万物皆流变，而我只要一种绝对的定数。",
-    accent: "#E2E8F0", 
+    accent: "#E7E5E4", 
     sections: [
       { t: "你的亲密底色", c: "在亲密关系中，你核心的情感诉求是“稳定与可预期”。相较于外在条件或轰轰烈烈的浪漫，你更看重凡事有交代、件件有着落。这种清晰、可靠的互动模式，是你构建安全感的基石。 \n\n你对“不确定性”极度敏感。任何模糊的信号、延迟的回应，都可能触发你内心的不安。你反复确认，本质上是为了在流动的关系中，寻找一个永远不会变的锚点。" },
       { t: "你的光影图谱", c: "【光】你是关系的定海神针。你具备极强的抗风险韧性，认定即终身。你的情感投入具有极强的排他性，拒绝模糊模式。 \n\n【影】你难以忍受信息空白。当对方沉默时，你容易过度解读，将中性信号转化为“被否定”。你常以“懂事”为名压抑需求，表面说没事，内心却在内耗。" },
@@ -103,7 +107,7 @@ const RESULTS = {
     title: "被需要",
     keyword: "价值确认",
     quote: "没有你，我只是一片废墟。",
-    accent: "#FDBA74", 
+    accent: "#FB923C", 
     sections: [
       { t: "你的亲密底色", c: "你最核心的需求是靠“被对方依赖”来确认自己的价值。比起甜言蜜语，你更在意自己的存在能让对方生活变轻松。你本能地盯着对方的细节：加班了煮饭，遇事了帮忙。 \n\n这背后藏着你最怕的事——怕自己可有可无。如果不被需要，你就会觉得不被爱，那种没着没落的感觉比吵架还难受。" },
       { t: "你的光影图谱", c: "【光】你是最踏实的后盾。从来不只说漂亮话，而是实打实地行动。你总能捕捉到他没说出口的疲惫，主动搭把手。 \n\n【影】你把价值感绑在了“被需要”上。一旦他独立搞定事情，你会失落。你不敢直说“我也想被照顾”，宁愿默默付出等着被发现，最后变成了委屈。" },
@@ -129,7 +133,7 @@ const RESULTS = {
     title: "被偏爱",
     keyword: "极致例外",
     quote: "你要永远为你驯服的东西负责。",
-    accent: "#FDA4AF", 
+    accent: "#FB7185", 
     sections: [
       { t: "你的亲密底色", c: "你追求的不是大众化的好，而是“独一份”的特权。如果他对你和对别人一样好，那这份爱对你来说就毫无意义。你要的是成为他唯一的例外。 \n\n你比谁都敏感于温度的波动。一旦感觉到“特殊待遇”被稀释，你的安全感就会崩塌。这不是矫情，是你确认爱的唯一方式。" },
       { t: "你的光影图谱", c: "【光】你深情且专注。一旦认定，你的爱带着极强的专属感。你擅长创造独特的记忆，让关系充满偶像剧般的心动。 \n\n【影】你对差别对待极致敏感。别人多得一份关注，你心里天平就歪了。你容易陷入求证的内耗，一旦感觉不再特别，会防御性地退缩。" },
@@ -142,7 +146,7 @@ const RESULTS = {
     title: "精神共鸣",
     keyword: "灵魂契合",
     quote: "我们相遇在精神的旷野，无需言语便已相通。",
-    accent: "#A5B4FC", 
+    accent: "#818CF8", 
     sections: [
       { t: "你的亲密底色", c: "你无法忍受“同床异梦”的孤独。对你来说，如果不能在思想和灵魂深处对话，那在一起就没有任何意义。你渴望的是那种“无需多言”的默契。 \n\n你对浅层关系有本能的疏离。你怕的不是没话题，而是话题永远停留在“吃了没”。一旦遇到能接住你奇思妙想的人，你会毫无保留地投入。" },
       { t: "你的光影图谱", c: "【光】你是最好的思想伴侣。你能带给对方认知的拓展和成长的活力。你真正懂得倾听，能读懂背后的情绪。 \n\n【影】你对浅层关系低耐受。如果长期只聊琐事，你会想抽离。你容易把“听不懂”等同于“不在乎”，对精神错位极其敏感。" },
@@ -155,7 +159,7 @@ const RESULTS = {
     title: "自由感",
     keyword: "舒展呼吸",
     quote: "我爱你，却不愿用爱束缚你。",
-    accent: "#7DD3FC", 
+    accent: "#38BDF8", 
     sections: [
       { t: "你的亲密底色", c: "你最核心的需求是“不被束缚”。靠近不难，难的是不用时刻报备、不用丢掉自己的节奏。你必须保留一块完全属于自己的空间。 \n\n对你来说，最好的爱是“我需要时你在，我想独处时你不扰”。这份“不吞没”的自在，才是你最踏实的亲密。" },
       { t: "你的光影图谱", c: "【光】你有让人舒服的松弛感。你不控制、不勒索，也不把情绪丢给对方。你的爱像春风，轻盈又不沉重。 \n\n【影】你对“过度靠近”本能抗拒。一旦感觉被绑架，你会提前撤退。你太习惯独自消化，容易让对方觉得“走不进你心里”。" },
@@ -165,10 +169,10 @@ const RESULTS = {
     ]
   },
   7: {
-    title: "安全感",
+    title: "安全距离",
     keyword: "审慎自护",
     quote: "待人如执烛，太近灼手，太远暗生。",
-    accent: "#6EE7B7", 
+    accent: "#34D399", 
     sections: [
       { t: "你的亲密底色", c: "你不是冷淡，只是自带“安全缓冲带”。你通过观察、确认，直到笃定“值得托付”才敢卸下防备。任何猛扑过来的热情，都会让你下意识后退。 \n\n你对关系的态度是“宁缺毋滥”。确定前有多审慎，确定后就有多坚定。" },
       { t: "你的光影图谱", c: "【光】你是最长情的定心丸。一旦选择便全心投入。你能拿捏“刚刚好”的距离，不黏腻也不疏远，情绪克制稳健。 \n\n【影】你的慢常被误解为“不上心”。被催促时你会防御性退缩。你总想着“再看看”，容易把关系困在观察期的内耗里。" },
@@ -181,7 +185,7 @@ const RESULTS = {
     title: "秩序感",
     keyword: "结构规则",
     quote: "好的关系，是一起把日子过成有章法的温柔。",
-    accent: "#93C5FD", 
+    accent: "#60A5FA", 
     sections: [
       { t: "你的亲密底色", c: "你是关系的共建者。你核心的需求是清晰的边界、明确的期待和可落地的沟通。你认定长期关系的根基必须扎在“坦诚”和“共识”的土壤里。 \n\n你怕够了混乱和内耗。当关系出现模糊态度，你会焦虑。你需要的是愿意一起共建规则的伙伴，而非顺其自然的敷衍。" },
       { t: "你的光影图谱", c: "【光】你有化繁为简的秩序力，能避开无效内耗。你主动破局，不逃避冷战。你的亲密是实实在在的支撑。 \n\n【影】你对模糊状态零容忍。急于解决问题时容易忽略情绪缓冲。你理性太强，有时会让对方觉得“不被懂”。" },
@@ -193,47 +197,48 @@ const RESULTS = {
 };
 
 // ==========================================
-// 3. 动态视觉组件
+// 3. 动态视觉组件 (CSS Art)
 // ==========================================
 
-// 结果页动态图腾 (CSS 生成的动态艺术)
-const ResultVisual = ({ id }) => {
+// 结果页动态图腾 - 8种不同形态
+const SoulTotem = ({ id }) => {
+  const type = SOUL_TYPES.find(t => t.id === id) || SOUL_TYPES[0];
+  
   return (
-    <div className={`visual-container type-${id}`}>
-      <div className="art-layer layer-1"></div>
-      <div className="art-layer layer-2"></div>
-      <div className="art-layer layer-3"></div>
-      <div className="art-core"></div>
+    <div className={`totem-container ${type.shape}`} style={{ '--glow': type.glow, '--color': type.color }}>
+      <div className="core"></div>
+      <div className="aura layer-1"></div>
+      <div className="aura layer-2"></div>
+      <div className="aura layer-3"></div>
     </div>
-  )
+  );
 }
 
 // 展开收起卡片
-const CollapsibleCard = ({ title, content, accent, isSpecial }) => {
+const CollapsibleCard = ({ title, content, isSpecial }) => {
   const [isOpen, setIsOpen] = useState(false);
   
   if (isSpecial) {
     return (
       <div className="text-card glass-panel special-card">
-        <div className="special-header" style={{borderBottomColor: 'rgba(255,255,255,0.1)'}}>
-          <h4 className="tc-title" style={{color: accent}}>💌 {title}</h4>
+        <div className="special-header">
+          <h4 className="tc-title">💌 {title}</h4>
           <span className="copy-hint">可截图转发给TA</span>
         </div>
-        <p className="tc-content" style={{whiteSpace: 'pre-line'}}>{content}</p>
+        <p className="tc-content">{content}</p>
       </div>
     )
   }
 
   return (
-    <div className="text-card glass-panel">
-      <h4 className="tc-title" style={{color: accent}}>{title}</h4>
-      <div className={`tc-content-wrapper ${isOpen ? 'open' : ''}`}>
-        <p className="tc-content" style={{whiteSpace: 'pre-line'}}>{content}</p>
-      </div>
-      <button className="expand-btn" onClick={() => setIsOpen(!isOpen)}>
-        {isOpen ? '收起' : '展开阅读'}
+    <div className="text-card glass-panel" onClick={() => setIsOpen(!isOpen)}>
+      <div className="card-header-row">
+        <h4 className="tc-title">{title}</h4>
         <span className={`arrow ${isOpen ? 'up' : ''}`}>▼</span>
-      </button>
+      </div>
+      <div className={`tc-content-wrapper ${isOpen ? 'open' : ''}`}>
+        <p className="tc-content">{content}</p>
+      </div>
     </div>
   );
 };
@@ -273,8 +278,8 @@ export default function App() {
     if (!code.trim()) return; setView('loading_verify'); setErrorMsg('');
     try {
       const { data, error } = await supabase.from('codes').select('*').eq('code', code.trim()).single();
-      if (error || !data) throw new Error('兑换码无效，请检查输入');
-      if (data.is_used) throw new Error('该兑换码已被使用');
+      if (error || !data) throw new Error('密钥无法识别，请核对');
+      if (data.is_used) throw new Error('该密钥已被使用');
       await supabase.from('codes').update({ is_used: true }).eq('id', data.id);
       await wait(1500); 
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ 
@@ -283,7 +288,7 @@ export default function App() {
         scores: { 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0 } 
       }));
       setView('intro');
-    } catch (err) { setErrorMsg(err.message || '网络异常，请重试'); setView('redeem'); }
+    } catch (err) { setErrorMsg(err.message || '网络连接微弱，请重试'); setView('redeem'); }
   };
 
   // 开始/继续
@@ -311,15 +316,15 @@ export default function App() {
     }));
 
     if (nextIndex === 16) { 
-      setInterstitialMsg("第一阶段结束... \n正在剥离社交伪装");
-      setView('interstitial'); await wait(3000);
+      setInterstitialMsg("第一层潜意识已剥离...\n正在潜入情绪的暗流");
+      setView('interstitial'); await wait(4000);
       setCurrentQIndex(nextIndex); setView('quiz'); setFadeKey(k => k + 1);
     } else if (nextIndex === 32) { 
-      setInterstitialMsg("正在潜入潜意识深处... \n触摸那些未曾开口的渴望");
-      setView('interstitial'); await wait(3000);
+      setInterstitialMsg("即将抵达灵魂核心...\n请听从直觉的指引");
+      setView('interstitial'); await wait(4000);
       setCurrentQIndex(nextIndex); setView('quiz'); setFadeKey(k => k + 1);
     } else if (nextIndex < QUESTIONS.length) {
-      await wait(250); 
+      await wait(200); 
       setCurrentQIndex(nextIndex); setFadeKey(k => k + 1);
     } else {
       calculateAndFinish(newScores);
@@ -341,12 +346,12 @@ export default function App() {
       results: resultData,
       scores: finalScores
     }));
-    await wait(3500);
+    await wait(4000);
     setView('result');
   };
 
   const resetTest = () => {
-    if(confirm('确定要重新开始吗？之前的记录将清空。')) {
+    if(confirm('确定要清除当前的灵魂图谱并重新开始吗？')) {
       localStorage.removeItem(STORAGE_KEY);
       setScores({ 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0 });
       setCurrentQIndex(0);
@@ -356,95 +361,91 @@ export default function App() {
 
   return (
     <div className="app-root">
-      <div className="stars-bg"></div>
-      <div className="noise-overlay"></div>
+      <div className="bg-void"></div>
+      <div className="noise-texture"></div>
 
-      {/* ================= 1. 落地页 ================= */}
+      {/* ================= 1. 落地页 (静谧神庙) ================= */}
       {view === 'welcome' && (
         <div className="view-container fade-in">
-          <div className="hero-card glass-panel">
-            <div className="logo-mark">柚子的心理小屋</div>
-            <h1 className="main-title">情感欲望测量</h1>
-            <p className="sub-title">潜意识深处的爱之本能</p>
-            <div className="hero-divider"></div>
-            <div className="hero-desc">
-              <p>这不是一个普通的性格测试。<br/>这是一次对内心隐秘角落的温柔探访。</p>
+          <div className="hero-section">
+            <div className="brand-header">柚子的心理小屋</div>
+            <h1 className="hero-title">情感欲望<br/>测量</h1>
+            <p className="hero-subtitle">DEEP PSYCHOLOGY TEST</p>
+            
+            <div className="hero-circle-anim"></div>
+
+            <div className="hero-actions">
+              {localStorage.getItem(STORAGE_KEY) && JSON.parse(localStorage.getItem(STORAGE_KEY)).status === 'in_progress' ? (
+                <button onClick={startQuiz} className="btn-main">继续潜入</button>
+              ) : localStorage.getItem(STORAGE_KEY) && JSON.parse(localStorage.getItem(STORAGE_KEY)).status === 'completed' ? (
+                <button onClick={() => {
+                  const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                  setResults(data.results);
+                  setView('result');
+                }} className="btn-main">查阅图谱</button>
+              ) : (
+                <button onClick={() => setView('redeem')} className="btn-main">开启测试</button>
+              )}
+              <button onClick={() => alert('请前往小红书搜索【柚子的心理小屋】获取')} className="btn-sub">如何获取密钥？</button>
             </div>
-            {localStorage.getItem(STORAGE_KEY) && JSON.parse(localStorage.getItem(STORAGE_KEY)).status === 'in_progress' ? (
-              <button onClick={startQuiz} className="btn-primary">继续探索</button>
-            ) : localStorage.getItem(STORAGE_KEY) && JSON.parse(localStorage.getItem(STORAGE_KEY)).status === 'completed' ? (
-              <button onClick={() => {
-                const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
-                setResults(data.results);
-                setView('result');
-              }} className="btn-primary">查看我的图谱</button>
-            ) : (
-              <button onClick={() => setView('redeem')} className="btn-primary">输入兑换码解锁</button>
-            )}
-            <button onClick={() => alert('请前往小红书搜索【柚子的心理小屋】获取')} className="btn-link">如何获得兑换码？</button>
           </div>
         </div>
       )}
 
-      {/* ================= 2. 兑换码输入 ================= */}
+      {/* ================= 2. 兑换页 (仪式感) ================= */}
       {view === 'redeem' && (
         <div className="view-fullscreen flex-center fade-in">
-          <div className="login-card glass-panel">
-            <h2 className="login-title">开启大门</h2>
-            <p className="login-desc">请输入你持有的密钥</p>
-            <input 
-              type="text" 
-              value={code}
-              onChange={e => setCode(e.target.value)}
-              placeholder="KEY CODE"
-              className="access-input"
-            />
-            <button onClick={handleVerify} className="btn-primary" style={{marginTop:'24px'}}>解锁</button>
-            <button onClick={() => setView('welcome')} className="btn-text">返回</button>
-            {errorMsg && <p className="err-msg">{errorMsg}</p>}
+          <div className="redeem-container">
+            <h2 className="section-title">请输入密钥</h2>
+            <div className="input-line-wrapper">
+              <input 
+                type="text" 
+                value={code}
+                onChange={e => setCode(e.target.value)}
+                placeholder="KEY CODE"
+                className="minimal-input"
+              />
+            </div>
+            <button onClick={handleVerify} className="btn-text-large">确认解锁 →</button>
+            <button onClick={() => setView('welcome')} className="btn-back">返回</button>
+            {errorMsg && <p className="status-msg error">{errorMsg}</p>}
           </div>
         </div>
       )}
 
-      {/* ================= 3. 说明页 (重设计：邀请函风格) ================= */}
+      {/* ================= 3. 说明页 (邀请函) ================= */}
       {view === 'intro' && (
         <div className="view-container fade-in">
-          <div className="intro-card glass-panel">
-            <div className="intro-header">
-              <h3>欢迎进入</h3>
-              <p>你的潜意识深处</p>
+          <div className="intro-paper glass-panel">
+            <div className="intro-text">
+              <p>欢迎来到你的潜意识深处。</p>
+              <br/>
+              <p>接下来的 15 分钟，<br/>是一场关于“爱”的独自潜行。</p>
+              <p>这里没有正确答案，<br/>只有你最真实的本能反应。</p>
+              <br/>
+              <p>请关掉外界的噪音，<br/>听从直觉的指引。</p>
             </div>
-            <div className="intro-content">
-              <p>接下来的 15 分钟，请将外界的喧嚣调至静音。</p>
-              <p>这 48 道问题，不是考卷，而是一面镜子。<br/>请不要思考“哪个选项更好”，<br/>只听从那一瞬间的直觉。</p>
-            </div>
-            <div className="intro-steps">
-               <span>Part 1 现实</span> → <span>Part 2 情绪</span> → <span>Part 3 灵魂</span>
-            </div>
-            <button onClick={startQuiz} className="btn-primary pulse-btn">开始潜入</button>
+            <button onClick={startQuiz} className="btn-main pulse">开始潜入</button>
           </div>
         </div>
       )}
 
-      {/* ================= 4. 答题页 ================= */}
+      {/* ================= 4. 答题页 (沉浸聚焦) ================= */}
       {view === 'quiz' && QUESTIONS[currentQIndex] && (
         <div className="view-quiz fade-in">
-          <div className="quiz-top-bar">
-            <div className="stage-tag">
-              {currentQIndex < 16 ? 'Part 1 · 现实切片' : currentQIndex < 32 ? 'Part 2 · 情绪暗涌' : 'Part 3 · 灵魂图腾'}
-            </div>
-            <div className="q-num">{currentQIndex + 1} <span className="dim">/ {QUESTIONS.length}</span></div>
+          <div className="quiz-header">
+            <span className="q-progress">0{currentQIndex + 1} / 48</span>
+            <span className="q-part">
+              {currentQIndex < 16 ? 'Part I · 现实' : currentQIndex < 32 ? 'Part II · 情绪' : 'Part III · 灵魂'}
+            </span>
           </div>
-          <div className="progress-line">
-            <div className="fill" style={{width: `${(currentQIndex)/QUESTIONS.length*100}%`}}></div>
-          </div>
-
-          <div key={fadeKey} className="question-container slide-up">
+          
+          <div key={fadeKey} className="question-wrapper slide-up">
             <h2 className="q-text">{QUESTIONS[currentQIndex].text}</h2>
-            <div className="opts-list">
+            <div className="options-group">
               {QUESTIONS[currentQIndex].options.map((opt, idx) => (
-                <button key={idx} onClick={() => handleAnswer(opt.v)} className="opt-card">
-                  <span className="opt-txt">{opt.t}</span>
+                <button key={idx} onClick={() => handleAnswer(opt.v)} className="opt-btn">
+                  {opt.t}
                 </button>
               ))}
             </div>
@@ -452,251 +453,280 @@ export default function App() {
         </div>
       )}
 
-      {/* ================= 5. 沉浸式过场 (呼吸动画) ================= */}
+      {/* ================= 5. 沉浸式过场 (深呼吸) ================= */}
       {(view === 'interstitial' || view === 'calculating') && (
-        <div className="view-fullscreen flex-center fade-in">
-          <div className="breathing-circle">
-            <div className="core"></div>
-            <div className="ring r1"></div>
-            <div className="ring r2"></div>
-          </div>
-          <p className="status-text-fade">
-            {view === 'calculating' ? '正在构建灵魂图谱...' : interstitialMsg}
+        <div className="view-fullscreen flex-center fade-in bg-deep">
+          <div className="breathing-orb"></div>
+          <p className="interstitial-text">
+            {view === 'calculating' ? '正在绘制灵魂图谱...' : interstitialMsg}
           </p>
         </div>
       )}
 
       {view === 'loading_verify' && (
         <div className="view-fullscreen flex-center fade-in">
-          <div className="loader-ring"></div>
-          <p className="status-text">正在验证密钥...</p>
+          <div className="loading-line"></div>
+          <p className="status-msg">正在验证...</p>
         </div>
       )}
 
-      {/* ================= 6. 结果页 (深度美学) ================= */}
+      {/* ================= 6. 结果页 (艺术画廊) ================= */}
       {view === 'result' && results && (
         <div className="view-result fade-in-slow">
-          <div className="result-wrapper">
+          <div className="result-container">
             
-            {/* A. 动态视觉卡片 */}
-            <div className="result-visual-card">
-               <ResultVisual id={results.primary} />
-               <div className="visual-meta">
-                 <p className="vm-label">你的最强情感欲望</p>
-                 <h1 className="vm-title" style={{color: DIMENSIONS[results.primary-1].color, textShadow: `0 0 20px ${DIMENSIONS[results.primary-1].shadow}`}}>
-                    {RESULTS[results.primary].title}
-                 </h1>
-                 <p className="vm-quote">“{RESULTS[results.primary].quote}”</p>
-               </div>
-            </div>
-
-            {/* B. 欲望结构 */}
-            <div className="ratio-card glass-panel">
-              <h3 className="section-title">欲望构成</h3>
-              <div className="ratio-bars">
-                <div className="rb-row">
-                  <span className="rb-label" style={{color: DIMENSIONS[results.primary-1].color}}>主：{RESULTS[results.primary].title}</span>
-                  <div className="rb-track">
-                    <div className="rb-fill" style={{width: `${results.pScore}%`, background: DIMENSIONS[results.primary-1].color, boxShadow: `0 0 10px ${DIMENSIONS[results.primary-1].shadow}`}}></div>
-                  </div>
-                  <span className="rb-val">{results.pScore}%</span>
-                </div>
-                <div className="rb-row">
-                  <span className="rb-label" style={{color: 'rgba(255,255,255,0.6)'}}>副：{RESULTS[results.secondary].title}</span>
-                  <div className="rb-track">
-                    <div className="rb-fill" style={{width: `${results.sScore}%`, background: 'rgba(255,255,255,0.3)'}}></div>
-                  </div>
-                  <span className="rb-val">{results.sScore}%</span>
-                </div>
+            {/* A. 动态图腾 */}
+            <div className="totem-section">
+              <SoulTotem id={results.primary} />
+              <div className="totem-info">
+                <p className="label">你的主导欲望</p>
+                <h1 className="result-title">{RESULTS[results.primary].title}</h1>
+                <p className="result-quote">{RESULTS[results.primary].quote}</p>
               </div>
             </div>
 
-            {/* C. 切换卡片 */}
-            <div className="dual-card glass-panel">
-              <div className="dual-tabs">
-                <button className={`tab ${activeTab === 'primary' ? 'active' : ''}`} onClick={() => setActiveTab('primary')}>主欲望</button>
-                <button className={`tab ${activeTab === 'secondary' ? 'active' : ''}`} onClick={() => setActiveTab('secondary')}>副欲望</button>
+            {/* B. 能量分布 */}
+            <div className="energy-bar-section glass-panel">
+              <div className="bar-row">
+                <span className="bar-label">主：{RESULTS[results.primary].title}</span>
+                <div className="bar-track"><div className="bar-fill" style={{width: `${results.pScore}%`, background: SOUL_TYPES[results.primary-1].color}}></div></div>
               </div>
-              <div className="dual-content fade-in">
-                {activeTab === 'primary' ? (
-                  <>
-                    <h4 className="dc-keyword" style={{color: DIMENSIONS[results.primary-1].color}}>{RESULTS[results.primary].keyword}</h4>
-                    <p className="dc-desc">{RESULTS[results.primary].sections[0].c.substring(0, 60)}...</p>
-                    <div className="dc-hint">↓ 下滑查看完整解析</div>
-                  </>
-                ) : (
-                  <>
-                    <h4 className="dc-keyword" style={{color: 'rgba(255,255,255,0.7)'}}>{RESULTS[results.secondary].keyword}</h4>
-                    <p className="dc-desc">{RESULTS[results.secondary].sections[0].c.substring(0, 60)}...</p>
-                    <div className="dc-hint">副欲望在潜意识中影响着你</div>
-                  </>
-                )}
+              <div className="bar-row secondary">
+                <span className="bar-label">副：{RESULTS[results.secondary].title}</span>
+                <div className="bar-track"><div className="bar-fill" style={{width: `${results.sScore}%`, background: 'rgba(255,255,255,0.3)'}}></div></div>
               </div>
             </div>
 
-            {/* D. 详细报告 */}
-            <div className="details-section">
-              <div className="divider-line"><span>深度解析</span></div>
+            {/* C. 双相切换 */}
+            <div className="dual-tabs-wrapper">
+              <div className="tabs-header">
+                <button className={activeTab === 'primary' ? 'active' : ''} onClick={() => setActiveTab('primary')}>主导面</button>
+                <button className={activeTab === 'secondary' ? 'active' : ''} onClick={() => setActiveTab('secondary')}>潜在面</button>
+              </div>
+              <div className="tab-content glass-panel">
+                <h3 className="keyword-title">
+                  {activeTab === 'primary' ? RESULTS[results.primary].keyword : RESULTS[results.secondary].keyword}
+                </h3>
+                <p className="keyword-desc">
+                  {activeTab === 'primary' ? RESULTS[results.primary].sections[0].c.substring(0, 50) + '...' : RESULTS[results.secondary].sections[0].c.substring(0, 50) + '...'}
+                </p>
+                <div className="scroll-hint">↓ 下滑阅读深度解析</div>
+              </div>
+            </div>
+
+            {/* D. 深度解析 */}
+            <div className="deep-read-section">
+              <div className="section-divider">深度解析</div>
               {RESULTS[results.primary].sections.map((sec, idx) => (
                 <CollapsibleCard 
                   key={idx}
                   title={sec.t}
                   content={sec.c}
-                  accent={DIMENSIONS[results.primary-1].color}
                   isSpecial={sec.t.includes('爱你的人')}
                 />
               ))}
             </div>
 
-            <div className="footer-actions">
-               <button onClick={resetTest} className="btn-text">重新测试</button>
-               <p className="brand-mark">柚子的心理小屋 原创内容</p>
+            <div className="footer">
+               <button onClick={resetTest} className="btn-reset">重新测试</button>
+               <p className="copyright">柚子的心理小屋 · Original</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* ================= CSS 样式引擎 (Deep Mystery Theme) ================= */}
+      {/* ================= CSS 艺术引擎 (Organic Ethereal Theme) ================= */}
       <style jsx global>{`
+        /* 全局变量：有机灵性色盘 */
         :root {
-          --bg-deep: #050505;
-          --glass: rgba(255, 255, 255, 0.03);
-          --glass-high: rgba(255, 255, 255, 0.08);
-          --border: rgba(255, 255, 255, 0.08);
-          --primary: #fff;
+          --bg-dark: #0a0a0c; /* 黑曜石 */
+          --text-main: #EAEAEA;
+          --text-sub: #888888;
+          --accent: #D4D4D8;
+          --glass-bg: rgba(20, 20, 23, 0.6);
+          --glass-border: rgba(255, 255, 255, 0.06);
           --font-serif: "Times New Roman", serif;
+          --font-sans: system-ui, -apple-system, sans-serif;
         }
 
         body {
-          background: var(--bg-deep); color: #E2E8F0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          margin: 0; overflow-x: hidden; -webkit-font-smoothing: antialiased;
+          background-color: var(--bg-dark);
+          color: var(--text-main);
+          font-family: var(--font-sans);
+          margin: 0; padding: 0;
+          overflow-x: hidden;
+          -webkit-font-smoothing: antialiased;
         }
 
-        /* 背景氛围 */
-        .stars-bg {
+        /* 1. 背景纹理：胶片噪点 + 深邃渐变 */
+        .bg-void {
           position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
-          background: radial-gradient(circle at 50% 0%, #1a1b2e 0%, #000000 100%);
+          background: radial-gradient(circle at 50% 30%, #1a1a20 0%, #050505 100%);
         }
-        .noise-overlay {
+        .noise-texture {
           position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-          opacity: 0.03; pointer-events: none;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+          opacity: 0.04; pointer-events: none;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
         }
 
-        /* 动画关键帧 */
-        @keyframes breathe { 0%, 100% { transform: scale(1); opacity: 0.3; } 50% { transform: scale(1.1); opacity: 0.6; } }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        @keyframes spinSlow { 100% { transform: rotate(360deg); } }
+        /* 2. 通用动效 */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes breathe { 0%,100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } }
+        @keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+        
+        .fade-in { animation: fadeIn 0.8s ease-out forwards; }
+        .fade-in-slow { animation: fadeIn 1.5s ease-out forwards; }
+        .slide-up { animation: fadeIn 0.5s ease-out forwards; }
 
-        /* 通用组件 */
+        /* 3. 组件样式 */
+        .view-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        .view-fullscreen { position: fixed; inset: 0; z-index: 50; background: var(--bg-dark); }
+        .flex-center { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
         .glass-panel {
-          background: var(--glass); backdrop-filter: blur(16px);
-          border: 1px solid var(--border); border-radius: 24px;
-          padding: 32px 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+          background: var(--glass-bg);
+          backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+          border: 1px solid var(--glass-border);
+          border-radius: 2px; /* 更加利落的边角，偏杂志风 */
+          padding: 32px;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
-        .btn-primary {
-          width: 100%; padding: 18px; background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%);
-          color: #0f172a; border: none; border-radius: 100px; font-weight: 600; letter-spacing: 1px;
-          margin-top: 24px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+
+        /* 按钮：极简线条风格 */
+        .btn-main {
+          width: 100%; padding: 18px; 
+          background: #fff; color: #000;
+          border: none; border-radius: 2px;
+          font-size: 14px; letter-spacing: 2px; font-weight: 600;
+          cursor: pointer; transition: all 0.3s; margin-top: 32px;
         }
-        .btn-primary:active { transform: scale(0.98); opacity: 0.9; }
-        .pulse-btn { animation: breathe 3s infinite; }
-        .btn-text, .btn-link { background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; display: block; margin: 20px auto 0; }
-
-        /* 1. 落地页 */
-        .view-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .hero-card { text-align: center; max-width: 380px; width: 100%; position: relative; overflow: hidden; }
-        .hero-card::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 60%); pointer-events:none; }
-        .logo-mark { font-size: 11px; letter-spacing: 3px; opacity: 0.5; margin-bottom: 24px; text-transform: uppercase; }
-        .main-title { font-family: var(--font-serif); font-size: 42px; margin: 0 0 8px; font-weight: 300; letter-spacing: -0.5px; background: linear-gradient(to bottom, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .sub-title { font-size: 13px; letter-spacing: 4px; opacity: 0.6; margin-bottom: 30px; }
-        .hero-divider { width: 40px; height: 1px; background: rgba(255,255,255,0.2); margin: 0 auto 30px; }
-        .hero-desc p { font-size: 15px; line-height: 1.8; opacity: 0.8; font-weight: 300; }
-
-        /* 2. 兑换页 */
-        .view-fullscreen { position: fixed; inset: 0; background: #000; z-index: 50; display: flex; align-items: center; justify-content: center; }
-        .login-card { width: 90%; max-width: 340px; text-align: center; }
-        .login-title { font-family: var(--font-serif); font-size: 26px; font-weight: 300; margin-bottom: 8px; }
-        .login-desc { font-size: 12px; opacity: 0.5; margin-bottom: 32px; letter-spacing: 1px; }
-        .access-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.3); padding: 12px; text-align: center; color: #fff; font-size: 20px; letter-spacing: 2px; border-radius: 0; outline: none; transition: border 0.3s; }
-        .access-input:focus { border-color: #fff; }
-
-        /* 3. 说明页 (重设计) */
-        .intro-card { text-align: center; max-width: 360px; border: 1px solid rgba(255,255,255,0.15); }
-        .intro-header h3 { font-family: var(--font-serif); font-size: 28px; margin: 0; font-weight: 300; }
-        .intro-header p { font-size: 12px; letter-spacing: 4px; opacity: 0.6; margin-top: 8px; margin-bottom: 40px; }
-        .intro-content p { font-size: 15px; line-height: 2; opacity: 0.85; margin-bottom: 24px; }
-        .intro-steps { font-size: 11px; opacity: 0.5; letter-spacing: 1px; margin-top: 40px; }
-
-        /* 4. 答题页 */
-        .view-quiz { max-width: 600px; margin: 0 auto; min-height: 100vh; padding: 24px; display: flex; flex-direction: column; }
-        .quiz-top-bar { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; margin-top: 10px; }
-        .stage-tag { font-size: 11px; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; }
-        .q-num { font-family: monospace; font-size: 14px; opacity: 0.8; }
-        .progress-line { width: 100%; height: 1px; background: rgba(255,255,255,0.1); margin-bottom: 40px; }
-        .fill { height: 100%; background: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: width 0.4s ease; }
-        .q-text { font-family: var(--font-serif); font-size: 22px; line-height: 1.6; font-weight: 400; margin-bottom: 40px; min-height: 80px; }
-        .opt-card { width: 100%; text-align: left; padding: 24px; background: var(--glass); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 16px; cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.9); font-size: 16px; line-height: 1.6; }
-        .opt-card:active { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
-
-        /* 5. 沉浸式过场 */
-        .breathing-circle { position: relative; width: 100px; height: 100px; display: flex; justify-content: center; align-items: center; margin-bottom: 40px; }
-        .core { width: 20px; height: 20px; background: #fff; border-radius: 50%; box-shadow: 0 0 20px #fff; animation: breathe 3s infinite; }
-        .ring { position: absolute; border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; }
-        .r1 { width: 60px; height: 60px; animation: breathe 3s infinite 0.5s; }
-        .r2 { width: 100px; height: 100px; animation: breathe 3s infinite 1s; }
-        .status-text-fade { opacity: 0.7; font-family: var(--font-serif); font-size: 16px; letter-spacing: 2px; text-align: center; line-height: 1.8; animation: pulse 2s infinite; }
-
-        /* 6. 结果页 (重构) */
-        .view-result { padding: 0 0 60px; min-height: 100vh; }
-        .result-wrapper { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; padding: 20px; }
-        
-        .result-visual-card { 
-          position: relative; height: 400px; border-radius: 32px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 30px;
-          background: radial-gradient(circle at center, #1e293b 0%, #000 100%); box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
+        .btn-main:hover { background: #e0e0e0; transform: translateY(-1px); }
+        .btn-sub, .btn-text, .btn-reset { 
+          background: none; border: none; color: var(--text-sub); 
+          font-size: 12px; letter-spacing: 1px; cursor: pointer; 
+          margin-top: 20px; opacity: 0.7; 
         }
-        .visual-container { position: absolute; top:0; left:0; width:100%; height:100%; z-index:0; opacity: 0.6; }
-        /* CSS Generative Art Placeholders */
-        .art-core { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; background: #fff; filter: blur(40px); opacity: 0.3; animation: breathe 4s infinite; }
-        .type-1 .art-layer { position: absolute; top:30%; left:50%; width:150px; height:150px; border: 1px solid rgba(255,255,255,0.2); transform: translateX(-50%) rotate(45deg); animation: spinSlow 20s linear infinite; }
-        .type-2 .art-core { background: #FDBA74; } .type-2 .art-layer { position:absolute; top:40%; left:50%; width:200px; height:200px; border-radius:50%; border:1px dashed rgba(253,186,116,0.3); transform:translate(-50%,-50%); animation: spinSlow 30s linear infinite; }
-        /* ...更多类型以此类推，用基础形状模拟抽象艺术... */
 
-        .visual-meta { position: relative; z-index: 10; text-align: center; }
-        .vm-label { font-size: 11px; text-transform: uppercase; letter-spacing: 3px; opacity: 0.7; margin-bottom: 12px; }
-        .vm-title { font-family: var(--font-serif); font-size: 42px; margin: 0 0 16px; font-weight: 400; letter-spacing: 1px; }
-        .vm-quote { font-size: 14px; opacity: 0.8; font-style: italic; font-family: var(--font-serif); }
+        /* --- 落地页 --- */
+        .hero-section { text-align: center; max-width: 320px; }
+        .brand-header { font-size: 10px; letter-spacing: 4px; opacity: 0.5; margin-bottom: 40px; text-transform: uppercase; }
+        .hero-title { font-family: var(--font-serif); font-size: 40px; font-weight: 300; line-height: 1.2; margin-bottom: 10px; letter-spacing: 1px; }
+        .hero-subtitle { font-size: 10px; letter-spacing: 3px; color: var(--text-sub); margin-bottom: 60px; }
+        /* 装饰圆环 */
+        .hero-circle-anim {
+          width: 80px; height: 80px; margin: 0 auto; border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 50%; animation: breathe 4s infinite;
+        }
 
-        .ratio-card .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; opacity: 0.5; margin-bottom: 24px; text-align: center; }
-        .rb-row { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
-        .rb-label { width: 100px; font-size: 13px; text-align: right; }
-        .rb-track { flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
-        .rb-fill { height: 100%; border-radius: 10px; }
+        /* --- 兑换页 (极简输入) --- */
+        .redeem-container { width: 100%; max-width: 300px; text-align: center; }
+        .section-title { font-family: var(--font-serif); font-weight: 300; margin-bottom: 40px; }
+        .minimal-input {
+          width: 100%; background: transparent; border: none; 
+          border-bottom: 1px solid rgba(255,255,255,0.2);
+          color: #fff; font-size: 24px; text-align: center; padding: 10px;
+          letter-spacing: 4px; outline: none; transition: border 0.3s;
+        }
+        .minimal-input:focus { border-color: #fff; }
+        .btn-text-large { background: none; border: none; color: #fff; font-size: 16px; margin-top: 40px; cursor: pointer; opacity: 0.8; }
+        .btn-back { background: none; border: none; color: var(--text-sub); margin-top: 20px; font-size: 12px; cursor: pointer; }
+        .status-msg { margin-top: 20px; font-size: 12px; color: #ef4444; }
+
+        /* --- 说明页 (信纸) --- */
+        .intro-paper { max-width: 340px; text-align: center; border: none; background: rgba(255,255,255,0.03); }
+        .intro-text p { font-size: 14px; line-height: 2.2; color: rgba(255,255,255,0.8); font-family: var(--font-serif); }
+        .pulse { animation: breathe 3s infinite; }
+
+        /* --- 答题页 (聚焦) --- */
+        .view-quiz { max-width: 500px; margin: 0 auto; padding: 30px 24px; min-height: 100vh; display: flex; flex-direction: column; }
+        .quiz-header { display: flex; justify-content: space-between; margin-bottom: 40px; font-size: 11px; color: var(--text-sub); letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
+        .q-text { font-family: var(--font-serif); font-size: 20px; line-height: 1.6; font-weight: 400; margin-bottom: 40px; min-height: 80px; }
+        .options-group { display: flex; flex-direction: column; gap: 16px; }
+        .opt-btn {
+          text-align: left; padding: 20px; background: rgba(255,255,255,0.03);
+          border: 1px solid transparent; color: var(--text-main);
+          font-size: 15px; line-height: 1.6; cursor: pointer; transition: all 0.3s;
+          border-radius: 2px;
+        }
+        .opt-btn:active { background: rgba(255,255,255,0.08); transform: scale(0.99); }
+
+        /* --- 沉浸过场 --- */
+        .bg-deep { background: #000; }
+        .breathing-orb {
+          width: 60px; height: 60px; background: radial-gradient(circle, #fff 0%, transparent 70%);
+          border-radius: 50%; opacity: 0.5; animation: breathe 4s infinite; margin-bottom: 30px;
+        }
+        .interstitial-text { font-family: var(--font-serif); font-size: 16px; letter-spacing: 2px; opacity: 0.7; text-align: center; white-space: pre-line; line-height: 2; }
+
+        /* --- 结果页 (艺术) --- */
+        .view-result { padding-bottom: 80px; }
+        .result-container { max-width: 500px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; gap: 40px; }
         
-        .dual-card { padding: 0; }
-        .dual-tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .tab { flex: 1; padding: 20px; background: transparent; border: none; color: rgba(255,255,255,0.4); font-size: 14px; cursor: pointer; }
-        .tab.active { color: #fff; background: rgba(255,255,255,0.02); }
-        .dual-content { padding: 32px 24px; text-align: center; min-height: 180px; }
-        .dc-keyword { font-size: 18px; letter-spacing: 2px; margin-bottom: 16px; opacity: 0.9; }
-        .dc-desc { font-size: 14px; line-height: 1.8; opacity: 0.7; margin-bottom: 20px; }
-        .dc-hint { font-size: 10px; opacity: 0.3; margin-top: auto; }
+        .totem-section { height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .totem-info { text-align: center; z-index: 10; margin-top: 20px; }
+        .totem-info .label { font-size: 10px; letter-spacing: 3px; opacity: 0.6; margin-bottom: 10px; text-transform: uppercase; }
+        .result-title { font-family: var(--font-serif); font-size: 36px; margin: 0 0 10px; font-weight: 400; }
+        .result-quote { font-family: var(--font-serif); font-size: 14px; opacity: 0.7; font-style: italic; max-width: 280px; margin: 0 auto; }
 
-        .divider-line { display: flex; align-items: center; margin: 40px 0 20px; opacity: 0.3; }
-        .divider-line::before, .divider-line::after { content:''; flex:1; height:1px; background: #fff; }
-        .divider-line span { padding: 0 16px; font-size: 12px; letter-spacing: 2px; }
-
-        .text-card { margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); }
-        .special-card { background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%); border: 1px solid rgba(255,255,255,0.15); }
-        .tc-title { margin: 0 0 12px; font-size: 17px; font-weight: 500; letter-spacing: 0.5px; }
-        .tc-content-wrapper { max-height: 90px; overflow: hidden; position: relative; transition: max-height 0.5s ease; }
-        .tc-content-wrapper.open { max-height: 1000px; }
-        .tc-content-wrapper:not(.open)::after { content:''; position:absolute; bottom:0; left:0; width:100%; height:60px; background:linear-gradient(to bottom, transparent, #0b0e14); }
-        .expand-btn { width: 100%; background: transparent; border: none; color: rgba(255,255,255,0.3); font-size: 12px; margin-top: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        /* 动态图腾 CSS Art */
+        .totem-container { position: absolute; width: 100%; height: 100%; top:0; left:0; display:flex; justify-content:center; align-items:center; opacity: 0.4; pointer-events: none; }
         
-        .footer-actions { margin-top: 60px; text-align: center; opacity: 0.5; padding-bottom: 40px; }
-        .brand-mark { font-size: 10px; letter-spacing: 2px; margin-top: 12px; }
+        /* 形态 1: Cube (确定感) */
+        .shape-cube .core { width: 120px; height: 120px; border: 1px solid var(--color); transform: rotate(45deg); animation: float 6s infinite ease-in-out; }
+        /* 形态 2: Sun (被需要) */
+        .shape-sun .core { width: 100px; height: 100px; background: radial-gradient(circle, var(--glow) 0%, transparent 70%); animation: breathe 3s infinite; }
+        /* 形态 3: Ring (掌控) */
+        .shape-ring .core { width: 140px; height: 140px; border: 1px solid var(--color); border-radius: 50%; animation: spin 10s linear infinite; }
+        /* 形态 4: Heart (被偏爱) */
+        .shape-heart .core { width: 80px; height: 80px; background: var(--glow); filter: blur(20px); animation: breathe 2s infinite; }
+        /* 形态 5: Wave (共鸣) */
+        .shape-wave .core { width: 150px; height: 1px; background: var(--color); box-shadow: 0 0 20px var(--glow); animation: breathe 4s infinite; }
+        /* 形态 6: Cloud (自由) */
+        .shape-cloud .core { width: 120px; height: 80px; background: var(--glow); filter: blur(30px); border-radius: 40%; animation: float 5s infinite; }
+        /* 形态 7: Shield (安全) */
+        .shape-shield .core { width: 100px; height: 120px; border: 1px solid var(--color); border-radius: 50px 50px 0 0; opacity: 0.5; }
+        /* 形态 8: Grid (秩序) */
+        .shape-grid .core { width: 100px; height: 100px; border: 1px dashed var(--color); }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* 能量条 */
+        .energy-bar-section { padding: 20px; }
+        .bar-row { display: flex; align-items: center; gap: 15px; margin-bottom: 12px; font-size: 12px; }
+        .bar-label { width: 80px; text-align: right; opacity: 0.7; }
+        .bar-track { flex: 1; height: 2px; background: rgba(255,255,255,0.1); }
+        .bar-fill { height: 100%; transition: width 1s ease; }
+
+        /* 切换卡片 */
+        .dual-tabs-wrapper { margin-top: 20px; }
+        .tabs-header { display: flex; justify-content: center; gap: 40px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .tabs-header button { background: none; border: none; color: var(--text-sub); font-size: 13px; cursor: pointer; padding-bottom: 5px; transition: all 0.3s; }
+        .tabs-header button.active { color: #fff; border-bottom: 1px solid #fff; }
+        
+        .tab-content { text-align: center; min-height: 160px; display: flex; flex-direction: column; justify-content: center; }
+        .keyword-title { font-size: 20px; margin-bottom: 15px; font-weight: 300; letter-spacing: 2px; }
+        .keyword-desc { font-size: 13px; line-height: 1.8; opacity: 0.7; max-width: 280px; margin: 0 auto; font-family: var(--font-serif); }
+        .scroll-hint { font-size: 10px; opacity: 0.3; margin-top: 20px; }
+
+        /* 深度解析 */
+        .section-divider { text-align: center; font-size: 10px; letter-spacing: 4px; opacity: 0.3; margin: 60px 0 30px; text-transform: uppercase; }
+        .text-card { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 20px 0; cursor: pointer; transition: opacity 0.2s; }
+        .text-card:hover { opacity: 0.8; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; }
+        .tc-title { font-size: 15px; font-weight: 400; margin: 0; letter-spacing: 1px; }
+        .arrow { font-size: 10px; opacity: 0.5; transition: transform 0.3s; }
+        .arrow.up { transform: rotate(180deg); }
+        
+        .tc-content-wrapper { max-height: 0; overflow: hidden; transition: max-height 0.5s ease; opacity: 0.8; font-size: 14px; line-height: 1.8; }
+        .tc-content-wrapper.open { max-height: 500px; margin-top: 15px; }
+        .tc-content { margin: 0; font-family: var(--font-serif); }
+
+        .special-card { background: rgba(255,255,255,0.05); padding: 24px; border-radius: 4px; border: none; margin-top: 20px; cursor: default; }
+        .special-header { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .copy-hint { font-size: 10px; opacity: 0.4; }
+
+        .footer { text-align: center; margin-top: 60px; }
+        .copyright { font-size: 10px; opacity: 0.2; letter-spacing: 2px; margin-top: 20px; }
       `}</style>
     </div>
   );
