@@ -1,6 +1,4 @@
-'use client';
-
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, ArrowDown, ChevronRight, BookOpen, Key, Feather, Search } from 'lucide-react';
 
 /**
@@ -62,7 +60,7 @@ const QUESTIONS = [
   { id: 42, question: "如果你闭上眼触摸“爱”，手感应该是？", options: [{ text: "晒热的石头。厚实、干燥、有分量。", type: "确定感" }, { text: "湿软的陶泥。柔软、依恋，填满空隙。", type: "被需要" }, { text: "流动的溪水。清凉、无重力，不带来负担。", type: "安全距离" }, { text: "紧绷的缰绳。粗糙有力，握住就能控制。", type: "掌控感" }] },
   { id: 43, question: "你觉得一段好的亲密关系，闻起来应该像？", options: [{ text: "薄荷或海盐。清冽透气，肺部扩张。", type: "自由感" }, { text: "草莓尖尖。第一口咬下去的甜，特供的。", type: "被偏爱" }, { text: "刚晒干的棉被。干净干燥，井井有条。", type: "秩序感" }, { text: "旧书页/焚香。沉静悠长，闻到时间。", type: "精神共鸣" }] },
   { id: 44, question: "你希望爱人是哪种光源？", options: [{ text: "壁炉里的火。需要我添柴，但照亮屋子。", type: "被需要" }, { text: "灯塔。固定的。无论去哪回头都在。", type: "确定感" }, { text: "月光。温柔清冷，不灼伤我。", type: "安全距离" }, { text: "手里的火把。靠我亲手点燃，劈开黑暗。", type: "掌控感" }] },
-  { id: 45, question: "如果把与爱人的相处节奏比作一段旋律，你希望它是？", options: [{ text: "时钟的声音。滴答滴答，精准规律。", type: "秩序感" }, { text: "随口的哼唱。没固定曲调，轻轻松松。", type: "自由感" }, { text: "山谷里的回音。微弱声音也能得到回应。", type: "精神共鸣" }] },
+  { id: 45, question: "如果把与爱人的相处节奏比作一段旋律，你希望它是？", options: [{ text: "时钟的声音。滴答滴答，精准规律。", type: "秩序感" }, { text: "随口的哼唱。没固定曲调，轻轻松松。", type: "自由感" }, { text: "山谷里的回音。微弱声音也能得到回应。", type: "精神共鸣" }, { text: "为你独奏。全世界是背景，只有我们。", type: "被偏爱" }] },
   { id: 46, question: "如果爱必须伴随一种痛，你宁愿是？", options: [{ text: "生长痛。骨骼拉伸，关系是成长的。", type: "被需要" }, { text: "钝痛。好过“不知道明天你还在不在”的撕裂。", type: "确定感" }, { text: "幻痛。宁愿隔着距离怀念，也不愿互相伤害。", type: "安全距离" }, { text: "剥离痛。撕开伪装，暴露软肋。", type: "精神共鸣" }] },
   { id: 47, question: "如果要把你们共度的时间比作一样东西，它应该是？", options: [{ text: "流沙。抓越紧流越快，不如摊开手。", type: "自由感" }, { text: "沙漏。时间可控，流完也能倒过来。", type: "掌控感" }, { text: "琥珀。封存最美瞬间，不被侵蚀。", type: "被偏爱" }, { text: "年轮。一圈一圈，扎扎实实。", type: "秩序感" }] },
   { id: 48, question: "最后，请凭直觉填空：爱是______。", options: [{ text: "定数。唯一不会更改的答案。", type: "确定感" }, { text: "认出。茫茫人海辨认出彼此是同类。", type: "精神共鸣" }, { text: "成全。不捆绑，拥有更广阔天空。", type: "自由感" }, { text: "治愈。看见你的破碎，甘愿做药。", type: "被需要" }] }
@@ -460,22 +458,22 @@ export default function SoulScan_StainedGlass() {
         <div className="flex-1 bg-stone-900 flex flex-col justify-center items-center text-center p-8 animate-fade-in relative overflow-hidden">
            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10" />
            <div className="relative z-10 max-w-sm">
-             <span className="text-rose-300/80 text-[10px] tracking-[0.4em] uppercase mb-6 block">Chapter</span>
-             <h2 className="text-2xl font-serif font-bold mb-6 text-rose-50 tracking-wide">{currentPart.title}</h2>
-             <div className="w-8 h-1 bg-rose-500/50 mx-auto mb-8 rounded-full"></div>
-             <p className="text-lg font-serif italic text-white/90 mb-8 leading-relaxed px-4">
-               {currentPart.quote}
-             </p>
-             <p className="text-xs text-stone-400 leading-6 mb-12 px-6">
-               {currentPart.desc}
-             </p>
-             <button 
-               onClick={() => setStep('quiz')}
-               className="group flex items-center gap-2 mx-auto text-rose-200 border border-rose-200/20 px-8 py-3 rounded-full hover:bg-rose-200/10 transition-all text-xs tracking-widest"
-             >
-               CONTINUE
-               <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-             </button>
+              <span className="text-rose-300/80 text-[10px] tracking-[0.4em] uppercase mb-6 block">Chapter</span>
+              <h2 className="text-2xl font-serif font-bold mb-6 text-rose-50 tracking-wide">{currentPart.title}</h2>
+              <div className="w-8 h-1 bg-rose-500/50 mx-auto mb-8 rounded-full"></div>
+              <p className="text-lg font-serif italic text-white/90 mb-8 leading-relaxed px-4">
+                {currentPart.quote}
+              </p>
+              <p className="text-xs text-stone-400 leading-6 mb-12 px-6">
+                {currentPart.desc}
+              </p>
+              <button 
+                onClick={() => setStep('quiz')}
+                className="group flex items-center gap-2 mx-auto text-rose-200 border border-rose-200/20 px-8 py-3 rounded-full hover:bg-rose-200/10 transition-all text-xs tracking-widest"
+              >
+                CONTINUE
+                <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+              </button>
            </div>
         </div>
       )}
@@ -490,31 +488,31 @@ export default function SoulScan_StainedGlass() {
             />
           </div>
           <div className="flex-1 flex flex-col justify-center pb-20">
-              <div className="mb-2">
-                <span className="text-[10px] font-bold tracking-widest uppercase text-rose-400 bg-rose-50 px-2 py-1 rounded inline-block mb-4">
-                  {currentQIndex < 16 ? 'Reality' : currentQIndex < 32 ? 'Emotion' : 'Soul'}
-                </span>
-                <h2 className="text-lg font-serif font-medium leading-relaxed text-stone-800">
-                  {QUESTIONS[currentQIndex].question}
-                </h2>
-              </div>
-              
-              <div className="space-y-3 mt-8">
-                {QUESTIONS[currentQIndex].options.map((opt, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleAnswer(opt.type)}
-                    className="w-full text-left p-5 bg-white border border-stone-100 rounded-2xl shadow-sm hover:border-rose-300 hover:shadow-md hover:bg-rose-50/30 transition-all duration-200 active:scale-[0.98] group relative overflow-hidden"
-                  >
-                    <div className="relative z-10 flex items-start gap-3">
-                      <div className="w-4 h-4 rounded-full border border-stone-300 mt-0.5 group-hover:border-rose-400 group-hover:bg-rose-400 flex-shrink-0 transition-colors" />
-                      <span className="text-sm text-stone-600 group-hover:text-stone-900 leading-relaxed">
-                        {opt.text}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
+             <div className="mb-2">
+               <span className="text-[10px] font-bold tracking-widest uppercase text-rose-400 bg-rose-50 px-2 py-1 rounded inline-block mb-4">
+                 {currentQIndex < 16 ? 'Reality' : currentQIndex < 32 ? 'Emotion' : 'Soul'}
+               </span>
+               <h2 className="text-lg font-serif font-medium leading-relaxed text-stone-800">
+                 {QUESTIONS[currentQIndex].question}
+               </h2>
+             </div>
+             
+             <div className="space-y-3 mt-8">
+               {QUESTIONS[currentQIndex].options.map((opt, idx) => (
+                 <button
+                   key={idx}
+                   onClick={() => handleAnswer(opt.type)}
+                   className="w-full text-left p-5 bg-white border border-stone-100 rounded-2xl shadow-sm hover:border-rose-300 hover:shadow-md hover:bg-rose-50/30 transition-all duration-200 active:scale-[0.98] group relative overflow-hidden"
+                 >
+                   <div className="relative z-10 flex items-start gap-3">
+                     <div className="w-4 h-4 rounded-full border border-stone-300 mt-0.5 group-hover:border-rose-400 group-hover:bg-rose-400 flex-shrink-0 transition-colors" />
+                     <span className="text-sm text-stone-600 group-hover:text-stone-900 leading-relaxed">
+                       {opt.text}
+                     </span>
+                   </div>
+                 </button>
+               ))}
+             </div>
           </div>
         </div>
       )}
@@ -575,11 +573,11 @@ export default function SoulScan_StainedGlass() {
                   </div>
                   
                   <div className="relative z-10 text-center mt-4">
-                      <div className="w-16 h-16 mx-auto mb-4 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
-                         {RESULTS[results.primary].icon}
-                      </div>
-                      <h2 className="text-3xl font-serif font-bold mb-1 drop-shadow-md">{results.primary}</h2>
-                      <p className="text-xs font-light opacity-90 tracking-wide">{RESULTS[results.primary].archetype}</p>
+                     <div className="w-16 h-16 mx-auto mb-4 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
+                        {RESULTS[results.primary].icon}
+                     </div>
+                     <h2 className="text-3xl font-serif font-bold mb-1 drop-shadow-md">{results.primary}</h2>
+                     <p className="text-xs font-light opacity-90 tracking-wide">{RESULTS[results.primary].archetype}</p>
                   </div>
                   
                   <div className="relative z-10 mt-auto">
@@ -625,7 +623,7 @@ export default function SoulScan_StainedGlass() {
                     </div>
                     
                     <div className="relative z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner ml-4">
-                        {RESULTS[results.secondary].icon}
+                       {RESULTS[results.secondary].icon}
                     </div>
                 </div>
               </div>
@@ -723,8 +721,8 @@ export default function SoulScan_StainedGlass() {
 
                 {activeTab === 'reshape' && (
                   <div className="animate-fade-in">
-                      <h4 className="font-bold text-xs mb-3 text-stone-800 flex items-center gap-2 uppercase tracking-wider">
-                        <Zap className="w-3 h-3 text-emerald-500" /> 能量重塑
+                     <h4 className="font-bold text-xs mb-3 text-stone-800 flex items-center gap-2 uppercase tracking-wider">
+                       <Zap className="w-3 h-3 text-emerald-500" /> 能量重塑
                     </h4>
                     <div className="text-sm text-stone-600 leading-7 bg-emerald-50/30 p-5 rounded-xl border border-emerald-50 text-justify whitespace-pre-line">
                       {displayData.tabs.reshape}
