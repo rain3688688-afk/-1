@@ -1,20 +1,17 @@
-"use client";  // 👈 第1行必须是这个！
+"use client";
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, ArrowDown, ChevronRight, BookOpen, Key, Feather, Search } from 'lucide-react';
-import Head from 'next/head'; // 👈 第5行必须有这个！
+import Head from 'next/head';
 
-// ... (后面接 const wait ...)
- */
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// 章节配置 (保持不变)
 const PARTS_CONFIG = [
   { startIndex: 0, title: "Part 1：现实切片", quote: "“爱不仅仅是誓言，更是下意识的本能。”", desc: "先让我们从生活的琐碎里，捕捉你在亲密关系中那些最真实的条件反射。" },
   { startIndex: 16, title: "Part 2：情绪暗涌", quote: "“日常的表象之下，藏着我们未曾说出口的渴望。”", desc: "现在的你，已经脱去了社交伪装。让我们再往下潜一点，去触碰那些让你感到不安、委屈或满足的瞬间。" },
   { startIndex: 32, title: "Part 3：灵魂图腾", quote: "“语言无法抵达的地方，直觉可以。”", desc: "欢迎来到你内心的最深处。接下来的问题不需要逻辑，仅凭直觉，选出你第一眼看到的那个答案。" }
 ];
 
-// 题目数据 (完整48题)
 const QUESTIONS = [
   { id: 1, question: "周末下午，伴侣突然失联了3个小时，发消息也没回。那一刻，你最真实的反应是？", options: [{ text: "下意识翻聊天记录，看是不是我说错话了？", type: "确定感" }, { text: "挺好的，刚好没人管我，专心做自己的事。", type: "自由感" }, { text: "推测原因，准备联系上后问清楚去向。", type: "掌控感" }, { text: "心里堵得慌。如果他够在意我，怎么舍得让我空等？", type: "被偏爱" }] },
   { id: 2, question: "伴侣最近工作压力极大，回家情绪低落一言不发。此时你心里的念头是？", options: [{ text: "看着心疼。倒杯水、切水果，让他知道有人照顾。", type: "被需要" }, { text: "他应该很烦。那我就识趣点躲远点，等他缓过来。", type: "安全距离" }, { text: "死气沉沉的沉默很难受。希望能聊聊。", type: "精神共鸣" }, { text: "在意接下来的安排：今晚怎么吃？计划还作数吗？", type: "秩序感" }] },
@@ -66,7 +63,6 @@ const QUESTIONS = [
   { id: 48, question: "最后，请凭直觉填空：爱是______。", options: [{ text: "定数。唯一不会更改的答案。", type: "确定感" }, { text: "认出。茫茫人海辨认出彼此是同类。", type: "精神共鸣" }, { text: "成全。不捆绑，拥有更广阔天空。", type: "自由感" }, { text: "治愈。看见你的破碎，甘愿做药。", type: "被需要" }] }
 ];
 
-// 结果数据 (重组：拆分 Origins, Reshape, Blessing)
 const RESULTS = {
   "确定感": {
     type: "确定感",
@@ -367,13 +363,11 @@ export default function SoulScan_StainedGlass() {
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] text-[#4A4A4A] font-sans selection:bg-rose-100 flex flex-col overflow-x-hidden">
-
-      {/* ⭐⭐⭐ 在这里插入下面这 3 行！ ⭐⭐⭐ */}
+      
       <Head>
         <script src="https://cdn.tailwindcss.com"></script>
       </Head>
-      {/* ⭐⭐⭐ 插入结束 ⭐⭐⭐ */}
-  
+
       {/* 顶部栏 */}
       {step !== 'landing' && step !== 'partIntro' && (
         <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-stone-100 px-6 py-4 flex justify-between items-center">
@@ -464,22 +458,22 @@ export default function SoulScan_StainedGlass() {
         <div className="flex-1 bg-stone-900 flex flex-col justify-center items-center text-center p-8 animate-fade-in relative overflow-hidden">
            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10" />
            <div className="relative z-10 max-w-sm">
-              <span className="text-rose-300/80 text-[10px] tracking-[0.4em] uppercase mb-6 block">Chapter</span>
-              <h2 className="text-2xl font-serif font-bold mb-6 text-rose-50 tracking-wide">{currentPart.title}</h2>
-              <div className="w-8 h-1 bg-rose-500/50 mx-auto mb-8 rounded-full"></div>
-              <p className="text-lg font-serif italic text-white/90 mb-8 leading-relaxed px-4">
-                {currentPart.quote}
-              </p>
-              <p className="text-xs text-stone-400 leading-6 mb-12 px-6">
-                {currentPart.desc}
-              </p>
-              <button 
-                onClick={() => setStep('quiz')}
-                className="group flex items-center gap-2 mx-auto text-rose-200 border border-rose-200/20 px-8 py-3 rounded-full hover:bg-rose-200/10 transition-all text-xs tracking-widest"
-              >
-                CONTINUE
-                <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-              </button>
+             <span className="text-rose-300/80 text-[10px] tracking-[0.4em] uppercase mb-6 block">Chapter</span>
+             <h2 className="text-2xl font-serif font-bold mb-6 text-rose-50 tracking-wide">{currentPart.title}</h2>
+             <div className="w-8 h-1 bg-rose-500/50 mx-auto mb-8 rounded-full"></div>
+             <p className="text-lg font-serif italic text-white/90 mb-8 leading-relaxed px-4">
+               {currentPart.quote}
+             </p>
+             <p className="text-xs text-stone-400 leading-6 mb-12 px-6">
+               {currentPart.desc}
+             </p>
+             <button 
+               onClick={() => setStep('quiz')}
+               className="group flex items-center gap-2 mx-auto text-rose-200 border border-rose-200/20 px-8 py-3 rounded-full hover:bg-rose-200/10 transition-all text-xs tracking-widest"
+             >
+               CONTINUE
+               <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+             </button>
            </div>
         </div>
       )}
@@ -579,11 +573,11 @@ export default function SoulScan_StainedGlass() {
                   </div>
                   
                   <div className="relative z-10 text-center mt-4">
-                     <div className="w-16 h-16 mx-auto mb-4 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
+                      <div className="w-16 h-16 mx-auto mb-4 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
                         {RESULTS[results.primary].icon}
-                     </div>
-                     <h2 className="text-3xl font-serif font-bold mb-1 drop-shadow-md">{results.primary}</h2>
-                     <p className="text-xs font-light opacity-90 tracking-wide">{RESULTS[results.primary].archetype}</p>
+                      </div>
+                      <h2 className="text-3xl font-serif font-bold mb-1 drop-shadow-md">{results.primary}</h2>
+                      <p className="text-xs font-light opacity-90 tracking-wide">{RESULTS[results.primary].archetype}</p>
                   </div>
                   
                   <div className="relative z-10 mt-auto">
@@ -727,7 +721,7 @@ export default function SoulScan_StainedGlass() {
 
                 {activeTab === 'reshape' && (
                   <div className="animate-fade-in">
-                     <h4 className="font-bold text-xs mb-3 text-stone-800 flex items-center gap-2 uppercase tracking-wider">
+                      <h4 className="font-bold text-xs mb-3 text-stone-800 flex items-center gap-2 uppercase tracking-wider">
                        <Zap className="w-3 h-3 text-emerald-500" /> 能量重塑
                     </h4>
                     <div className="text-sm text-stone-600 leading-7 bg-emerald-50/30 p-5 rounded-xl border border-emerald-50 text-justify whitespace-pre-line">
