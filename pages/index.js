@@ -3,15 +3,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, ArrowDown, ChevronRight, BookOpen, Key, Feather, Search } from 'lucide-react';
 import Head from 'next/head';
+import { createClient } from '@supabase/supabase-js';
+
+// --- 初始化 Supabase 数据库连接 ---
+// 这里会自动读取你在 Vercel 里配置好的那两个变量
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// 章节配置 (保持不变)
 const PARTS_CONFIG = [
   { startIndex: 0, title: "Part 1：现实切片", quote: "“爱不仅仅是誓言，更是下意识的本能。”", desc: "先让我们从生活的琐碎里，捕捉你在亲密关系中那些最真实的条件反射。" },
   { startIndex: 16, title: "Part 2：情绪暗涌", quote: "“日常的表象之下，藏着我们未曾说出口的渴望。”", desc: "现在的你，已经脱去了社交伪装。让我们再往下潜一点，去触碰那些让你感到不安、委屈或满足的瞬间。" },
   { startIndex: 32, title: "Part 3：灵魂图腾", quote: "“语言无法抵达的地方，直觉可以。”", desc: "欢迎来到你内心的最深处。接下来的问题不需要逻辑，仅凭直觉，选出你第一眼看到的那个答案。" }
 ];
 
+// 题目数据 (完整48题)
 const QUESTIONS = [
   { id: 1, question: "周末下午，伴侣突然失联了3个小时，发消息也没回。那一刻，你最真实的反应是？", options: [{ text: "下意识翻聊天记录，看是不是我说错话了？", type: "确定感" }, { text: "挺好的，刚好没人管我，专心做自己的事。", type: "自由感" }, { text: "推测原因，准备联系上后问清楚去向。", type: "掌控感" }, { text: "心里堵得慌。如果他够在意我，怎么舍得让我空等？", type: "被偏爱" }] },
   { id: 2, question: "伴侣最近工作压力极大，回家情绪低落一言不发。此时你心里的念头是？", options: [{ text: "看着心疼。倒杯水、切水果，让他知道有人照顾。", type: "被需要" }, { text: "他应该很烦。那我就识趣点躲远点，等他缓过来。", type: "安全距离" }, { text: "死气沉沉的沉默很难受。希望能聊聊。", type: "精神共鸣" }, { text: "在意接下来的安排：今晚怎么吃？计划还作数吗？", type: "秩序感" }] },
@@ -63,6 +72,7 @@ const QUESTIONS = [
   { id: 48, question: "最后，请凭直觉填空：爱是______。", options: [{ text: "定数。唯一不会更改的答案。", type: "确定感" }, { text: "认出。茫茫人海辨认出彼此是同类。", type: "精神共鸣" }, { text: "成全。不捆绑，拥有更广阔天空。", type: "自由感" }, { text: "治愈。看见你的破碎，甘愿做药。", type: "被需要" }] }
 ];
 
+// 结果数据 (重组：拆分 Origins, Reshape, Blessing)
 const RESULTS = {
   "确定感": {
     type: "确定感",
@@ -296,26 +306,37 @@ export default function SoulScan_StainedGlass() {
   const [activeTab, setActiveTab] = useState('base');
 
   // --- 1. 登录交互 ---
-  const handleVerify = () => {
+  const handleVerify = async () => {
     setErrorMsg('');
-    if (!code.trim()) {
+    const inputCode = code.trim();
+
+    if (!inputCode) {
       setErrorMsg('请输入兑换码，不能为空');
       return;
     }
-    
-    // 模拟验证
+
     setIsLoading(true);
-    setTimeout(() => {
-      // 模拟简单校验：如果输入 "error" 则报错
-      if (code.trim().toLowerCase() === 'error') {
-        setErrorMsg('该兑换码无效或已被使用，请检查');
-        setIsLoading(false);
-        return;
+
+    try {
+      // 👇 去数据库查！
+      const { data, error } = await supabase
+        .from('codes') // 确保你的表名叫 'codes'
+        .select('*')
+        .eq('code', inputCode) // 确保你的列名叫 'code'
+        .single();
+
+      if (error || !data) {
+        throw new Error('未找到该兑换码');
       }
       
       setIsLoading(false);
-      handlePartTransition(0);
-    }, 1200);
+      handlePartTransition(0); // 验证通过！
+
+    } catch (err) {
+      console.error(err);
+      setIsLoading(false);
+      setErrorMsg('兑换码无效或已被使用');
+    }
   };
 
   const handlePartTransition = (index) => {
