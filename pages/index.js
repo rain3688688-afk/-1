@@ -4,9 +4,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, ArrowDown, ChevronRight, BookOpen, Key, Feather, Search } from 'lucide-react';
 import Head from 'next/head';
 import { createClient } from '@supabase/supabase-js';
+// 👇 引入图表库
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 
-// --- 初始化 Supabase 数据库连接 ---
-// 这里会自动读取你在 Vercel 里配置好的那两个变量
+// --- 初始化 Supabase ---
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -72,16 +73,16 @@ const QUESTIONS = [
   { id: 48, question: "最后，请凭直觉填空：爱是______。", options: [{ text: "定数。唯一不会更改的答案。", type: "确定感" }, { text: "认出。茫茫人海辨认出彼此是同类。", type: "精神共鸣" }, { text: "成全。不捆绑，拥有更广阔天空。", type: "自由感" }, { text: "治愈。看见你的破碎，甘愿做药。", type: "被需要" }] }
 ];
 
-// 结果数据 (重组：拆分 Origins, Reshape, Blessing)
+// 结果数据
 const RESULTS = {
   "确定感": {
     type: "确定感",
     archetype: "风暴中的守夜人",
     icon: <Anchor className="w-8 h-8" />,
     quote: "万物皆流变，而我只要一种绝对的定数。",
-    keywords: ["稳定", "契约", "长情"],
     cardStyle: "from-blue-700/60 to-indigo-900/60 shadow-[0_0_40px_-5px_rgba(59,130,246,0.5)] border-blue-200/40",
     accentColor: "text-blue-700",
+    radarColor: "#3b82f6", // Blue
     tabs: {
       base: `在亲密关系中，你核心的情感诉求是 “稳定与可预期”，始终坚守着对长期联结的极致追求。相较于外在条件的光鲜或浪漫形式的轰轰烈烈，你更看重关系中的确定性—— 凡事有交代、件件有着落、事事有回音，这种清晰、可靠的互动模式，是你构建情感安全感的基石。\n\n你的情感底色厚重且带着强烈的契约精神，对感情的投入从不浅尝辄止，而是带着 “认定即终身” 的郑重。`,
       lightShadow: [
@@ -105,9 +106,9 @@ const RESULTS = {
     archetype: "以付出为锚的守护者",
     icon: <Heart className="w-8 h-8" />,
     quote: "没有你，我只是一片废墟。",
-    keywords: ["付出", "价值", "依赖"],
     cardStyle: "from-orange-600/60 to-red-800/60 shadow-[0_0_40px_-5px_rgba(234,88,12,0.5)] border-orange-200/40",
     accentColor: "text-orange-700",
+    radarColor: "#ea580c", // Orange
     tabs: {
       base: `在亲密关系里，你最核心的需求是靠被对方依赖来确认自己的价值。对别人来说，爱可能是鲜花、情话和浪漫仪式，但对你而言，爱从来都是实打实的联结 —— 是“我能为你做什么”，是 “我的存在能让你少操心”。\n\n你的情感底色里，藏着一种付出才值得被爱的本能认知。你会本能地盯着对方的生活细节，想成为他生活里离不了的人。`,
       lightShadow: [
@@ -131,9 +132,9 @@ const RESULTS = {
     archetype: "为关系掌舵的同行者",
     icon: <Zap className="w-8 h-8" />,
     quote: "我抛开了所有理智，只求你结束我的痛苦。",
-    keywords: ["协同", "规划", "兜底"],
     cardStyle: "from-rose-700/60 to-red-900/60 shadow-[0_0_40px_-5px_rgba(225,29,72,0.5)] border-rose-200/40",
     accentColor: "text-rose-700",
+    radarColor: "#be123c", // Rose
     tabs: {
       base: `在亲密关系里，你最核心的需求从不是控制对方，而是关系的可预期、可沟通、可协同。亲密更像两人共掌舵的船，得提前校准航向、明确规则、同步节奏，你才能放下顾虑，放心交付自己。\n\n你对关系章法的执念，藏着对无序失控的恐惧。模糊的界限、反复的态度、没说清的期待，在你眼里都是隐患。`,
       lightShadow: [
@@ -157,9 +158,9 @@ const RESULTS = {
     archetype: "渴求例外的驯养者",
     icon: <Sparkles className="w-8 h-8" />,
     quote: "你要永远为你驯服的东西负责。",
-    keywords: ["例外", "专注", "独特"],
     cardStyle: "from-pink-600/60 to-fuchsia-800/60 shadow-[0_0_40px_-5px_rgba(219,39,119,0.5)] border-pink-200/40",
     accentColor: "text-pink-600",
+    radarColor: "#db2777", // Pink
     tabs: {
       base: `你愿意毫无保留地付出，也能带着真心耐心经营，但这份投入有个隐形前提 —— 你的爱意需要被 “特殊对待” 来回应。如果有一天，你发现他的温柔开始平均分配，对别人的在意不比对你少，对你的倾斜慢慢消失，你的情绪会瞬间绷紧。\n\n这不是嫉妒，也不是小气，是你赖以生存的 “例外感” 被稀释了。`,
       lightShadow: [
@@ -183,9 +184,9 @@ const RESULTS = {
     archetype: "灵魂旷野的寻觅者",
     icon: <Eye className="w-8 h-8" />,
     quote: "我们相遇在精神的旷野，无需言语便已相通。",
-    keywords: ["懂得", "同频", "深层"],
     cardStyle: "from-purple-600/60 to-violet-900/60 shadow-[0_0_40px_-5px_rgba(147,51,234,0.5)] border-purple-200/40",
     accentColor: "text-purple-700",
+    radarColor: "#9333ea", // Purple
     tabs: {
       base: `在亲密关系里，你最核心的需求从不是占有或依赖，甚至不是流于表面的陪伴，而是一种灵魂层面的同频共振 —— 思想被看见、观点被呼应、内心深处的褶皱被温柔抚平。\n\n日常寒暄的温暖固然是关系的养分，却永远替代不了 “你一句话戳中我未说出口的心事” 的心灵碰撞。你对浅层关系有着近乎本能的疏离感，没有精神交流的亲密，对你来说像一个缺了核心的空壳。`,
       lightShadow: [
@@ -209,9 +210,9 @@ const RESULTS = {
     archetype: "守望星空的风之子",
     icon: <Wind className="w-8 h-8" />,
     quote: "我爱你，却不愿用爱束缚你。",
-    keywords: ["空间", "自在", "边界"],
     cardStyle: "from-sky-500/60 to-blue-700/60 shadow-[0_0_40px_-5px_rgba(14,165,233,0.5)] border-sky-200/40",
     accentColor: "text-sky-600",
+    radarColor: "#0284c7", // Sky
     tabs: {
       base: `在亲密关系里，你最核心的需求从不是占有或依赖，而是 “在爱里守住自我” 的自由 —— 靠近不难，难的是不用时刻黏在一起、不用事事报备、不用为了迎合对方丢掉自己的节奏。\n\n你愿意真心投入，也喜欢分享生活里的喜怒哀乐，但必须保留一块完全属于自己的空间。只要这份空间被尊重，你的爱就会自然流淌；可一旦被过度关注、被实时追问、被情绪绑架，你的本能反应就是退一步。`,
       lightShadow: [
@@ -235,9 +236,9 @@ const RESULTS = {
     archetype: "迷雾中的试探者",
     icon: <Shield className="w-8 h-8" />,
     quote: "待人如执烛，太近灼手，太远暗生。",
-    keywords: ["审慎", "慢热", "保护"],
     cardStyle: "from-teal-600/60 to-emerald-800/60 shadow-[0_0_40px_-5px_rgba(13,148,136,0.5)] border-teal-200/40",
     accentColor: "text-teal-700",
+    radarColor: "#0f766e", // Teal
     tabs: {
       base: `在亲密关系里，你最核心的需求从不是轰轰烈烈的奔赴，而是 “安全第一” 的踏实靠近 —— 你从不是冷淡，也不是慢热，只是心里自带一层 “安全缓冲带”，像洗手前慢慢试探水温，先确认没有刺痛，才敢再往前挪一步。\n\n你的亲密节奏里藏着独有的审慎：先悄悄观察、反复确认，直到笃定 “这个人值得托付”，才敢真正卸下防备。任何猛扑过来的热情、急着拉你进入深度关系、逼你立刻敞开心扉，都会让你下意识启动自我保护。`,
       lightShadow: [
@@ -261,9 +262,9 @@ const RESULTS = {
     archetype: "构建未来的建筑师",
     icon: <Grid className="w-8 h-8" />,
     quote: "好的关系，是一起把日子过成有章法的温柔。",
-    keywords: ["规则", "清晰", "共建"],
     cardStyle: "from-slate-600/60 to-zinc-800/60 shadow-[0_0_40px_-5px_rgba(71,85,105,0.5)] border-slate-200/40",
     accentColor: "text-slate-700",
+    radarColor: "#334155", // Slate
     tabs: {
       base: `在亲密关系里，你是主动和对方搭建关系框架的共建者，核心需求从不是模糊的浪漫悸动，而是两人共同打磨的秩序感 —— 清晰的边界不越界，明确的期待不猜度，可落地的沟通不内耗，这些才是你敢放心交付真心的底气。\n\n你打心底不信随缘式相处能走得远，认定长期关系的根基必须扎在坦诚沟通、明确共识的土壤里。这不是理性过度的较真，而是怕够了混乱带来的消耗。`,
       lightShadow: [
@@ -284,11 +285,6 @@ const RESULTS = {
   }
 };
 
-/**
- * ==========================================
- * 主组件逻辑
- * ==========================================
- */
 export default function SoulScan_StainedGlass() {
   const [step, setStep] = useState('landing');
   const [showInput, setShowInput] = useState(false);
@@ -298,11 +294,13 @@ export default function SoulScan_StainedGlass() {
   
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [scores, setScores] = useState({});
-  const [results, setResults] = useState({ primary: null, secondary: null });
+  const [results, setResults] = useState({ primary: null });
   const [currentPart, setCurrentPart] = useState(null);
   
-  const [flippedCards, setFlippedCards] = useState({ primary: false, secondary: false });
-  const [viewingResult, setViewingResult] = useState('primary'); 
+  // 新增：动画状态
+  const [flipped, setFlipped] = useState(false);
+  const [showFinal, setShowFinal] = useState(false);
+  const [chartData, setChartData] = useState([]);
   const [activeTab, setActiveTab] = useState('base');
 
   // --- 1. 登录交互 ---
@@ -318,23 +316,20 @@ export default function SoulScan_StainedGlass() {
     setIsLoading(true);
 
     try {
-      // 👇 去数据库查！
       const { data, error } = await supabase
-        .from('codes') // 确保你的表名叫 'codes'
+        .from('codes')
         .select('*')
-        .eq('code', inputCode) // 确保你的列名叫 'code'
+        .eq('code', inputCode)
         .single();
 
       if (error || !data) {
         throw new Error('未找到该兑换码');
       }
 
-      // 2. 检查次数：如果“已用次数” >= “最大次数”，说明失效了
       if (data.used_count >= data.max_uses) {
         throw new Error('该兑换码已被使用，请购买新码');
       }
 
-      // 3. 扣费环节：把数据库里的 used_count 加 1
       const { error: updateError } = await supabase
         .from('codes')
         .update({ used_count: data.used_count + 1 })
@@ -345,7 +340,7 @@ export default function SoulScan_StainedGlass() {
       }
       
       setIsLoading(false);
-      handlePartTransition(0); // 验证通过！
+      handlePartTransition(0);
 
     } catch (err) {
       console.error(err);
@@ -379,23 +374,42 @@ export default function SoulScan_StainedGlass() {
     }
   };
 
-  // --- 3. 结算 ---
+  // --- 3. 结算逻辑 ---
   const finishQuiz = (finalScores) => {
     setStep('analyzing');
     const sortedScores = Object.entries(finalScores).sort((a, b) => b[1] - a[1]);
     const primaryKey = sortedScores[0][0];
-    const secondaryKey = sortedScores.length > 1 ? sortedScores[1][0] : primaryKey;
+
+    // 准备雷达图数据
+    const allTypes = ["确定感", "被需要", "掌控感", "被偏爱", "精神共鸣", "自由感", "安全距离", "秩序感"];
+    const radarData = allTypes.map(type => ({
+      subject: type,
+      A: finalScores[type] || 0,
+      fullMark: 8 // 假定满分大概是8（其实不重要，只是为了图形好看）
+    }));
 
     setTimeout(() => {
-      setResults({ primary: primaryKey, secondary: secondaryKey });
-      setStep('result');
+      setResults({ primary: primaryKey });
+      setChartData(radarData);
+      setStep('result_card'); // 先去卡片页
     }, 2500);
   };
 
-  // 渲染相关辅助
+  // 翻转卡片并跳转
+  const handleCardClick = () => {
+    if (flipped) return; // 防止重复点击
+    setFlipped(true);
+    
+    // 翻转后等待 800ms 自动跳转到最终结果页
+    setTimeout(() => {
+      setShowFinal(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 1500);
+  };
+
+  // 渲染进度条
   const progress = ((currentQIndex + 1) / QUESTIONS.length) * 100;
-  const displayResultKey = viewingResult === 'primary' ? results.primary : results.secondary;
-  const displayData = RESULTS[displayResultKey];
+  const displayData = RESULTS[results.primary];
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] text-[#4A4A4A] font-sans selection:bg-rose-100 flex flex-col overflow-x-hidden">
@@ -405,7 +419,7 @@ export default function SoulScan_StainedGlass() {
       </Head>
 
       {/* 顶部栏 */}
-      {step !== 'landing' && step !== 'partIntro' && (
+      {step !== 'landing' && step !== 'partIntro' && !showFinal && (
         <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-stone-100 px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-rose-400" />
@@ -419,10 +433,9 @@ export default function SoulScan_StainedGlass() {
         </nav>
       )}
 
-      {/* --- Landing Page 落地页 --- */}
+      {/* --- Landing Page --- */}
       {step === 'landing' && (
         <div className="flex-1 flex flex-col relative overflow-hidden">
-          {/* 背景装饰 */}
           <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-rose-200/40 to-orange-100/40 blur-[80px]" />
           <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-gradient-to-tl from-blue-200/40 to-purple-100/40 blur-[80px]" />
 
@@ -568,117 +581,87 @@ export default function SoulScan_StainedGlass() {
         </div>
       )}
 
-      {/* --- Result --- */}
-      {step === 'result' && (
-        <div className="flex-1 flex flex-col animate-fade-in pt-24 px-6 pb-20 max-w-md mx-auto w-full">
+      {/* --- Result Step 1: Card Flip --- */}
+      {step === 'result_card' && !showFinal && (
+        <div className="flex-1 flex flex-col items-center justify-center animate-fade-in p-6 bg-stone-900">
+          <p className="text-center text-[10px] text-stone-400 mb-8 tracking-[0.2em] uppercase">Tap to Reveal Your Soul</p>
           
-          <p className="text-center text-[10px] text-stone-400 mb-8 tracking-[0.2em] uppercase">Tap Card to Reveal</p>
-
-          <div className="space-y-8 mb-12">
-            
-            {/* 1. 主卡片 */}
-            <div 
-              className="relative w-full aspect-[4/5] perspective-1000 cursor-pointer group"
-              onClick={() => {
-                setFlippedCards(prev => ({...prev, primary: true}));
-                setViewingResult('primary');
-                setActiveTab('base');
-              }}
-            >
-              <div className={`relative w-full h-full duration-1000 transform-style-3d transition-transform ${flippedCards.primary ? 'rotate-y-180' : ''}`}>
-                
-                {/* Back */}
-                <div className={`absolute inset-0 backface-hidden bg-stone-900 rounded-[2rem] shadow-2xl border-[1px] border-white/10 flex flex-col items-center justify-center ${viewingResult === 'primary' && flippedCards.primary ? 'ring-2 ring-rose-200/50 ring-offset-2 ring-offset-[#FDFBF9]' : ''}`}>
-                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20" />
-                  <Sun className="w-12 h-12 text-rose-200/80 mb-4 animate-pulse" />
-                  <h3 className="text-rose-100/90 text-sm font-serif tracking-widest">主导欲望</h3>
-                  <p className="text-white/30 text-[10px] mt-2 uppercase tracking-[0.2em]">Core Desire</p>
-                </div>
-
-                {/* Front (Stained Glass Effect) */}
-                <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col justify-between text-white p-6 
-                  bg-gradient-to-br ${RESULTS[results.primary].cardStyle} backdrop-blur-xl border border-white/30`}>
-                  
-                  {/* Glass Highlights */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-                  <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/30 rounded-full blur-3xl" />
-
-                  <div className="relative z-10 flex justify-between items-start">
-                    <span className="text-[10px] border border-white/40 px-2 py-0.5 rounded backdrop-blur-md bg-white/10">CORE</span>
-                    <Sun className="w-4 h-4 text-white/90" />
-                  </div>
-                  
-                  <div className="relative z-10 text-center mt-4">
-                      <div className="w-16 h-16 mx-auto mb-4 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
-                        {RESULTS[results.primary].icon}
-                      </div>
-                      <h2 className="text-3xl font-serif font-bold mb-1 drop-shadow-md">{results.primary}</h2>
-                      <p className="text-xs font-light opacity-90 tracking-wide">{RESULTS[results.primary].archetype}</p>
-                  </div>
-                  
-                  <div className="relative z-10 mt-auto">
-                    <div className="bg-black/20 backdrop-blur-md p-3 rounded-xl border border-white/10">
-                      <p className="text-xs italic font-serif leading-relaxed text-center opacity-95">
-                        “{RESULTS[results.primary].quote}”
-                      </p>
-                    </div>
-                  </div>
-                </div>
+          <div 
+            className="relative w-full max-w-sm aspect-[4/5] perspective-1000 cursor-pointer group"
+            onClick={handleCardClick}
+          >
+            <div className={`relative w-full h-full duration-1000 transform-style-3d transition-transform ${flipped ? 'rotate-y-180' : ''}`}>
+              
+              {/* Back (封面) */}
+              <div className="absolute inset-0 backface-hidden bg-stone-800 rounded-[2rem] shadow-2xl border border-white/10 flex flex-col items-center justify-center">
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20" />
+                <Sparkles className="w-16 h-16 text-rose-200/50 mb-6 animate-pulse" />
+                <h3 className="text-rose-100/90 text-lg font-serif tracking-widest">点击揭晓</h3>
               </div>
-            </div>
 
-            {/* 2. 副卡片 */}
-            <div 
-              className="relative w-full aspect-[4/2] perspective-1000 cursor-pointer group"
-              onClick={() => {
-                setFlippedCards(prev => ({...prev, secondary: true}));
-                setViewingResult('secondary');
-                setActiveTab('base');
-              }}
-            >
-              <div className={`relative w-full h-full duration-1000 transform-style-3d transition-transform ${flippedCards.secondary ? 'rotate-y-180' : ''}`}>
+              {/* Front (结果) */}
+              <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col justify-between text-white p-8 
+                bg-gradient-to-br ${RESULTS[results.primary].cardStyle} backdrop-blur-xl border border-white/30`}>
                 
-                {/* Back */}
-                <div className={`absolute inset-0 backface-hidden bg-stone-800 rounded-[2rem] shadow-xl border-[1px] border-white/5 flex flex-col items-center justify-center ${viewingResult === 'secondary' && flippedCards.secondary ? 'ring-2 ring-rose-200/50 ring-offset-2 ring-offset-[#FDFBF9]' : ''}`}>
-                  <Moon className="w-8 h-8 text-purple-200/70 mb-2" />
-                  <h3 className="text-purple-100/80 text-xs font-serif tracking-widest">潜意识欲望</h3>
+                <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+                
+                <div className="relative z-10 flex justify-between items-start">
+                  <span className="text-[10px] border border-white/40 px-2 py-0.5 rounded backdrop-blur-md bg-white/10">SOUL TYPE</span>
+                  <Sun className="w-5 h-5 text-white/90" />
                 </div>
-
-                {/* Front (Stained Glass) */}
-                <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex items-center justify-between text-white p-6
-                  bg-gradient-to-br ${RESULTS[results.secondary].cardStyle} backdrop-blur-xl border border-white/30`}>
-                    
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-                    
-                    <div className="relative z-10 flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] border border-white/40 px-1.5 rounded bg-white/10 backdrop-blur-md">SUB</span>
-                        <h2 className="text-xl font-serif font-bold drop-shadow-sm">{results.secondary}</h2>
-                      </div>
-                      <p className="text-[10px] opacity-90 mb-2 font-light">{RESULTS[results.secondary].archetype}</p>
+                
+                <div className="relative z-10 text-center mt-8">
+                    <div className="w-20 h-20 mx-auto mb-6 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
+                      {RESULTS[results.primary].icon}
                     </div>
-                    
-                    <div className="relative z-10 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner ml-4">
-                       {RESULTS[results.secondary].icon}
-                    </div>
+                    <h2 className="text-4xl font-serif font-bold mb-2 drop-shadow-md">{results.primary}</h2>
+                    <p className="text-sm font-light opacity-90 tracking-wide">{RESULTS[results.primary].archetype}</p>
+                </div>
+                
+                <div className="relative z-10 mt-auto">
+                  <p className="text-xs italic font-serif leading-relaxed text-center opacity-80">
+                    Redirecting to analysis...
+                  </p>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+      )}
 
-          {/* 3. 详情区 (Tabs) */}
-          {(flippedCards.primary || flippedCards.secondary) && displayData && (
-            <div className="w-full animate-slide-up-delayed scroll-mt-24 mb-16" id="details-section">
-              
-              <div className="flex items-center justify-between mb-4 px-1">
-                <h3 className={`font-serif font-bold text-base flex items-center gap-2 ${displayData.accentColor}`}>
-                  {viewingResult === 'primary' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                  {viewingResult === 'primary' ? '主导欲望解析' : '潜意识欲望解析'}
-                </h3>
-              </div>
+      {/* --- Result Step 2: Final Page (Shareable) --- */}
+      {showFinal && displayData && (
+        <div className="flex-1 flex flex-col animate-slide-up bg-white">
+          {/* Header Area */}
+          <div className={`pt-12 pb-8 px-8 rounded-b-[3rem] shadow-xl bg-gradient-to-b ${displayData.cardStyle} text-white relative overflow-hidden`}>
+             <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full bg-white/10 blur-[60px]" />
+             
+             <p className="relative z-10 text-xs font-medium opacity-80 tracking-widest mb-2">你的情感欲望是——</p>
+             <h1 className="relative z-10 text-4xl font-serif font-bold mb-8">{results.primary}</h1>
 
-              {/* Tab Nav */}
-              <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar mb-1 px-1">
+             {/* Radar Chart */}
+             <div className="relative z-10 w-full h-[280px] bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
+                    <PolarGrid stroke="rgba(255,255,255,0.2)" />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: 'white', fontSize: 10 }} />
+                    <PolarRadiusAxis angle={30} domain={[0, 8]} tick={false} axisLine={false} />
+                    <Radar
+                      name="My Desire"
+                      dataKey="A"
+                      stroke={displayData.radarColor || "#fff"}
+                      fill={displayData.radarColor || "#fff"}
+                      fillOpacity={0.6}
+                    />
+                  </RadarChart>
+                </ResponsiveContainer>
+             </div>
+          </div>
+
+          {/* Analysis Content */}
+          <div className="px-6 py-8 -mt-4 relative z-20">
+             {/* Tabs */}
+             <div className="flex gap-2 overflow-x-auto pb-6 no-scrollbar">
                 {[
                   { id: 'base', label: '底色' },
                   { id: 'lightShadow', label: '光影' },
@@ -689,10 +672,10 @@ export default function SoulScan_StainedGlass() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all duration-300 ${
+                    className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all shadow-sm ${
                       activeTab === tab.id 
-                      ? 'bg-stone-800 text-white shadow-md' 
-                      : 'bg-white text-stone-400 border border-stone-100'
+                      ? 'bg-stone-800 text-white ring-2 ring-stone-800 ring-offset-2' 
+                      : 'bg-white text-stone-500 border border-stone-200'
                     }`}
                   >
                     {tab.label}
@@ -700,14 +683,12 @@ export default function SoulScan_StainedGlass() {
                 ))}
               </div>
 
-              {/* Content Box */}
-              <div className="bg-white p-6 rounded-[2rem] shadow-xl shadow-stone-200/50 border border-stone-50 min-h-[260px] relative overflow-hidden transition-all duration-500">
-                <div className="absolute top-0 left-0 w-full h-1 bg-stone-100" />
-                
+              {/* Text Content */}
+              <div className="space-y-6 animate-fade-in">
                 {activeTab === 'base' && (
-                  <div className="animate-fade-in">
-                    <h4 className="font-bold text-xs mb-3 text-stone-800 flex items-center gap-2 uppercase tracking-wider">
-                       <BookOpen className="w-3 h-3" /> 亲密底色
+                  <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100">
+                    <h4 className="font-bold text-sm mb-4 text-stone-800 flex items-center gap-2">
+                       <BookOpen className="w-4 h-4" /> 亲密底色
                     </h4>
                     <p className="text-sm text-stone-600 leading-7 text-justify whitespace-pre-line">
                       {displayData.tabs.base}
@@ -716,90 +697,83 @@ export default function SoulScan_StainedGlass() {
                 )}
 
                 {activeTab === 'lightShadow' && (
-                  <div className="animate-fade-in space-y-4">
+                  <div className="space-y-4">
                     {displayData.tabs.lightShadow.map((item, idx) => (
-                      <div key={idx} className="bg-stone-50/80 p-4 rounded-xl border border-stone-100/50">
-                        <h4 className={`text-xs font-bold mb-1.5 flex items-center gap-2 ${item.label.includes('(光)') ? 'text-amber-600' : 'text-slate-600'}`}>
+                      <div key={idx} className="bg-white p-5 rounded-2xl border border-stone-100 shadow-sm">
+                        <h4 className={`text-xs font-bold mb-2 flex items-center gap-2 ${item.label.includes('(光)') ? 'text-amber-600' : 'text-slate-600'}`}>
                           {item.label.includes('(光)') ? <Sun className="w-3 h-3" /> : <Moon className="w-3 h-3" />}
                           {item.label.split(' ')[0]}
                         </h4>
-                        <p className="text-xs text-stone-600 leading-relaxed">{item.text}</p>
+                        <p className="text-sm text-stone-600 leading-relaxed">{item.text}</p>
                       </div>
                     ))}
                   </div>
                 )}
 
                 {activeTab === 'partner' && (
-                  <div className="animate-fade-in space-y-3">
+                  <div className="space-y-3">
                     <div className="flex items-center gap-2 mb-4 text-rose-500 font-bold text-xs bg-rose-50 w-fit px-3 py-1 rounded-full border border-rose-100">
                       <Share2 className="w-3 h-3" />
                       <span>转发给 TA，减少 80% 误会</span>
                     </div>
                     {displayData.tabs.partner.map((line, idx) => (
-                      <div key={idx} className="flex gap-3 text-sm text-stone-600 bg-stone-50 p-4 rounded-xl border border-stone-100">
-                        <span className={`font-serif italic text-lg ${displayData.accentColor}`}>{idx + 1}.</span>
-                        <span className="leading-relaxed pt-0.5">{line}</span>
+                      <div key={idx} className="flex gap-4 text-sm text-stone-600 bg-white p-5 rounded-2xl border border-stone-100 shadow-sm">
+                        <span className={`font-serif italic text-xl ${displayData.accentColor}`}>{idx + 1}.</span>
+                        <span className="leading-relaxed pt-1">{line}</span>
                       </div>
                     ))}
                   </div>
                 )}
 
                 {activeTab === 'origins' && (
-                  <div className="animate-fade-in">
-                    <h4 className="font-bold text-xs mb-3 text-stone-800 flex items-center gap-2 uppercase tracking-wider">
-                       <Search className="w-3 h-3" /> 童年溯源
+                  <div className="bg-white p-6 rounded-2xl border border-stone-100 shadow-sm">
+                    <h4 className="font-bold text-sm mb-4 text-stone-800 flex items-center gap-2">
+                       <Search className="w-4 h-4" /> 童年溯源
                     </h4>
-                    <div className="text-sm text-stone-600 leading-7 bg-stone-50/50 p-5 rounded-xl border border-stone-100 text-justify">
+                    <p className="text-sm text-stone-600 leading-7 text-justify">
                       {displayData.tabs.origins}
-                    </div>
+                    </p>
                   </div>
                 )}
 
                 {activeTab === 'reshape' && (
-                  <div className="animate-fade-in">
-                      <h4 className="font-bold text-xs mb-3 text-stone-800 flex items-center gap-2 uppercase tracking-wider">
-                       <Zap className="w-3 h-3 text-emerald-500" /> 能量重塑
+                  <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100">
+                      <h4 className="font-bold text-sm mb-4 text-emerald-800 flex items-center gap-2">
+                       <Zap className="w-4 h-4" /> 能量重塑
                     </h4>
-                    <div className="text-sm text-stone-600 leading-7 bg-emerald-50/30 p-5 rounded-xl border border-emerald-50 text-justify whitespace-pre-line">
+                    <p className="text-sm text-emerald-700/80 leading-7 text-justify whitespace-pre-line">
                       {displayData.tabs.reshape}
-                    </div>
+                    </p>
                   </div>
                 )}
               </div>
-            </div>
-          )}
 
-          {/* 4. 祝福 (卡片外，底部) */}
-          {(flippedCards.primary || flippedCards.secondary) && displayData && (
-             <div className="mt-8 mb-12 text-center animate-fade-in px-4">
-               <Feather className="w-5 h-5 text-rose-300 mx-auto mb-4 opacity-80" />
-               <p className="font-serif italic text-stone-600 text-sm leading-8">
-                 {displayData.blessing}
-               </p>
-               <div className="w-8 h-[1px] bg-stone-200 mx-auto mt-6"></div>
-             </div>
-          )}
+              {/* Blessing */}
+              <div className="mt-12 text-center">
+                 <Feather className="w-6 h-6 text-stone-300 mx-auto mb-4" />
+                 <p className="font-serif italic text-stone-500 text-sm leading-8 max-w-xs mx-auto">
+                   {displayData.blessing}
+                 </p>
+              </div>
 
-          {/* 5. 底部操作栏 */}
-          {(flippedCards.primary || flippedCards.secondary) && (
-             <div className="flex gap-3 pb-4">
-                <button 
-                  onClick={() => window.location.reload()}
-                  className="flex-1 py-3.5 bg-white border border-stone-200 rounded-xl text-stone-500 text-sm font-bold flex items-center justify-center gap-2 hover:bg-stone-50 transition-colors"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  再测一次
-                </button>
-             </div>
-          )}
-
+              {/* Restart Button */}
+              <button 
+                onClick={() => window.location.reload()}
+                className="w-full mt-12 py-4 bg-stone-900 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-xl"
+              >
+                <RefreshCw className="w-4 h-4" />
+                再测一次
+              </button>
+          </div>
         </div>
       )}
 
-      {/* --- Footer (Unified) --- */}
-      <footer className="py-6 text-center text-[10px] text-stone-300 tracking-widest uppercase border-t border-stone-100 mt-auto bg-white/50 backdrop-blur-sm">
-        柚子的心理小屋 原创（小红书同名）
-      </footer>
+      {/* --- Footer --- */}
+      {(!showFinal && step !== 'result_card') && (
+        <footer className="py-6 text-center text-[10px] text-stone-300 tracking-widest uppercase border-t border-stone-100 mt-auto bg-white/50 backdrop-blur-sm">
+          柚子的心理小屋 原创（小红书同名）
+        </footer>
+      )}
 
       <style jsx global>{`
         .perspective-1000 { perspective: 1000px; }
