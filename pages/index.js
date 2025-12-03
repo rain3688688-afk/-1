@@ -1,10 +1,10 @@
+"use client";  // 👈 第1行必须是这个！
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, ArrowDown, ChevronRight, BookOpen, Key, Feather, Search } from 'lucide-react';
+import Head from 'next/head'; // 👈 第5行必须有这个！
 
-/**
- * ==========================================
- * 数据源配置：已按新结构拆分结果内容
- * ==========================================
+// ... (后面接 const wait ...)
  */
 
 // 章节配置 (保持不变)
@@ -367,7 +367,13 @@ export default function SoulScan_StainedGlass() {
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] text-[#4A4A4A] font-sans selection:bg-rose-100 flex flex-col overflow-x-hidden">
-      
+
+      {/* ⭐⭐⭐ 在这里插入下面这 3 行！ ⭐⭐⭐ */}
+      <Head>
+        <script src="https://cdn.tailwindcss.com"></script>
+      </Head>
+      {/* ⭐⭐⭐ 插入结束 ⭐⭐⭐ */}
+  
       {/* 顶部栏 */}
       {step !== 'landing' && step !== 'partIntro' && (
         <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-stone-100 px-6 py-4 flex justify-between items-center">
