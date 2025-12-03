@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, ArrowDown, ChevronRight, BookOpen, Key, Feather, Search } from 'lucide-react';
+import Head from 'next/head';
 
 // 下面这行是模拟等待，不需要 Supabase
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
