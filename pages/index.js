@@ -1,17 +1,17 @@
-import { useState, useEffect, useRef } from 'react';
-import { createClient } from '@supabase/supabase-js';
-import Head from 'next/head';
+"use client";
 
-// ==========================================
-// 1. 系统配置
-// ==========================================
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import React, { useState, useEffect, useRef } from 'react';
+import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, ArrowDown, ChevronRight, BookOpen, Key, Feather, Search } from 'lucide-react';
 
-// 极速版：去除了所有人为的长时间等待，追求原生APP般的响应速度
+// 下面这行是模拟等待，不需要 Supabase
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * ==========================================
+ * 数据源配置：已按新结构拆分结果内容
+ * ==========================================
+ */
+// ... 接原来的代码 ...
 
 // ==========================================
 // 2. 核心资料库
