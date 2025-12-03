@@ -1,18 +1,17 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, ArrowDown, ChevronRight, BookOpen, Key, Feather, Search } from 'lucide-react';
+import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, Download, ChevronRight, BookOpen, Key, Feather, Search } from 'lucide-react';
 import Head from 'next/head';
 import { createClient } from '@supabase/supabase-js';
-// 引入图表库
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
+// 👇 引入截图插件
+import html2canvas from 'html2canvas';
 
 // --- 初始化 Supabase ---
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
-
-const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // 章节配置
 const PARTS_CONFIG = [
@@ -21,7 +20,7 @@ const PARTS_CONFIG = [
   { startIndex: 32, title: "Part 3：灵魂图腾", quote: "“语言无法抵达的地方，直觉可以。”", desc: "欢迎来到你内心的最深处。接下来的问题不需要逻辑，仅凭直觉，选出你第一眼看到的那个答案。" }
 ];
 
-// 题目数据
+// 题目数据 (精简展示，逻辑不变)
 const QUESTIONS = [
   { id: 1, question: "周末下午，伴侣突然失联了3个小时，发消息也没回。那一刻，你最真实的反应是？", options: [{ text: "下意识翻聊天记录，看是不是我说错话了？", type: "确定感" }, { text: "挺好的，刚好没人管我，专心做自己的事。", type: "自由感" }, { text: "推测原因，准备联系上后问清楚去向。", type: "掌控感" }, { text: "心里堵得慌。如果他够在意我，怎么舍得让我空等？", type: "被偏爱" }] },
   { id: 2, question: "伴侣最近工作压力极大，回家情绪低落一言不发。此时你心里的念头是？", options: [{ text: "看着心疼。倒杯水、切水果，让他知道有人照顾。", type: "被需要" }, { text: "他应该很烦。那我就识趣点躲远点，等他缓过来。", type: "安全距离" }, { text: "死气沉沉的沉默很难受。希望能聊聊。", type: "精神共鸣" }, { text: "在意接下来的安排：今晚怎么吃？计划还作数吗？", type: "秩序感" }] },
@@ -73,7 +72,7 @@ const QUESTIONS = [
   { id: 48, question: "最后，请凭直觉填空：爱是______。", options: [{ text: "定数。唯一不会更改的答案。", type: "确定感" }, { text: "认出。茫茫人海辨认出彼此是同类。", type: "精神共鸣" }, { text: "成全。不捆绑，拥有更广阔天空。", type: "自由感" }, { text: "治愈。看见你的破碎，甘愿做药。", type: "被需要" }] }
 ];
 
-// 结果数据：已完全替换为文档2.0的详细内容
+// 结果数据 (完整版，包含所有文案)
 const RESULTS = {
   "确定感": {
     type: "确定感",
@@ -82,7 +81,7 @@ const RESULTS = {
     quote: "万物皆流变，而我只要一种绝对的定数。",
     cardStyle: "from-blue-700/60 to-indigo-900/60 shadow-[0_0_40px_-5px_rgba(59,130,246,0.5)] border-blue-200/40",
     accentColor: "text-blue-700",
-    radarColor: "#3b82f6", 
+    radarColor: "#3b82f6",
     tabs: {
       base: `在亲密关系中，你核心的情感诉求是 “稳定与可预期”，始终坚守着对长期联结的极致追求。相较于外在条件的光鲜或浪漫形式的轰轰烈烈，你更看重关系中的确定性—— 凡事有交代、件件有着落、事事有回音，这种清晰、可靠的互动模式，是你构建情感安全感的基石。\n\n你的情感底色厚重且带着强烈的契约精神，对感情的投入从不浅尝辄止，而是带着 “认定即终身” 的郑重。只要对方传递的态度足够明确、信号足够清晰，你便会毫无保留地深度投入，愿意为关系的长久发展付出耐心与精力，包容差异、共担责任，将长期承诺作为情感的核心导向，而非一时的情绪冲动。\n\n这份对关系的厚重期待背后，潜藏着你对不确定性的极度敏感与对被抛弃的深层恐惧。你对关系中的距离变化、态度波动有着本能的警觉，任何模糊的信号、延迟的回应，都可能触发你内心的不安。你并非刻意试探或控制，所有看似执着的追问与确认，本质上都是为了在不确定的关系流动中，寻找一个稳定的情感锚点，反复确认自身在对方心中的重要性与不可替代性。`,
       lightShadow: [
@@ -312,7 +311,7 @@ const RESULTS = {
   }
 };
 
-// 雷达图的基础配置 (8个维度)
+// 雷达图的维度
 const ALL_DIMENSIONS = ["确定感", "被需要", "掌控感", "被偏爱", "精神共鸣", "自由感", "安全距离", "秩序感"];
 
 export default function SoulScan_StainedGlass() {
@@ -329,10 +328,11 @@ export default function SoulScan_StainedGlass() {
   
   // 动画状态
   const [flipped, setFlipped] = useState(false);
+  const [isExploding, setIsExploding] = useState(false); // 爆炸白光
   const [showFinal, setShowFinal] = useState(false);
-  const [isCracking, setIsCracking] = useState(false); // 新增碎裂状态
   const [chartData, setChartData] = useState([]);
   const [activeTab, setActiveTab] = useState('base');
+  const [saving, setSaving] = useState(false);
 
   // --- 1. 登录交互 ---
   const handleVerify = async () => {
@@ -409,7 +409,6 @@ export default function SoulScan_StainedGlass() {
     const sortedScores = Object.entries(finalScores).sort((a, b) => b[1] - a[1]);
     const primaryKey = sortedScores[0][0];
 
-    // 准备雷达图数据
     const radarData = ALL_DIMENSIONS.map(type => ({
       subject: type,
       A: finalScores[type] || 0,
@@ -423,22 +422,45 @@ export default function SoulScan_StainedGlass() {
     }, 2500);
   };
 
-  // 卡片翻转 + 碎裂动画逻辑
+  // 剧烈晃动 -> 爆炸 -> 结果
   const handleCardClick = () => {
     if (flipped) return;
     setFlipped(true);
     
-    // 1. 翻转后停留 1.5秒
+    // 1. 翻转后停留，开始积蓄能量 (晃动)
     setTimeout(() => {
-      // 2. 开始碎裂/白屏动画
-      setIsCracking(true);
+      setIsExploding(true); // 触发白光爆炸
       
-      // 3. 动画结束后跳转 (给动画留 1秒时间)
+      // 2. 爆炸白光闪过，切换界面
       setTimeout(() => {
         setShowFinal(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 800);
-    }, 1500);
+      }, 600); // 在白光最亮的时候切换
+    }, 1800);
+  };
+
+  // 生成海报功能
+  const handleSavePoster = async () => {
+    const element = document.getElementById('poster-area');
+    if (!element) return;
+    
+    setSaving(true);
+    try {
+      const canvas = await html2canvas(element, {
+        useCORS: true,
+        scale: 2, // 高清
+        backgroundColor: '#ffffff',
+      });
+      
+      const link = document.createElement('a');
+      link.download = `我的情感欲望-${results.primary}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (err) {
+      console.error('Poster generation failed', err);
+      alert('保存失败，请尝试截屏分享');
+    }
+    setSaving(false);
   };
 
   const progress = ((currentQIndex + 1) / QUESTIONS.length) * 100;
@@ -614,22 +636,22 @@ export default function SoulScan_StainedGlass() {
         </div>
       )}
 
-      {/* --- Result Step 1: Card Flip + Crack Animation --- */}
+      {/* --- Result Step 1: Card Flip + Explosion --- */}
       {step === 'result_card' && !showFinal && (
         <div className="flex-1 flex flex-col items-center justify-center animate-fade-in p-6 bg-stone-900 relative overflow-hidden">
           
-          {/* 碎裂白屏遮罩 */}
-          {isCracking && (
-            <div className="absolute inset-0 z-50 animate-crack-reveal bg-white pointer-events-none"></div>
-          )}
+          {/* 白光爆炸遮罩 */}
+          <div className={`absolute inset-0 z-50 bg-white pointer-events-none transition-opacity duration-1000 ${isExploding ? 'opacity-100' : 'opacity-0'}`}></div>
 
-          <p className="text-center text-[10px] text-stone-400 mb-8 tracking-[0.2em] uppercase">Tap to Reveal Your Soul</p>
+          <p className={`text-center text-[10px] text-stone-400 mb-8 tracking-[0.2em] uppercase transition-opacity ${flipped ? 'opacity-0' : 'opacity-100'}`}>
+             Tap to Reveal
+          </p>
           
           <div 
             className="relative w-full max-w-sm aspect-[4/5] perspective-1000 cursor-pointer group"
             onClick={handleCardClick}
           >
-            <div className={`relative w-full h-full duration-1000 transform-style-3d transition-transform ${flipped ? 'rotate-y-180' : ''}`}>
+            <div className={`relative w-full h-full duration-1000 transform-style-3d transition-transform ${flipped ? 'rotate-y-180' : ''} ${flipped && !isExploding ? 'animate-violent-shake' : ''}`}>
               
               {/* Back (封面) */}
               <div className="absolute inset-0 backface-hidden bg-stone-800 rounded-[2rem] shadow-2xl border border-white/10 flex flex-col items-center justify-center">
@@ -641,6 +663,7 @@ export default function SoulScan_StainedGlass() {
               {/* Front (翻转后暂留) */}
               <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col justify-between text-white p-8 
                 bg-gradient-to-br ${RESULTS[results.primary].cardStyle} backdrop-blur-xl border border-white/30`}>
+                <div className="absolute inset-0 bg-white/10 mix-blend-overlay" />
                 
                 <div className="relative z-10 text-center mt-20">
                     <div className="w-20 h-20 mx-auto mb-6 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
@@ -654,178 +677,126 @@ export default function SoulScan_StainedGlass() {
         </div>
       )}
 
-      {/* --- Result Step 2: Final Share Page --- */}
+      {/* --- Result Step 2: Final Share Page (Poster) --- */}
       {showFinal && displayData && (
-        <div className="flex-1 flex flex-col animate-fade-in bg-white">
-          {/* Header Area with Radar */}
-          <div className={`pt-12 pb-10 px-6 rounded-b-[3rem] shadow-xl bg-gradient-to-b ${displayData.cardStyle} text-white relative overflow-hidden`}>
-             {/* Background Noise */}
-             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10" />
-             <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full bg-white/10 blur-[60px]" />
-             
-             <div className="relative z-10 flex flex-col items-center">
-               <p className="text-[10px] font-medium opacity-80 tracking-[0.3em] mb-3 uppercase border border-white/20 px-3 py-1 rounded-full bg-white/5 backdrop-blur-md">
-                 你的情感欲望是
-               </p>
-               <h1 className="text-5xl font-serif font-bold mb-8 drop-shadow-lg tracking-wider text-center">
-                 {results.primary}
-               </h1>
+        <div className="flex-1 flex flex-col animate-fade-in bg-white pb-12">
+          
+          {/* 这个区域会被截图 */}
+          <div id="poster-area" className="bg-white">
+              {/* Header Area with Radar */}
+              <div className={`pt-12 pb-10 px-6 rounded-b-[3rem] shadow-xl bg-gradient-to-b ${displayData.cardStyle} text-white relative overflow-hidden`}>
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10" />
+                <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full bg-white/10 blur-[60px]" />
+                
+                <div className="relative z-10 flex flex-col items-center">
+                  <p className="text-[10px] font-medium opacity-80 tracking-[0.3em] mb-3 uppercase border border-white/20 px-3 py-1 rounded-full bg-white/5 backdrop-blur-md">
+                    你的情感欲望是
+                  </p>
+                  <h1 className="text-5xl font-serif font-bold mb-8 drop-shadow-lg tracking-wider text-center">
+                    {results.primary}
+                  </h1>
 
-               {/* Radar Chart */}
-               <div className="w-full max-w-xs h-[320px] bg-white/10 backdrop-blur-sm rounded-3xl border border-white/20 p-4 shadow-inner relative">
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-3xl pointer-events-none"></div>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
-                      <defs>
-                        <linearGradient id="radarFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={displayData.radarColor || "#fff"} stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor={displayData.radarColor || "#fff"} stopOpacity={0.1}/>
-                        </linearGradient>
-                      </defs>
-                      <PolarGrid stroke="rgba(255,255,255,0.15)" />
-                      <PolarAngleAxis dataKey="subject" tick={{ fill: 'white', fontSize: 12, fontWeight: 500 }} />
-                      <PolarRadiusAxis angle={30} domain={[0, 8]} tick={false} axisLine={false} />
-                      <Radar
-                        name="My Desire"
-                        dataKey="A"
-                        stroke={displayData.radarColor || "#fff"}
-                        strokeWidth={2}
-                        fill="url(#radarFill)"
-                        fillOpacity={1}
-                      />
-                    </RadarChart>
-                  </ResponsiveContainer>
-               </div>
-
-               {/* Verdict Quote */}
-               <div className="mt-8 px-4">
-                 <div className="relative">
-                   <span className="absolute -top-2 -left-2 text-4xl opacity-30 font-serif">“</span>
-                   <p className="text-sm font-serif italic text-center leading-7 opacity-95 px-4">
-                     {displayData.quote}
-                   </p>
-                   <span className="absolute -bottom-4 -right-0 text-4xl opacity-30 font-serif">”</span>
-                 </div>
-               </div>
-             </div>
-          </div>
-
-          {/* Analysis Content */}
-          <div className="px-6 py-8 -mt-4 relative z-20">
-             {/* Tabs */}
-             <div className="flex gap-2 overflow-x-auto pb-6 no-scrollbar">
-                {[
-                  { id: 'base', label: '底色' },
-                  { id: 'lightShadow', label: '光影' },
-                  { id: 'partner', label: '致伴侣' },
-                  { id: 'origins', label: '溯源' },
-                  { id: 'reshape', label: '重塑' }
-                ].map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all shadow-sm ${
-                      activeTab === tab.id 
-                      ? 'bg-stone-800 text-white ring-2 ring-stone-800 ring-offset-2' 
-                      : 'bg-white text-stone-500 border border-stone-200'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Text Content */}
-              <div className="space-y-6 animate-fade-in pb-12">
-                {activeTab === 'base' && (
-                  <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100">
-                    <h4 className="font-bold text-sm mb-4 text-stone-800 flex items-center gap-2 uppercase tracking-wider">
-                       <BookOpen className="w-4 h-4" /> 亲密底色
-                    </h4>
-                    <p className="text-sm text-stone-600 leading-7 text-justify whitespace-pre-line">
-                      {displayData.tabs.base}
-                    </p>
+                  {/* Radar Chart */}
+                  <div className="w-full max-w-xs h-[320px] bg-white/10 backdrop-blur-sm rounded-3xl border border-white/20 p-4 shadow-inner relative">
+                      <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-3xl pointer-events-none"></div>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
+                          <defs>
+                            <linearGradient id="radarFill" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor={displayData.radarColor || "#fff"} stopOpacity={0.8}/>
+                              <stop offset="95%" stopColor={displayData.radarColor || "#fff"} stopOpacity={0.1}/>
+                            </linearGradient>
+                          </defs>
+                          <PolarGrid stroke="rgba(255,255,255,0.15)" />
+                          <PolarAngleAxis dataKey="subject" tick={{ fill: 'white', fontSize: 12, fontWeight: 500 }} />
+                          <PolarRadiusAxis angle={30} domain={[0, 8]} tick={false} axisLine={false} />
+                          <Radar
+                            name="My Desire"
+                            dataKey="A"
+                            stroke={displayData.radarColor || "#fff"}
+                            strokeWidth={2}
+                            fill="url(#radarFill)"
+                            fillOpacity={1}
+                          />
+                        </RadarChart>
+                      </ResponsiveContainer>
                   </div>
-                )}
 
-                {activeTab === 'lightShadow' && (
-                  <div className="space-y-4">
-                    {displayData.tabs.lightShadow.map((item, idx) => (
-                      <div key={idx} className="bg-white p-5 rounded-2xl border border-stone-100 shadow-sm">
-                        <h4 className={`text-xs font-bold mb-2 flex items-center gap-2 ${item.label.includes('(光)') ? 'text-amber-600' : 'text-slate-600'}`}>
-                          {item.label.includes('(光)') ? <Sun className="w-3 h-3" /> : <Moon className="w-3 h-3" />}
-                          {item.label.split(' ')[0]}
-                        </h4>
-                        <p className="text-sm text-stone-600 leading-relaxed">{item.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {activeTab === 'partner' && (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 mb-4 text-rose-500 font-bold text-xs bg-rose-50 w-fit px-3 py-1 rounded-full border border-rose-100">
-                      <Share2 className="w-3 h-3" />
-                      <span>转发给 TA，减少 80% 误会</span>
+                  {/* Verdict Quote */}
+                  <div className="mt-8 px-4">
+                    <div className="relative">
+                      <span className="absolute -top-2 -left-2 text-4xl opacity-30 font-serif">“</span>
+                      <p className="text-sm font-serif italic text-center leading-7 opacity-95 px-4">
+                        {displayData.quote}
+                      </p>
+                      <span className="absolute -bottom-4 -right-0 text-4xl opacity-30 font-serif">”</span>
                     </div>
-                    {displayData.tabs.partner.map((line, idx) => (
-                      <div key={idx} className="flex gap-4 text-sm text-stone-600 bg-white p-5 rounded-2xl border border-stone-100 shadow-sm">
-                        <span className={`font-serif italic text-xl ${displayData.accentColor}`}>{idx + 1}.</span>
-                        <span className="leading-relaxed pt-1">{line}</span>
-                      </div>
-                    ))}
                   </div>
-                )}
-
-                {activeTab === 'origins' && (
-                  <div className="bg-white p-6 rounded-2xl border border-stone-100 shadow-sm">
-                    <h4 className="font-bold text-sm mb-4 text-stone-800 flex items-center gap-2 uppercase tracking-wider">
-                       <Search className="w-4 h-4" /> 童年溯源
-                    </h4>
-                    <p className="text-sm text-stone-600 leading-7 text-justify whitespace-pre-line">
-                      {displayData.tabs.origins}
-                    </p>
-                  </div>
-                )}
-
-                {activeTab === 'reshape' && (
-                  <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100">
-                      <h4 className="font-bold text-sm mb-4 text-emerald-800 flex items-center gap-2 uppercase tracking-wider">
-                       <Zap className="w-4 h-4" /> 能量重塑
-                    </h4>
-                    <p className="text-sm text-emerald-700/80 leading-7 text-justify whitespace-pre-line">
-                      {displayData.tabs.reshape}
-                    </p>
-                  </div>
-                )}
+                </div>
               </div>
 
-              {/* Blessing */}
-              <div className="text-center px-4">
-                 <Feather className="w-6 h-6 text-stone-300 mx-auto mb-4" />
-                 <p className="font-serif italic text-stone-500 text-sm leading-8">
-                   {displayData.blessing}
-                 </p>
-                 <div className="w-12 h-[1px] bg-stone-200 mx-auto mt-8"></div>
-              </div>
+              {/* Analysis Content (Full) */}
+              <div className="px-6 py-8 -mt-4 relative z-20">
+                <div className="space-y-6">
+                    <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100">
+                      <h4 className="font-bold text-sm mb-4 text-stone-800 flex items-center gap-2 uppercase tracking-wider">
+                          <BookOpen className="w-4 h-4" /> 亲密底色
+                      </h4>
+                      <p className="text-sm text-stone-600 leading-7 text-justify whitespace-pre-line">
+                        {displayData.tabs.base}
+                      </p>
+                    </div>
 
-              {/* Restart Button */}
-              <button 
-                onClick={() => window.location.reload()}
-                className="w-full mt-12 py-4 bg-stone-900 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-xl"
-              >
-                <RefreshCw className="w-4 h-4" />
-                再测一次
-              </button>
+                    <div className="bg-white p-5 rounded-2xl border border-stone-100 shadow-sm">
+                        <h4 className="text-xs font-bold mb-4 flex items-center gap-2 text-amber-600">
+                          <Sun className="w-3 h-3" /> 你的光影图谱
+                        </h4>
+                        <div className="space-y-4">
+                          {displayData.tabs.lightShadow.map((item, idx) => (
+                            <div key={idx} className="border-b border-stone-50 pb-2 last:border-0">
+                              <span className={`text-xs font-bold mr-2 ${item.label.includes('(光)') ? 'text-amber-600' : 'text-slate-600'}`}>
+                                {item.label.split(' ')[0]}
+                              </span>
+                              <span className="text-xs text-stone-500">{item.text}</span>
+                            </div>
+                          ))}
+                        </div>
+                    </div>
+
+                    <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100">
+                        <h4 className="font-bold text-sm mb-4 text-emerald-800 flex items-center gap-2">
+                          <Zap className="w-4 h-4" /> 能量重塑建议
+                      </h4>
+                      <p className="text-sm text-emerald-700/80 leading-7 text-justify whitespace-pre-line">
+                        {displayData.tabs.reshape}
+                      </p>
+                    </div>
+                </div>
+
+                <div className="mt-12 text-center">
+                    <Feather className="w-6 h-6 text-stone-300 mx-auto mb-4" />
+                    <p className="font-serif italic text-stone-500 text-sm leading-8 max-w-xs mx-auto">
+                      {displayData.blessing}
+                    </p>
+                    <div className="w-12 h-[1px] bg-stone-200 mx-auto mt-8"></div>
+                    <p className="text-[10px] text-stone-300 mt-4 tracking-widest uppercase">柚子的心理小屋 · 原创出品</p>
+                </div>
+              </div>
           </div>
-        </div>
-      )}
 
-      {/* --- Footer --- */}
-      {(!showFinal && step !== 'result_card') && (
-        <footer className="py-6 text-center text-[10px] text-stone-300 tracking-widest uppercase border-t border-stone-100 mt-auto bg-white/50 backdrop-blur-sm">
-          柚子的心理小屋 原创（小红书同名）
-        </footer>
+          {/* Save Button (Floating) */}
+          <div className="fixed bottom-8 left-0 w-full px-6 z-50">
+            <button 
+              onClick={handleSavePoster}
+              disabled={saving}
+              className="w-full py-4 bg-stone-900 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-2xl"
+            >
+              {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              {saving ? '生成中...' : '保存结果海报'}
+            </button>
+          </div>
+
+        </div>
       )}
 
       <style jsx global>{`
@@ -841,17 +812,29 @@ export default function SoulScan_StainedGlass() {
           to { opacity: 1; transform: translateY(0); }
         }
         
-        /* 碎裂/闪白过渡动画 */
-        @keyframes crackReveal {
-          0% { opacity: 0; transform: scale(0.8); clip-path: polygon(0 0, 100% 0, 100% 0, 0 0); }
-          50% { opacity: 1; transform: scale(1.1); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
-          100% { opacity: 0; }
+        /* 剧烈晃动动画 */
+        @keyframes violent-shake {
+          0% { transform: rotateY(180deg) translate(0, 0) rotate(0deg); }
+          10% { transform: rotateY(180deg) translate(-3px, -3px) rotate(-2deg); }
+          20% { transform: rotateY(180deg) translate(3px, 3px) rotate(2deg); }
+          30% { transform: rotateY(180deg) translate(-5px, 3px) rotate(-3deg); }
+          40% { transform: rotateY(180deg) translate(5px, -3px) rotate(3deg); }
+          50% { transform: rotateY(180deg) translate(-3px, 5px) rotate(-2deg); }
+          60% { transform: rotateY(180deg) translate(3px, -5px) rotate(2deg); }
+          70% { transform: rotateY(180deg) translate(2px, 2px) rotate(-1deg); }
+          80% { transform: rotateY(180deg) translate(-2px, -2px) rotate(1deg); }
+          90% { transform: rotateY(180deg) translate(1px, 1px) rotate(0deg); }
+          100% { transform: rotateY(180deg) translate(0, 0) rotate(0deg); }
         }
 
         .animate-slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-slide-up-delayed { animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; opacity: 0; }
         .animate-fade-in { animation: slideUp 0.8s ease-out forwards; }
-        .animate-crack-reveal { animation: crackReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        
+        /* 持续1秒的剧烈晃动 */
+        .animate-violent-shake {
+          animation: violent-shake 0.8s cubic-bezier(.36,.07,.19,.97) both;
+        }
       `}</style>
     </div>
   );
