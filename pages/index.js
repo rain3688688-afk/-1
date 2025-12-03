@@ -13,14 +13,14 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// 章节配置 (保持不变)
+// 章节配置
 const PARTS_CONFIG = [
   { startIndex: 0, title: "Part 1：现实切片", quote: "“爱不仅仅是誓言，更是下意识的本能。”", desc: "先让我们从生活的琐碎里，捕捉你在亲密关系中那些最真实的条件反射。" },
   { startIndex: 16, title: "Part 2：情绪暗涌", quote: "“日常的表象之下，藏着我们未曾说出口的渴望。”", desc: "现在的你，已经脱去了社交伪装。让我们再往下潜一点，去触碰那些让你感到不安、委屈或满足的瞬间。" },
   { startIndex: 32, title: "Part 3：灵魂图腾", quote: "“语言无法抵达的地方，直觉可以。”", desc: "欢迎来到你内心的最深处。接下来的问题不需要逻辑，仅凭直觉，选出你第一眼看到的那个答案。" }
 ];
 
-// 题目数据 (完整48题)
+// 题目数据
 const QUESTIONS = [
   { id: 1, question: "周末下午，伴侣突然失联了3个小时，发消息也没回。那一刻，你最真实的反应是？", options: [{ text: "下意识翻聊天记录，看是不是我说错话了？", type: "确定感" }, { text: "挺好的，刚好没人管我，专心做自己的事。", type: "自由感" }, { text: "推测原因，准备联系上后问清楚去向。", type: "掌控感" }, { text: "心里堵得慌。如果他够在意我，怎么舍得让我空等？", type: "被偏爱" }] },
   { id: 2, question: "伴侣最近工作压力极大，回家情绪低落一言不发。此时你心里的念头是？", options: [{ text: "看着心疼。倒杯水、切水果，让他知道有人照顾。", type: "被需要" }, { text: "他应该很烦。那我就识趣点躲远点，等他缓过来。", type: "安全距离" }, { text: "死气沉沉的沉默很难受。希望能聊聊。", type: "精神共鸣" }, { text: "在意接下来的安排：今晚怎么吃？计划还作数吗？", type: "秩序感" }] },
@@ -328,6 +328,21 @@ export default function SoulScan_StainedGlass() {
       if (error || !data) {
         throw new Error('未找到该兑换码');
       }
+
+      // 2. 检查次数：如果“已用次数” >= “最大次数”，说明失效了
+      if (data.used_count >= data.max_uses) {
+        throw new Error('该兑换码已被使用，请购买新码');
+      }
+
+      // 3. 扣费环节：把数据库里的 used_count 加 1
+      const { error: updateError } = await supabase
+        .from('codes')
+        .update({ used_count: data.used_count + 1 })
+        .eq('code', inputCode);
+
+      if (updateError) {
+        throw new Error('系统繁忙，请重试');
+      }
       
       setIsLoading(false);
       handlePartTransition(0); // 验证通过！
@@ -335,7 +350,7 @@ export default function SoulScan_StainedGlass() {
     } catch (err) {
       console.error(err);
       setIsLoading(false);
-      setErrorMsg('兑换码无效或已被使用');
+      setErrorMsg(err.message || '兑换码无效或已被使用');
     }
   };
 
