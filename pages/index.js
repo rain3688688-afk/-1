@@ -1,17 +1,21 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, Download, ChevronRight, BookOpen, Key, Feather, Search } from 'lucide-react';
+import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, Download, ChevronRight, BookOpen, Key, Feather, Search, Mail, Link as LinkIcon, Copy } from 'lucide-react';
 import Head from 'next/head';
 import { createClient } from '@supabase/supabase-js';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
-// 👇 引入截图插件
 import html2canvas from 'html2canvas';
 
-// --- 初始化 Supabase ---
+// --- 1. 初始化配置 ---
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+// 你的小红书店铺口令/搜索词
+const XIAOHONGSHU_KEYWORD = "柚子的心理小屋";
+
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // 章节配置
 const PARTS_CONFIG = [
@@ -20,7 +24,7 @@ const PARTS_CONFIG = [
   { startIndex: 32, title: "Part 3：灵魂图腾", quote: "“语言无法抵达的地方，直觉可以。”", desc: "欢迎来到你内心的最深处。接下来的问题不需要逻辑，仅凭直觉，选出你第一眼看到的那个答案。" }
 ];
 
-// 题目数据 (精简展示，逻辑不变)
+// 题目数据
 const QUESTIONS = [
   { id: 1, question: "周末下午，伴侣突然失联了3个小时，发消息也没回。那一刻，你最真实的反应是？", options: [{ text: "下意识翻聊天记录，看是不是我说错话了？", type: "确定感" }, { text: "挺好的，刚好没人管我，专心做自己的事。", type: "自由感" }, { text: "推测原因，准备联系上后问清楚去向。", type: "掌控感" }, { text: "心里堵得慌。如果他够在意我，怎么舍得让我空等？", type: "被偏爱" }] },
   { id: 2, question: "伴侣最近工作压力极大，回家情绪低落一言不发。此时你心里的念头是？", options: [{ text: "看着心疼。倒杯水、切水果，让他知道有人照顾。", type: "被需要" }, { text: "他应该很烦。那我就识趣点躲远点，等他缓过来。", type: "安全距离" }, { text: "死气沉沉的沉默很难受。希望能聊聊。", type: "精神共鸣" }, { text: "在意接下来的安排：今晚怎么吃？计划还作数吗？", type: "秩序感" }] },
@@ -72,7 +76,7 @@ const QUESTIONS = [
   { id: 48, question: "最后，请凭直觉填空：爱是______。", options: [{ text: "定数。唯一不会更改的答案。", type: "确定感" }, { text: "认出。茫茫人海辨认出彼此是同类。", type: "精神共鸣" }, { text: "成全。不捆绑，拥有更广阔天空。", type: "自由感" }, { text: "治愈。看见你的破碎，甘愿做药。", type: "被需要" }] }
 ];
 
-// 结果数据 (完整版，包含所有文案)
+// 结果数据 (完整版)
 const RESULTS = {
   "确定感": {
     type: "确定感",
@@ -311,7 +315,6 @@ const RESULTS = {
   }
 };
 
-// 雷达图的维度
 const ALL_DIMENSIONS = ["确定感", "被需要", "掌控感", "被偏爱", "精神共鸣", "自由感", "安全距离", "秩序感"];
 
 export default function SoulScan_StainedGlass() {
@@ -326,15 +329,52 @@ export default function SoulScan_StainedGlass() {
   const [results, setResults] = useState({ primary: null });
   const [currentPart, setCurrentPart] = useState(null);
   
-  // 动画状态
+  // 动画与分享状态
   const [flipped, setFlipped] = useState(false);
-  const [isExploding, setIsExploding] = useState(false); // 爆炸白光
+  const [isExploding, setIsExploding] = useState(false);
   const [showFinal, setShowFinal] = useState(false);
   const [chartData, setChartData] = useState([]);
   const [activeTab, setActiveTab] = useState('base');
   const [saving, setSaving] = useState(false);
+  // 信封模式相关
+  const [envelopeMode, setEnvelopeMode] = useState(false);
+  const [letterOpened, setLetterOpened] = useState(false);
+  const [senderResult, setSenderResult] = useState(null);
+  const [typedText, setTypedText] = useState("");
 
-  // --- 1. 登录交互 ---
+  // --- 初始化逻辑 ---
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const letterKey = params.get('letter');
+    
+    if (letterKey && RESULTS[letterKey]) {
+      setEnvelopeMode(true);
+      setSenderResult(letterKey);
+      // 准备朋友的雷达图数据
+      const mockData = ALL_DIMENSIONS.map(type => ({
+        subject: type,
+        A: type === letterKey ? 8 : 4,
+        fullMark: 8
+      }));
+      setChartData(mockData);
+    }
+  }, []);
+
+  // --- 打字机效果 ---
+  useEffect(() => {
+    if (letterOpened && senderResult) {
+      const fullText = `亲爱的，\n我刚刚窥探了自己的内心...\n我的欲望底色是：【${senderResult}】\n\n你也想看看，\n我们灵魂深处的契合度吗？`;
+      let i = 0;
+      const timer = setInterval(() => {
+        setTypedText(fullText.slice(0, i));
+        i++;
+        if (i > fullText.length) clearInterval(timer);
+      }, 50);
+      return () => clearInterval(timer);
+    }
+  }, [letterOpened, senderResult]);
+
+  // --- 登录交互 (1次性码核销) ---
   const handleVerify = async () => {
     setErrorMsg('');
     const inputCode = code.trim();
@@ -371,6 +411,7 @@ export default function SoulScan_StainedGlass() {
       }
       
       setIsLoading(false);
+      setEnvelopeMode(false); // 退出信封模式，开始答题
       handlePartTransition(0);
 
     } catch (err) {
@@ -422,50 +463,116 @@ export default function SoulScan_StainedGlass() {
     }, 2500);
   };
 
-  // 剧烈晃动 -> 爆炸 -> 结果
   const handleCardClick = () => {
     if (flipped) return;
     setFlipped(true);
-    
-    // 1. 翻转后停留，开始积蓄能量 (晃动)
     setTimeout(() => {
-      setIsExploding(true); // 触发白光爆炸
-      
-      // 2. 爆炸白光闪过，切换界面
+      setIsExploding(true);
       setTimeout(() => {
         setShowFinal(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 600); // 在白光最亮的时候切换
+      }, 600);
     }, 1800);
   };
 
-  // 生成海报功能
+  // 1. 生成纯净海报 (无二维码)
   const handleSavePoster = async () => {
-    const element = document.getElementById('poster-area');
+    const element = document.getElementById('clean-poster-area');
     if (!element) return;
     
     setSaving(true);
     try {
       const canvas = await html2canvas(element, {
         useCORS: true,
-        scale: 2, // 高清
+        scale: 2,
         backgroundColor: '#ffffff',
       });
-      
       const link = document.createElement('a');
-      link.download = `我的情感欲望-${results.primary}.png`;
+      link.download = `我的欲望底色-${results.primary}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
+      alert("图片已保存！这张图很纯净，快去小红书评论区晒出你的结果吧~");
     } catch (err) {
-      console.error('Poster generation failed', err);
-      alert('保存失败，请尝试截屏分享');
+      console.error('Poster failed', err);
     }
     setSaving(false);
+  };
+
+  // 2. 复制信封链接
+  const handleCopyLink = () => {
+    const link = `https://www.qingganyuwang.top/?letter=${results.primary}`;
+    navigator.clipboard.writeText(link).then(() => {
+      alert("💌 链接已复制！\n\n请私发给微信/QQ好友（请勿发到小红书，会被屏蔽哦）");
+    });
+  };
+
+  const handleGoToXiaohongshu = () => {
+    navigator.clipboard.writeText(XIAOHONGSHU_KEYWORD);
+    alert(`已复制口令：${XIAOHONGSHU_KEYWORD}\n请前往小红书搜索购买`);
+    window.location.href = "https://www.xiaohongshu.com";
   };
 
   const progress = ((currentQIndex + 1) / QUESTIONS.length) * 100;
   const displayData = RESULTS[results.primary];
 
+  // --- 渲染部分 ---
+  
+  // 1. 信封模式 (B用户视角)
+  if (envelopeMode && RESULTS[senderResult]) {
+    const senderData = RESULTS[senderResult];
+    return (
+      <div className="min-h-screen bg-stone-900 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10" />
+        
+        {!letterOpened ? (
+          <div 
+            onClick={() => setLetterOpened(true)}
+            className="cursor-pointer animate-bounce-slow"
+          >
+            <div className="w-64 h-48 bg-rose-100 rounded-lg shadow-2xl relative flex items-center justify-center border-4 border-rose-200">
+              <Mail className="w-16 h-16 text-rose-400" />
+              <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">
+                New
+              </div>
+            </div>
+            <p className="text-stone-400 text-center mt-8 text-sm tracking-widest">有一封来自朋友的灵魂回信...</p>
+            <p className="text-stone-500 text-center mt-2 text-xs">(点击拆启)</p>
+          </div>
+        ) : (
+          <div className="w-full max-w-md bg-white rounded-xl p-8 shadow-2xl animate-slide-up relative">
+             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-rose-400 to-purple-400 rounded-t-xl" />
+             <div className="min-h-[200px] font-serif text-stone-700 leading-8 whitespace-pre-line mb-8">
+               {typedText}
+             </div>
+             
+             {/* 朋友的雷达图 */}
+             {typedText.length > 20 && (
+               <div className="w-full h-[200px] mb-8 animate-fade-in">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
+                      <PolarGrid stroke="#e5e7eb" />
+                      <PolarAngleAxis dataKey="subject" tick={{ fill: '#9ca3af', fontSize: 10 }} />
+                      <PolarRadiusAxis angle={30} domain={[0, 8]} tick={false} axisLine={false} />
+                      <Radar name="Friend" dataKey="A" stroke={senderData.radarColor} fill={senderData.radarColor} fillOpacity={0.5} />
+                    </RadarChart>
+                  </ResponsiveContainer>
+               </div>
+             )}
+
+             <button 
+               onClick={() => setEnvelopeMode(false)} 
+               className="w-full py-4 bg-stone-900 text-white rounded-xl text-sm font-bold shadow-lg hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"
+             >
+               <Sparkles className="w-4 h-4" />
+               我也要测 (查看我的欲望)
+             </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // 2. 正常流程
   return (
     <div className="min-h-screen bg-[#FDFBF9] text-[#4A4A4A] font-sans selection:bg-rose-100 flex flex-col overflow-x-hidden">
       
@@ -488,7 +595,7 @@ export default function SoulScan_StainedGlass() {
         </nav>
       )}
 
-      {/* --- Landing Page --- */}
+      {/* Landing Page */}
       {step === 'landing' && (
         <div className="flex-1 flex flex-col relative overflow-hidden">
           <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-rose-200/40 to-orange-100/40 blur-[80px]" />
@@ -498,66 +605,36 @@ export default function SoulScan_StainedGlass() {
             <div className="mb-8 p-4 bg-white/50 backdrop-blur-sm rounded-2xl shadow-sm border border-white/60">
                <Lock className="w-8 h-8 text-stone-700 opacity-80" />
             </div>
-            
             <div className="text-center space-y-4 mb-12">
-              <h1 className="text-4xl font-serif font-bold text-stone-800 tracking-wide">
-                情感欲望图鉴
-              </h1>
-              <p className="text-sm font-light text-stone-500 tracking-[0.2em] uppercase">
-                Unlock Your Hidden Desires
-              </p>
-              <p className="text-sm text-stone-600 leading-relaxed max-w-xs mx-auto pt-4">
-                48道潜意识扫描，揭示你的双重欲望。<br/>
-                探索那些未被说出口的渴望。
-              </p>
+              <h1 className="text-4xl font-serif font-bold text-stone-800 tracking-wide">情感欲望图鉴</h1>
+              <p className="text-sm font-light text-stone-500 tracking-[0.2em] uppercase">Unlock Your Hidden Desires</p>
             </div>
 
             <div className="w-full max-w-xs space-y-4 min-h-[140px]">
               {!showInput ? (
-                <button 
-                  onClick={() => setShowInput(true)}
-                  className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold text-sm shadow-xl hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  <Key className="w-4 h-4" />
-                  我已有兑换码
-                </button>
+                <div className="space-y-3">
+                  <button onClick={() => setShowInput(true)} className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold text-sm shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
+                    <Key className="w-4 h-4" /> 我有兑换码
+                  </button>
+                  <button onClick={handleGoToXiaohongshu} className="w-full bg-rose-50 text-rose-600 border border-rose-100 py-4 rounded-xl font-bold text-sm hover:bg-rose-100 transition-colors flex items-center justify-center gap-2">
+                    <Search className="w-4 h-4" /> 没有码？去小红书获取
+                  </button>
+                </div>
               ) : (
                 <div className="space-y-3 animate-slide-up">
-                  <input 
-                    type="text" 
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    placeholder="请输入你在小红书获得的兑换码"
-                    className="w-full p-4 bg-white/80 border border-stone-200 rounded-xl outline-none text-center focus:ring-2 focus:ring-rose-200 transition-all placeholder:text-xs"
-                  />
-                  <button 
-                    onClick={handleVerify}
-                    disabled={isLoading}
-                    className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold text-sm shadow-lg hover:bg-stone-800 transition-colors flex items-center justify-center gap-2"
-                  >
+                  <input type="text" value={code} onChange={(e) => setCode(e.target.value)} placeholder="请输入兑换码" className="w-full p-4 bg-white/80 border border-stone-200 rounded-xl outline-none text-center focus:ring-2 focus:ring-rose-200 transition-all placeholder:text-xs" />
+                  <button onClick={handleVerify} disabled={isLoading} className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold text-sm shadow-lg hover:bg-stone-800 transition-colors flex items-center justify-center gap-2">
                     {isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : '开始解锁'}
                   </button>
-                  {errorMsg && (
-                    <p className="text-xs text-red-500 text-center bg-red-50 py-2 rounded-lg">
-                      {errorMsg}
-                    </p>
-                  )}
+                  {errorMsg && <p className="text-xs text-red-500 text-center bg-red-50 py-2 rounded-lg">{errorMsg}</p>}
                 </div>
               )}
-            </div>
-
-            <div className="mt-16 text-center">
-              <p className="text-xs text-stone-400 mb-2">如何获得兑换码？</p>
-              <div className="inline-flex items-center gap-1 text-xs text-rose-500 bg-rose-50 px-3 py-1.5 rounded-full cursor-pointer hover:bg-rose-100 transition-colors">
-                <Search className="w-3 h-3" />
-                <span>前往小红书搜索【柚子的心理小屋】</span>
-              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* --- Part Intro --- */}
+      {/* Part Intro & Quiz */}
       {step === 'partIntro' && currentPart && (
         <div className="flex-1 bg-stone-900 flex flex-col justify-center items-center text-center p-8 animate-fade-in relative overflow-hidden">
            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10" />
@@ -565,54 +642,30 @@ export default function SoulScan_StainedGlass() {
              <span className="text-rose-300/80 text-[10px] tracking-[0.4em] uppercase mb-6 block">Chapter</span>
              <h2 className="text-2xl font-serif font-bold mb-6 text-rose-50 tracking-wide">{currentPart.title}</h2>
              <div className="w-8 h-1 bg-rose-500/50 mx-auto mb-8 rounded-full"></div>
-             <p className="text-lg font-serif italic text-white/90 mb-8 leading-relaxed px-4">
-               {currentPart.quote}
-             </p>
-             <p className="text-xs text-stone-400 leading-6 mb-12 px-6">
-               {currentPart.desc}
-             </p>
-             <button 
-               onClick={() => setStep('quiz')}
-               className="group flex items-center gap-2 mx-auto text-rose-200 border border-rose-200/20 px-8 py-3 rounded-full hover:bg-rose-200/10 transition-all text-xs tracking-widest"
-             >
-               CONTINUE
-               <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+             <p className="text-lg font-serif italic text-white/90 mb-8 leading-relaxed px-4">{currentPart.quote}</p>
+             <button onClick={() => setStep('quiz')} className="group flex items-center gap-2 mx-auto text-rose-200 border border-rose-200/20 px-8 py-3 rounded-full hover:bg-rose-200/10 transition-all text-xs tracking-widest">
+               CONTINUE <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
              </button>
            </div>
         </div>
       )}
 
-      {/* --- Quiz --- */}
       {step === 'quiz' && (
         <div className="flex-1 flex flex-col pt-24 px-6 animate-slide-up max-w-md mx-auto w-full">
           <div className="w-full h-1 bg-stone-100 rounded-full mb-10 overflow-hidden">
-            <div 
-              className="h-full bg-rose-400 transition-all duration-500 ease-out"
-              style={{ width: `${progress}%` }}
-            />
+            <div className="h-full bg-rose-400 transition-all duration-500 ease-out" style={{ width: `${progress}%` }} />
           </div>
           <div className="flex-1 flex flex-col justify-center pb-20">
              <div className="mb-2">
-               <span className="text-[10px] font-bold tracking-widest uppercase text-rose-400 bg-rose-50 px-2 py-1 rounded inline-block mb-4">
-                 {currentQIndex < 16 ? 'Reality' : currentQIndex < 32 ? 'Emotion' : 'Soul'}
-               </span>
-               <h2 className="text-lg font-serif font-medium leading-relaxed text-stone-800">
-                 {QUESTIONS[currentQIndex].question}
-               </h2>
+               <span className="text-[10px] font-bold tracking-widest uppercase text-rose-400 bg-rose-50 px-2 py-1 rounded inline-block mb-4">{currentQIndex < 16 ? 'Reality' : currentQIndex < 32 ? 'Emotion' : 'Soul'}</span>
+               <h2 className="text-lg font-serif font-medium leading-relaxed text-stone-800">{QUESTIONS[currentQIndex].question}</h2>
              </div>
-             
              <div className="space-y-3 mt-8">
                {QUESTIONS[currentQIndex].options.map((opt, idx) => (
-                 <button
-                   key={idx}
-                   onClick={() => handleAnswer(opt.type)}
-                   className="w-full text-left p-5 bg-white border border-stone-100 rounded-2xl shadow-sm hover:border-rose-300 hover:shadow-md hover:bg-rose-50/30 transition-all duration-200 active:scale-[0.98] group relative overflow-hidden"
-                 >
+                 <button key={idx} onClick={() => handleAnswer(opt.type)} className="w-full text-left p-5 bg-white border border-stone-100 rounded-2xl shadow-sm hover:border-rose-300 hover:shadow-md hover:bg-rose-50/30 transition-all duration-200 active:scale-[0.98] group relative overflow-hidden">
                    <div className="relative z-10 flex items-start gap-3">
                      <div className="w-4 h-4 rounded-full border border-stone-300 mt-0.5 group-hover:border-rose-400 group-hover:bg-rose-400 flex-shrink-0 transition-colors" />
-                     <span className="text-sm text-stone-600 group-hover:text-stone-900 leading-relaxed">
-                       {opt.text}
-                     </span>
+                     <span className="text-sm text-stone-600 group-hover:text-stone-900 leading-relaxed">{opt.text}</span>
                    </div>
                  </button>
                ))}
@@ -621,54 +674,32 @@ export default function SoulScan_StainedGlass() {
         </div>
       )}
 
-      {/* --- Analysis --- */}
       {step === 'analyzing' && (
         <div className="flex-1 flex flex-col justify-center items-center text-center bg-stone-900 text-white">
           <div className="relative w-24 h-24">
             <div className="absolute inset-0 border-2 border-stone-800 rounded-full" />
             <div className="absolute inset-0 border-2 border-rose-400 rounded-full border-t-transparent animate-spin" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-rose-300 animate-pulse" />
-            </div>
+            <div className="absolute inset-0 flex items-center justify-center"><Sparkles className="w-8 h-8 text-rose-300 animate-pulse" /></div>
           </div>
           <h3 className="mt-8 text-base font-serif font-bold text-rose-50 tracking-wide">生成欲望图谱...</h3>
-          <p className="text-[10px] text-stone-500 mt-2 font-mono tracking-widest uppercase">Calculating</p>
         </div>
       )}
 
-      {/* --- Result Step 1: Card Flip + Explosion --- */}
+      {/* Result Step 1: Card Flip + Crack */}
       {step === 'result_card' && !showFinal && (
         <div className="flex-1 flex flex-col items-center justify-center animate-fade-in p-6 bg-stone-900 relative overflow-hidden">
-          
-          {/* 白光爆炸遮罩 */}
           <div className={`absolute inset-0 z-50 bg-white pointer-events-none transition-opacity duration-1000 ${isExploding ? 'opacity-100' : 'opacity-0'}`}></div>
-
-          <p className={`text-center text-[10px] text-stone-400 mb-8 tracking-[0.2em] uppercase transition-opacity ${flipped ? 'opacity-0' : 'opacity-100'}`}>
-             Tap to Reveal
-          </p>
-          
-          <div 
-            className="relative w-full max-w-sm aspect-[4/5] perspective-1000 cursor-pointer group"
-            onClick={handleCardClick}
-          >
+          <p className={`text-center text-[10px] text-stone-400 mb-8 tracking-[0.2em] uppercase transition-opacity ${flipped ? 'opacity-0' : 'opacity-100'}`}>Tap to Reveal</p>
+          <div className="relative w-full max-w-sm aspect-[4/5] perspective-1000 cursor-pointer group" onClick={handleCardClick}>
             <div className={`relative w-full h-full duration-1000 transform-style-3d transition-transform ${flipped ? 'rotate-y-180' : ''} ${flipped && !isExploding ? 'animate-violent-shake' : ''}`}>
-              
-              {/* Back (封面) */}
               <div className="absolute inset-0 backface-hidden bg-stone-800 rounded-[2rem] shadow-2xl border border-white/10 flex flex-col items-center justify-center">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20" />
                 <Sparkles className="w-16 h-16 text-rose-200/50 mb-6 animate-pulse" />
                 <h3 className="text-rose-100/90 text-lg font-serif tracking-widest">点击揭晓</h3>
               </div>
-
-              {/* Front (翻转后暂留) */}
-              <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col justify-between text-white p-8 
-                bg-gradient-to-br ${RESULTS[results.primary].cardStyle} backdrop-blur-xl border border-white/30`}>
-                <div className="absolute inset-0 bg-white/10 mix-blend-overlay" />
-                
+              <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col justify-between text-white p-8 bg-gradient-to-br ${RESULTS[results.primary].cardStyle} backdrop-blur-xl border border-white/30`}>
                 <div className="relative z-10 text-center mt-20">
-                    <div className="w-20 h-20 mx-auto mb-6 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
-                      {RESULTS[results.primary].icon}
-                    </div>
+                    <div className="w-20 h-20 mx-auto mb-6 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">{RESULTS[results.primary].icon}</div>
                     <h2 className="text-4xl font-serif font-bold mb-2 drop-shadow-md">{results.primary}</h2>
                 </div>
               </div>
@@ -677,122 +708,81 @@ export default function SoulScan_StainedGlass() {
         </div>
       )}
 
-      {/* --- Result Step 2: Final Share Page (Poster) --- */}
+      {/* Result Step 2: Final Page & Dual Share */}
       {showFinal && displayData && (
-        <div className="flex-1 flex flex-col animate-fade-in bg-white pb-12">
+        <div className="flex-1 flex flex-col animate-fade-in bg-white pb-24">
           
-          {/* 这个区域会被截图 */}
-          <div id="poster-area" className="bg-white">
-              {/* Header Area with Radar */}
-              <div className={`pt-12 pb-10 px-6 rounded-b-[3rem] shadow-xl bg-gradient-to-b ${displayData.cardStyle} text-white relative overflow-hidden`}>
+          {/* 📸 专门用于生成【纯净海报】的区域 */}
+          <div id="clean-poster-area" className="bg-white relative">
+              <div className={`pt-16 pb-12 px-6 rounded-b-[3rem] shadow-xl bg-gradient-to-b ${displayData.cardStyle} text-white relative overflow-hidden`}>
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10" />
                 <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full bg-white/10 blur-[60px]" />
                 
                 <div className="relative z-10 flex flex-col items-center">
-                  <p className="text-[10px] font-medium opacity-80 tracking-[0.3em] mb-3 uppercase border border-white/20 px-3 py-1 rounded-full bg-white/5 backdrop-blur-md">
-                    你的情感欲望是
-                  </p>
-                  <h1 className="text-5xl font-serif font-bold mb-8 drop-shadow-lg tracking-wider text-center">
-                    {results.primary}
-                  </h1>
-
-                  {/* Radar Chart */}
-                  <div className="w-full max-w-xs h-[320px] bg-white/10 backdrop-blur-sm rounded-3xl border border-white/20 p-4 shadow-inner relative">
-                      <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-3xl pointer-events-none"></div>
+                  <p className="text-[10px] font-medium opacity-80 tracking-[0.3em] mb-4 uppercase border border-white/20 px-3 py-1 rounded-full bg-white/5 backdrop-blur-md">你的情感欲望是</p>
+                  <h1 className="text-6xl font-serif font-bold mb-8 drop-shadow-lg tracking-wider text-center">{results.primary}</h1>
+                  
+                  <div className="w-full max-w-xs h-[300px] bg-white/10 backdrop-blur-sm rounded-3xl border border-white/20 p-4 shadow-inner relative mb-8">
                       <ResponsiveContainer width="100%" height="100%">
                         <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
-                          <defs>
-                            <linearGradient id="radarFill" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor={displayData.radarColor || "#fff"} stopOpacity={0.8}/>
-                              <stop offset="95%" stopColor={displayData.radarColor || "#fff"} stopOpacity={0.1}/>
-                            </linearGradient>
-                          </defs>
                           <PolarGrid stroke="rgba(255,255,255,0.15)" />
-                          <PolarAngleAxis dataKey="subject" tick={{ fill: 'white', fontSize: 12, fontWeight: 500 }} />
+                          <PolarAngleAxis dataKey="subject" tick={{ fill: 'white', fontSize: 10, fontWeight: 500 }} />
                           <PolarRadiusAxis angle={30} domain={[0, 8]} tick={false} axisLine={false} />
-                          <Radar
-                            name="My Desire"
-                            dataKey="A"
-                            stroke={displayData.radarColor || "#fff"}
-                            strokeWidth={2}
-                            fill="url(#radarFill)"
-                            fillOpacity={1}
-                          />
+                          <Radar name="My Desire" dataKey="A" stroke={displayData.radarColor || "#fff"} strokeWidth={2} fill={displayData.radarColor || "#fff"} fillOpacity={0.5} />
                         </RadarChart>
                       </ResponsiveContainer>
                   </div>
 
-                  {/* Verdict Quote */}
-                  <div className="mt-8 px-4">
-                    <div className="relative">
-                      <span className="absolute -top-2 -left-2 text-4xl opacity-30 font-serif">“</span>
-                      <p className="text-sm font-serif italic text-center leading-7 opacity-95 px-4">
-                        {displayData.quote}
-                      </p>
-                      <span className="absolute -bottom-4 -right-0 text-4xl opacity-30 font-serif">”</span>
-                    </div>
+                  <div className="relative px-6">
+                    <span className="absolute -top-4 -left-0 text-5xl opacity-20 font-serif">“</span>
+                    <p className="text-base font-serif italic text-center leading-8 opacity-95 px-2">{displayData.quote}</p>
+                    <span className="absolute -bottom-6 -right-0 text-5xl opacity-20 font-serif">”</span>
                   </div>
                 </div>
               </div>
 
-              {/* Analysis Content (Full) */}
-              <div className="px-6 py-8 -mt-4 relative z-20">
-                <div className="space-y-6">
-                    <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100">
-                      <h4 className="font-bold text-sm mb-4 text-stone-800 flex items-center gap-2 uppercase tracking-wider">
-                          <BookOpen className="w-4 h-4" /> 亲密底色
-                      </h4>
-                      <p className="text-sm text-stone-600 leading-7 text-justify whitespace-pre-line">
-                        {displayData.tabs.base}
-                      </p>
-                    </div>
-
-                    <div className="bg-white p-5 rounded-2xl border border-stone-100 shadow-sm">
-                        <h4 className="text-xs font-bold mb-4 flex items-center gap-2 text-amber-600">
-                          <Sun className="w-3 h-3" /> 你的光影图谱
-                        </h4>
-                        <div className="space-y-4">
-                          {displayData.tabs.lightShadow.map((item, idx) => (
-                            <div key={idx} className="border-b border-stone-50 pb-2 last:border-0">
-                              <span className={`text-xs font-bold mr-2 ${item.label.includes('(光)') ? 'text-amber-600' : 'text-slate-600'}`}>
-                                {item.label.split(' ')[0]}
-                              </span>
-                              <span className="text-xs text-stone-500">{item.text}</span>
-                            </div>
-                          ))}
-                        </div>
-                    </div>
-
-                    <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100">
-                        <h4 className="font-bold text-sm mb-4 text-emerald-800 flex items-center gap-2">
-                          <Zap className="w-4 h-4" /> 能量重塑建议
-                      </h4>
-                      <p className="text-sm text-emerald-700/80 leading-7 text-justify whitespace-pre-line">
-                        {displayData.tabs.reshape}
-                      </p>
-                    </div>
-                </div>
-
-                <div className="mt-12 text-center">
-                    <Feather className="w-6 h-6 text-stone-300 mx-auto mb-4" />
-                    <p className="font-serif italic text-stone-500 text-sm leading-8 max-w-xs mx-auto">
-                      {displayData.blessing}
-                    </p>
-                    <div className="w-12 h-[1px] bg-stone-200 mx-auto mt-8"></div>
-                    <p className="text-[10px] text-stone-300 mt-4 tracking-widest uppercase">柚子的心理小屋 · 原创出品</p>
-                </div>
+              <div className="px-6 py-6 text-center bg-white">
+                  <p className="text-[10px] text-stone-300 tracking-[0.4em] uppercase">柚子的心理小屋 · 原创出品</p>
               </div>
           </div>
+          {/* 📸 纯净海报区域结束 */}
 
-          {/* Save Button (Floating) */}
-          <div className="fixed bottom-8 left-0 w-full px-6 z-50">
+          {/* 下方详细内容 (不截图) */}
+          <div className="px-6 py-2 relative z-20">
+             <div className="flex gap-2 overflow-x-auto pb-6 no-scrollbar">
+                {[{ id: 'base', label: '底色' }, { id: 'lightShadow', label: '光影' }, { id: 'partner', label: '致伴侣' }, { id: 'origins', label: '溯源' }, { id: 'reshape', label: '重塑' }].map(tab => (
+                  <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all shadow-sm ${activeTab === tab.id ? 'bg-stone-800 text-white ring-2 ring-stone-800 ring-offset-2' : 'bg-white text-stone-500 border border-stone-200'}`}>
+                    {tab.label}
+                  </button>
+                ))}
+             </div>
+
+             <div className="space-y-6 animate-fade-in pb-20">
+                {/* 内容渲染逻辑保持不变，此处省略具体标签以节省长度 */}
+                {activeTab === 'base' && <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100"><p className="text-sm text-stone-600 leading-7 whitespace-pre-line">{displayData.tabs.base}</p></div>}
+                {activeTab === 'lightShadow' && <div className="space-y-4">{displayData.tabs.lightShadow.map((item,i)=><div key={i} className="bg-white p-5 rounded-2xl border border-stone-100"><span className="text-xs font-bold text-amber-600 block mb-1">{item.label.split(' ')[0]}</span><p className="text-sm text-stone-600">{item.text}</p></div>)}</div>}
+                {activeTab === 'partner' && <div className="space-y-3">{displayData.tabs.partner.map((l,i)=><div key={i} className="bg-white p-4 rounded-xl border border-stone-100 text-sm text-stone-600">{l}</div>)}</div>}
+                {activeTab === 'origins' && <div className="bg-white p-6 rounded-2xl border border-stone-100 text-sm text-stone-600 leading-7 whitespace-pre-line">{displayData.tabs.origins}</div>}
+                {activeTab === 'reshape' && <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 text-sm text-emerald-800 leading-7 whitespace-pre-line">{displayData.tabs.reshape}</div>}
+             </div>
+          </div>
+
+          {/* 双按钮悬浮栏 */}
+          <div className="fixed bottom-0 left-0 w-full px-4 py-4 bg-white/90 backdrop-blur-md border-t border-stone-100 z-50 flex gap-3">
             <button 
               onClick={handleSavePoster}
-              disabled={saving}
-              className="w-full py-4 bg-stone-900 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-2xl"
+              className="flex-1 py-3 bg-stone-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-xl active:scale-95 transition-transform"
             >
-              {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-              {saving ? '生成中...' : '保存结果海报'}
+              <Download className="w-4 h-4" />
+              生成结果卡片 (防折叠)
+            </button>
+            
+            <button 
+              onClick={handleCopyLink}
+              className="flex-1 py-3 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+            >
+              <LinkIcon className="w-4 h-4" />
+              复制心之密语 (微信用)
             </button>
           </div>
 
@@ -807,34 +797,18 @@ export default function SoulScan_StainedGlass() {
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* 剧烈晃动动画 */
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes violent-shake {
           0% { transform: rotateY(180deg) translate(0, 0) rotate(0deg); }
-          10% { transform: rotateY(180deg) translate(-3px, -3px) rotate(-2deg); }
-          20% { transform: rotateY(180deg) translate(3px, 3px) rotate(2deg); }
-          30% { transform: rotateY(180deg) translate(-5px, 3px) rotate(-3deg); }
-          40% { transform: rotateY(180deg) translate(5px, -3px) rotate(3deg); }
-          50% { transform: rotateY(180deg) translate(-3px, 5px) rotate(-2deg); }
-          60% { transform: rotateY(180deg) translate(3px, -5px) rotate(2deg); }
-          70% { transform: rotateY(180deg) translate(2px, 2px) rotate(-1deg); }
-          80% { transform: rotateY(180deg) translate(-2px, -2px) rotate(1deg); }
-          90% { transform: rotateY(180deg) translate(1px, 1px) rotate(0deg); }
+          25% { transform: rotateY(180deg) translate(5px, 5px) rotate(2deg); }
+          50% { transform: rotateY(180deg) translate(-5px, -5px) rotate(-2deg); }
+          75% { transform: rotateY(180deg) translate(5px, -5px) rotate(2deg); }
           100% { transform: rotateY(180deg) translate(0, 0) rotate(0deg); }
         }
-
         .animate-slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .animate-slide-up-delayed { animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; opacity: 0; }
         .animate-fade-in { animation: slideUp 0.8s ease-out forwards; }
-        
-        /* 持续1秒的剧烈晃动 */
-        .animate-violent-shake {
-          animation: violent-shake 0.8s cubic-bezier(.36,.07,.19,.97) both;
-        }
+        .animate-violent-shake { animation: violent-shake 0.5s infinite; }
+        .animate-bounce-slow { animation: bounce 2s infinite; }
       `}</style>
     </div>
   );
