@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, Download, ChevronRight, BookOpen, Key, Feather, Search, Link as LinkIcon, Copy } from 'lucide-react';
+import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, Download, ChevronRight, BookOpen, Key, Feather, Search, Link as LinkIcon, Mail, Copy } from 'lucide-react';
 import Head from 'next/head';
 import { createClient } from '@supabase/supabase-js';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
@@ -12,6 +12,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// 你的网站域名 (用于生成右键的分享链接)
 const SITE_URL = "https://www.qingganyuwang.top"; 
 const XIAOHONGSHU_KEYWORD = "柚子的心理小屋";
 
@@ -24,7 +25,7 @@ const PARTS_CONFIG = [
   { startIndex: 32, title: "Part 3：灵魂图腾", quote: "“语言无法抵达的地方，直觉可以。”", desc: "欢迎来到你内心的最深处。接下来的问题不需要逻辑，仅凭直觉，选出你第一眼看到的那个答案。" }
 ];
 
-// 题目数据
+// 题目数据 (完整48题)
 const QUESTIONS = [
   { id: 1, question: "周末下午，伴侣突然失联了3个小时，发消息也没回。那一刻，你最真实的反应是？", options: [{ text: "下意识翻聊天记录，看是不是我说错话了？", type: "确定感" }, { text: "挺好的，刚好没人管我，专心做自己的事。", type: "自由感" }, { text: "推测原因，准备联系上后问清楚去向。", type: "掌控感" }, { text: "心里堵得慌。如果他够在意我，怎么舍得让我空等？", type: "被偏爱" }] },
   { id: 2, question: "伴侣最近工作压力极大，回家情绪低落一言不发。此时你心里的念头是？", options: [{ text: "看着心疼。倒杯水、切水果，让他知道有人照顾。", type: "被需要" }, { text: "他应该很烦。那我就识趣点躲远点，等他缓过来。", type: "安全距离" }, { text: "死气沉沉的沉默很难受。希望能聊聊。", type: "精神共鸣" }, { text: "在意接下来的安排：今晚怎么吃？计划还作数吗？", type: "秩序感" }] },
@@ -76,7 +77,7 @@ const QUESTIONS = [
   { id: 48, question: "最后，请凭直觉填空：爱是______。", options: [{ text: "定数。唯一不会更改的答案。", type: "确定感" }, { text: "认出。茫茫人海辨认出彼此是同类。", type: "精神共鸣" }, { text: "成全。不捆绑，拥有更广阔天空。", type: "自由感" }, { text: "治愈。看见你的破碎，甘愿做药。", type: "被需要" }] }
 ];
 
-// 结果数据 (完整内容版)
+[cite_start]// 结果数据 (完整版 [cite: 1-384])
 const RESULTS = {
   "确定感": {
     type: "确定感",
@@ -101,7 +102,7 @@ const RESULTS = {
         "2、你的 “报备”，是我的定心丸。\n我不要求你秒回消息，但真的怕你突然失联。如果你要忙、或者心情不好想静一静，提前说一句 “我忙会儿，晚点找你”，就能让我从心慌落到踏实。",
         "3、关键时刻，请坚定地偏向我。\n我不用你对抗全世界，但需要知道：在我和别人之间，你会本能地护着我。任何犹豫、迟疑，或是 “先讲道理再顾我”，在我眼里都会变成 “我不重要” 的信号。"
       ],
-      origins: `深度溯源：看见那个时刻在 “扫雷” 的小孩\n\n从依恋理论视角来看，你对确定感的极致渴求，本质是焦虑型依恋模式的典型呈现 —— 这种模式在人群中约占 28%，核心特征正是对关系稳定性的持续焦虑，以及对 “被抛弃” 的深层恐惧。\n\n你一定有过这样的童年记忆：那个重要的照顾者（父母或长辈），对你的态度从来没有固定的规律。他们的爱不是稳定的滋养，有时会在你哭闹时立刻抱起安抚，把你宠成掌心的宝贝；有时却对你的需求视而不见，甚至会因为自己的情绪不佳，对你莫名冷淡或责备。\n\n说好的周末陪伴可能被临时取消，承诺的礼物或安慰转头就忘；你需要关注时可能被说 “太黏人”，试图独立时又被质疑 “不够亲近”。这种反复无常的对待，让小小的你始终搞不懂：“为什么前一刻还好好的，爱就突然消失了？”“到底什么样的自己，才能换来一份稳定不变的爱？”\n\n这种不可预测的养育环境，让你从小就被迫活在 “不确定” 里。你不知道下一次伸手是否会被回应，下一次撒娇是否会被拒绝，只能时刻绷紧神经，留意着照顾者的每一个细微信号 —— 是脸色的变化，是语气的起伏，还是动作的轻重。\n\n这份童年里的不安，不是因为你不够好，而是源于照料者不稳定的回应模式。它在你心里埋下了一颗种子：“爱随时可能消失，我随时可能被丢下”。而这份深埋心底的恐惧，正是焦虑型依恋模式的根源，也让你在后来的亲密关系中，本能地执着于 “确定感”，只为填补童年从未被满足的、对稳定与安全的渴求。`,
+      origins: `深度溯源：看见那个时刻在 “扫雷” 的小孩\n\n从依恋理论视角来看，你对确定感的极致渴求，本质是焦虑型依恋模式的典型呈现 —— 这种模式在人群中约占 28%，核心特征正是对关系稳定性的持续焦虑，以及对 “被抛弃” 的深层恐惧。\n\n你一定有过这样的童年记忆：那个重要的照顾者（父母或长辈），对你的态度从来没有固定的规律。他们的爱不是稳定的滋养，有时会在你哭闹时立刻抱起安抚，把你宠成掌心的宝贝；有时却对你的需求视而不见，甚至会因为自己的情绪不佳，对你莫名冷淡或责备。\n\n说好的周末陪伴可能被临时取消，承诺的礼物或安慰转头就忘；你需要关注时可能被说 “太黏人”，试图独立时又被质疑 “不够亲近”。这种反复无常的对待，让小小的你始终搞不懂：“为什么前一刻还好好的，爱就突然消失了？”这份童年里的不安，不是因为你不够好，而是源于照料者不稳定的回应模式。它在你心里埋下了一颗种子：“爱随时可能消失，我随时可能被丢下”。而这份深埋心底的恐惧，正是焦虑型依恋模式的根源，也让你在后来的亲密关系中，本能地执着于 “确定感”，只为填补童年从未被满足的、对稳定与安全的渴求。`,
       reshape: `重塑：把“锚”抛回自己手里\n\n1. 练习事实归因：停止对模糊信号的灾难化解读\n你习惯的读心术，本质是把不确定自动转化为被否定的负面预判。试着用事实 + 合理假设 替代脑补剧情：\n当对方沉默时，别想 “他厌倦我了”，而是告诉自己：“他现在没说话（事实），可能是工作累了 / 在处理私事（合理假设），和我们的关系无关”；\n当对方回应延迟时，别钻 “他不在乎我” 的牛角尖，而是接纳：“每个人都有自己的节奏，延迟回应是他的状态问题，不是我的价值问题”。\n\n2. 建立爱的韧性认知：相信关系的稳定性不依赖即时回应\n你总怕 “不回应 = 爱消失”，但真正的亲密关系，不是时刻在线的热烈，而是哪怕有间隙，也不会断裂的韧性。爱不是持续输出的电流，而是有蓄电功能的电池—— 偶尔的沉默、疏离，只是暂时的能量补给，不是电量耗尽；关系的稳固，不在于没有矛盾，而在于经历波动后依然能回归。试着相信，你们的联结不会因为一次延迟、一句平淡的回应就崩塌，它比你想象中更坚韧。\n\n3. 构建自我价值支撑体系：把情绪重心从对方身上收回\n当你把所有喜怒哀乐都绑定在对方身上时，自然会因对方的一点波动而失衡。真正的安全感，源我本身就足够完整：\n培养独立于关系的快乐来源：无论是深耕一项爱好，拓展社交圈，还是专注职业成长（学习新技能、），这些能让你在独处时也感受到价值与愉悦；\n关注自我需求的满足：不再等着对方来安抚、认可，而是学会自己取悦自己 —— 想吃的美食自己去吃，想看的电影自己去看，想被肯定时就给自己一个小奖励。当你自身的 “快乐账户” 足够充盈，就不会再依赖对方的 “情绪转账”，对方的偶尔摇摆，自然也就没那么有杀伤力了。`,
       blessing: `愿你在世事浮沉的人间，能遇见一个懂你敏感、护你不安的人 —— 他不必为你画地为牢，却愿意为你停下匆忙的脚步；不必许你永远，却能在你慌慌张张试探时，给你一份 “我一直都在” 的笃定。\n\n更愿你修炼出一颗稳稳的内心：不再把安全感寄托于他人的回应，不再把价值感捆绑于关系的稳定。当你真正相信 “无论是否被坚定选择，我本身就值得被好好爱着”，便会发现 —— 最坚实的依靠从不是别人的承诺，而是自己给的底气；最恒久的确定感，也从不是来自外界的安稳，而是源于内心的自洽与从容。\n\n往后余生，既有被人稳稳偏爱的幸运，也有独自安然前行的勇气。`
     }
@@ -172,7 +173,7 @@ const RESULTS = {
     accentColor: "text-pink-600",
     radarColor: "#db2777",
     tabs: {
-      base: `你愿意毫无保留地付出，也能带着真心耐心经营，但这份投入有个隐形前提 —— 你的爱意需要被 “特殊对待” 来回应。如果有一天，你发现他的温柔开始平均分配，对别人的在意不比对你少，对你的倾斜慢慢消失，你的情绪会瞬间绷紧。这不是嫉妒，也不是小气，是你赖以生存的 “例外感” 被稀释了。\n\n你比谁都能精准捕捉感情里的温度波动，哪怕是一丝一毫的冷淡、敷衍或疏忽，都能触动你内心最敏感的神经。这份敏锐让你爱得格外深沉，能把关系经营得细腻又动人；但也让你格外脆弱，因为你所有的安全感，都扎根在 “我是你独一份的偏爱” 这个锚点上，一旦这个锚点松动，整段关系的安全感都会跟着崩塌。`,
+      base: `你愿意毫无保留地付出，也能带着真心耐心经营，但这份投入有个隐形前提 —— 你的爱意需要被 “特殊对待” 来回应。如果有一天，你发现他的温柔开始平均分配，对别人的在意不比对你少，你的情绪会瞬间绷紧。这不是嫉妒，也不是小气，是你赖以生存的 “例外感” 被稀释了 —— 你怕的不是他对别人好，而是他对所有人都一样好，怕自己的深情最后只换来 “可有可无” 的待遇。\n\n你比谁都能精准捕捉感情里的温度波动，哪怕是一丝一毫的冷淡、敷衍或疏忽，都能触动你内心最敏感的神经。这份敏锐让你爱得格外深沉，能把关系经营得细腻又动人；但也让你格外脆弱，因为你所有的安全感，都扎根在 “我是你独一份的偏爱” 这个锚点上，一旦这个锚点松动，整段关系的安全感都会跟着崩塌。`,
       lightShadow: [
         { label: "深情且坚定的专注度 (光)", text: "一旦认定一个人，你会全身心投入，给出稳定又纯粹的爱意回馈，不会轻易摇摆。你的爱不是泛泛的好，而是带着 “只对你” 的专属感，让对方能清晰感受到被珍视。" },
         { label: "细腻入微的洞察力 (光)", text: "你能捕捉到别人忽略的细节 —— 记得他随口提的喜好、察觉他没说出口的情绪、在意他隐藏的疲惫，这种 “被真正看见” 的体贴，让关系充满温度。" },
@@ -249,7 +250,7 @@ const RESULTS = {
         "3、当我主动告诉你我的安排，其实是在把你放进我的生活节奏里\n比如今天想一个人待着、最近在忙一件喜欢的事，这些都不是在推开你，而是我愿意让你知道我当下的状态，希望你能接住我的节奏。如果你能轻轻回应一句好，我等你，我会更安心，也更愿意在未来的日子里，把更多心里的话慢慢说给你听。"
       ],
       origins: `深度溯源：看见那个 “怕失去自我” 的小孩\n\n你对自由感的执着，从来不是 “不爱黏人” 的天性，而是早年成长体验刻进心底的本能渴望 —— 那些 “不能按自己的想法来、只能听话” 的压抑时刻，早就在心里埋下了对 “自我空间” 的极度珍视。\n\n小时候的你，总被 “听话” 的期待包裹：可能是想法刚说出口就被否定，想做的事总被大人安排好，连难过了都要被说 “别矫情”；可能是生活被严密管束，不能有自己的小爱好，不能随便和喜欢的人相处；也可能是被寄托了太多期待，必须活成别人想要的样子，慢慢就懂了，失去自我、顺着别人的节奏走，有多压抑。\n\n慢慢的，你在心里划了一道线：只有守住自己的空间和节奏，才不会被别人的期待吞没。这份从小到大练出来的自我保护，让你在亲密关系里对 “被绑住” 的感觉特别敏锐 —— 哪怕只是一点点过度关注、一点点 “你该这样” 的要求，你都会立刻警觉。不是你不想靠近，是太怕重蹈覆辙，太怕在关系里再次弄丢那个真实的自己。\n\n你拼命想要的自由，说到底，不过是想被好好尊重 —— 允许你按自己的节奏活，允许你保留喜欢的样子，允许你有不被打扰的空间。这份对自由的渴求，本质上是藏在心底的深层期待：我能不能不用迎合谁，就被好好爱着？`,
-      reshape: `重塑：在自由与亲密间找到平衡\n\n1、接纳你的边界需求，它从不是冷漠\n不用因为自己不爱黏人就怪自己，也不用觉得需要独处是疏远。你对自由和边界的珍视，是保护真实自我的重要特质，从来不是缺点。你值得被爱，更值得被尊重本来的节奏 —— 真正爱你的人，不会逼你丢掉自己去迎合，只会接纳你所有的样子，包括你需要独处的时刻、不喜欢黏腻的习惯。真实的你，本身就值得被好好对待。\n\n2、温柔划定边界，不用刻意推开别人\n不用等对方越界了才仓促后退，不如在关系里主动说清自己的节奏：比如 “我每天想留 1 小时做自己的事，不是不想陪你，这样我反而能更专注地跟你相处”“我不喜欢频繁报备行踪，但忙的时候会主动说一声，不让你担心”。清晰的边界从不是推开别人，而是给彼此一份安心的约定 —— 你不用勉强自己妥协，对方也不用猜来猜去，这样的关系才能少点误会，多点自在。\n\n3、试着适度敞开，不用一直独自硬扛\n你可以保留自己消化情绪的习惯，但不用逼自己把所有心事都藏在心里。不用追求 “完全透明”，偶尔试着说一句 “这件事我有点乱，想听听你的想法”“我现在需要静一静，晚点跟你细说”，就已经很好。适度的敞开不是失去自由，也不是要你丢掉边界，而是让对方知道：你不是不想靠近，只是需要一点时间整理自己。不用怕暴露脆弱，真正在意你的人，会在你需要时陪着，不会趁虚而入打扰你的节奏。`,
+      reshape: `重塑：在自由与亲密间找到平衡\n\n1、接纳你的边界需求，它从不是冷漠\n不用因为自己不爱黏人就怪自己，也不用觉得需要独处是疏远。你对自由和边界的珍视，是保护真实自我的重要特质，从来不是缺点。你值得被爱，更值得被尊重本来的节奏 —— 真正爱你的人，不会逼你丢掉自己去迎合，只会接纳你所有的样子，包括你需要独处的时刻、不喜欢黏腻的习惯。真实的你，本身就值得被好好对待。\n\n2、温柔划定边界，不用刻意推开别人\n不用等对方越界了才仓促后退，不如在关系里主动说清自己的节奏：比如 “我每天想留 1 小时做自己的事，不是不想陪你，这样我反而能更专注地跟你相处”“我不喜欢频繁报备行踪，但忙的时候会主动说一声，不让你担心”。清晰的边界从不是推开别人，而是给彼此一份安心的约定 —— 你不用勉强自己妥协，对方也不用猜来猜去，这样的关系才能少点误会，多点自在。\n\n3、试着适度敞开，不用一直独自硬扛\n你可以保留自己消化情绪的习惯，但不用逼自己把所有心事都藏在心里。不用追求 “完全透明”，偶尔试着说一句 “这件事我有点乱，想听听你的想法”“我现在需要静一静，晚点跟你细说”，就已经很好。适度的敞开不是失去自由，而是让对方知道：你不是不想靠近，只是需要一点时间整理自己。不用怕暴露脆弱，真正在意你的人，会在你需要时陪着，不会趁虚而入打扰你的节奏。`,
       blessing: `愿你始终保有做自己的勇气和节奏，不用为了爱妥协，不用为了自由假装冷漠。愿你遇见这样的人：他懂你对自由的渴求，不会用 “爱” 捆绑你；你们是并行的光，各自有自己的轨道，却能在彼此需要时相互照亮。\n\n也愿你在需要后退一步时，不再自责 —— 真正懂你的人，会尊重你的边界；会留下来的人，从来不需要你用 “丢掉自我” 去挽留。往后余生，你既是自由的风，也能拥有安稳的岸，在爱里自在呼吸，在自我里闪闪发光。`
     }
   },
@@ -308,14 +309,13 @@ const RESULTS = {
         "2、长时间的模糊状态，会慢慢耗光我对关系的安全感\n如果你总用顺其自然、先这样吧回避聊关系本身，我只会越来越焦虑，最后不是想争吵，而是想抽身 —— 我不想在混沌里消耗彼此，只想拥有一段清晰笃定的关系。",
         "3、当我提议我们坐下来好好聊聊，请一定认真对待\n我不是要审判谁、指责谁，只是想把误会捋清、把委屈讲开，重新对齐彼此的节奏和边界。你如果愿意和我一起面对，而不是逃避冷战，我对这段关系的信心会成倍增加。"
       ],
-      origins: `深度溯源：看见那个靠秩序保护自己的小孩\n\n小时候的你，最怕没个准数的慌。可能是答应好的旅行说黄就黄，连句像样的解释都没有；可能是家里的规矩朝令夕改，今天允许的事明天就被否定，全看大人心情；也可能是遇事没人牵头，让你一个小孩站在原地手足无措。那种抓不住任何东西的无助，悄悄在心里压了一层又一层。\n\n你慢慢发现，只有自己给自己找章法才踏实：把玩具摆得整整齐齐，心里的乱就跟着少一点。这份秩序感，从来不是死板的坚持，而是你捂热不安的温柔方式 —— 用清晰的规则挡住突如其来的乱，用可控的流程抵消不知道怎么办的慌。\n\n长大后你把这份需求带进亲密关系，想要的从不是冷冰冰的条款，而是不用猜、不内耗的踏实。你要的秩序，本质上是有人和你一起稳住日子的安心。`,
+      origins: `深度溯源：看见那个靠秩序保护自己的小孩\n\n小时候的你，最怕没个准数的慌。可能是家里的规矩朝令夕改，全看大人心情；也可能是遇事没人牵头，让你一个小孩站在原地手足无措。那种抓不住任何东西的无助，悄悄在心里压了一层又一层。\n\n你慢慢发现，只有自己给自己找章法才踏实：把玩具摆得整整齐齐，心里的乱就跟着少一点。这份秩序感，从来不是死板的坚持，而是你捂热不安的温柔方式 —— 用清晰的规则挡住突如其来的乱，用可控的流程抵消不知道怎么办的慌。\n\n长大后你把这份需求带进亲密关系，想要的从不是冷冰冰的条款，而是不用猜、不内耗的踏实。你要的秩序，本质上是有人和你一起稳住日子的安心 —— 不用再自己一个人扛着所有乱，不用再慌慌张张找方向，有人和你一起把日子捋顺、把心稳住，这才是你最深处的渴望。`,
       reshape: `重塑：允许关系有温柔的留白\n\n1、接纳自己的秩序需求，它从不是过度理性\n你对秩序的渴求，是保护自己也守护关系的珍贵能力 —— 清晰的边界、坦诚的沟通本就是长期关系的基石，你的需求一点都不过分，更不是需要修正的缺点。\n\n2、分清问题和情绪，给彼此缓冲空间\n下次遇到矛盾，别急着立刻推进解决。先问问自己：对方现在需要的是具体方案，还是只想被理解？试着先接住对方的情绪，比如轻轻说一句你现在肯定不好受，等情绪慢慢平复，再一起聊怎么处理。秩序感很重要，但情感的温度，和秩序感一样，都是关系能长久的底气。\n\n3、允许关系有暂时没答案的空白，但不接受逃避\n你不用要求所有事都立刻有结果，也可以允许彼此有慢慢梳理的时间，但这份空白不能成为对方回避沟通的借口。要拎得清：对方是真的需要时间消化，还是根本不愿面对问题？只要能看到对方的诚意，感受到他在努力靠近、愿意一起面对，偶尔慢一点、留白久一点，也没关系。`,
       blessing: `愿你遇见这样的同行者：不回避问题，不敷衍沟通，愿意和你一起把话说透、把日子捋顺，在亲密、友情、合作里，主动与你并肩分担 —— 不用你独自扛起混乱，而是一起把琐碎梳理成暖意，让秩序不再是负担，而是彼此安心的底气。\n\n也愿你始终懂得：你的清晰、原则与不将就的坚持，从来都是珍贵的礼物。有章法的相处少内耗，有共识的陪伴最绵长，这份踏实的温暖，会在岁月里慢慢沉淀，成为你最长久的幸福。`
     }
   }
 };
 
-// 雷达图的维度
 const ALL_DIMENSIONS = ["确定感", "被需要", "掌控感", "被偏爱", "精神共鸣", "自由感", "安全距离", "秩序感"];
 
 export default function SoulScan_StainedGlass() {
@@ -333,20 +333,20 @@ export default function SoulScan_StainedGlass() {
   
   // 动画与分享状态
   const [flipped, setFlipped] = useState(false);
-  const [isShaking, setIsShaking] = useState(false); // 震动
-  const [isExploding, setIsExploding] = useState(false); // 白光
+  const [isShaking, setIsShaking] = useState(false); // 震动状态
+  const [isExploding, setIsExploding] = useState(false); // 爆炸状态
   const [showFinal, setShowFinal] = useState(false);
   
   const [chartData, setChartData] = useState([]);
   const [activeTab, setActiveTab] = useState('base');
   const [saving, setSaving] = useState(false);
 
-  // 解决 Hydration 报错
+  // 解决服务端渲染报错
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // --- 1. 登录交互 ---
+  // --- 登录交互 (1次性码核销) ---
   const handleVerify = async () => {
     setErrorMsg('');
     const inputCode = code.trim();
@@ -434,7 +434,7 @@ export default function SoulScan_StainedGlass() {
     }, 2500);
   };
 
-  // 优化的转场动画逻辑
+  // 优化的卡牌转场动画 (分阶段执行，防止跳变)
   const handleCardClick = () => {
     if (flipped) return;
     
@@ -458,7 +458,7 @@ export default function SoulScan_StainedGlass() {
     }, 2300);
   };
 
-  // 1. 生成纯净海报
+  // 1. 生成纯净海报 (左键)
   const handleSavePoster = async () => {
     const element = document.getElementById('clean-poster-area');
     if (!element) return;
@@ -474,14 +474,14 @@ export default function SoulScan_StainedGlass() {
       link.download = `我的欲望底色-${results.primary}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
-      alert("✅ 结果卡片已保存！\n快去小红书评论区晒出你的结果吧~");
+      alert("✅ 结果卡片已保存！\n快去小红书晒出你的结果吧~");
     } catch (err) {
       console.error('Poster failed', err);
     }
     setSaving(false);
   };
 
-  // 2. 复制信封链接
+  // 2. 复制信封链接 (右键)
   const handleCopyLink = () => {
     const link = `${SITE_URL}/letter?type=${results.primary}`;
     navigator.clipboard.writeText(link).then(() => {
@@ -495,10 +495,10 @@ export default function SoulScan_StainedGlass() {
     window.location.href = "https://www.xiaohongshu.com";
   };
 
-  if (!mounted) return null; // 防止 Hydration Error
+  if (!mounted) return null;
 
   const progress = ((currentQIndex + 1) / QUESTIONS.length) * 100;
-  const displayData = results.primary ? RESULTS[results.primary] : null;
+  const displayData = RESULTS[results.primary];
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] text-[#4A4A4A] font-sans selection:bg-rose-100 flex flex-col overflow-x-hidden">
@@ -618,38 +618,22 @@ export default function SoulScan_StainedGlass() {
       {/* Result Step 1: Card Flip + Crack */}
       {step === 'result_card' && !showFinal && (
         <div className="flex-1 flex flex-col items-center justify-center animate-fade-in p-6 bg-stone-900 relative overflow-hidden">
-          
-          {/* 白光遮罩 */}
-          <div className={`absolute inset-0 z-50 bg-white pointer-events-none transition-opacity duration-700 ${isExploding ? 'opacity-100' : 'opacity-0'}`}></div>
-
+          <div className={`absolute inset-0 z-50 bg-white pointer-events-none transition-opacity duration-1000 ${isExploding ? 'opacity-100' : 'opacity-0'}`}></div>
           <p className={`text-center text-[10px] text-stone-400 mb-8 tracking-[0.2em] uppercase transition-opacity ${flipped ? 'opacity-0' : 'opacity-100'}`}>Tap to Reveal</p>
-          
-          <div 
-            className="relative w-full max-w-sm aspect-[4/5] perspective-1000 cursor-pointer group" 
-            onClick={handleCardClick}
-          >
-            {/* 核心动画容器：翻转 + 震动 */}
+          <div className="relative w-full max-w-sm aspect-[4/5] perspective-1000 cursor-pointer group" onClick={handleCardClick}>
             <div className={`relative w-full h-full duration-1000 transform-style-3d transition-transform 
               ${flipped ? 'rotate-y-180' : ''} 
               ${isShaking ? 'animate-violent-shake' : ''}`
             }>
-              
-              {/* Back (封面) */}
               <div className="absolute inset-0 backface-hidden bg-stone-800 rounded-[2rem] shadow-2xl border border-white/10 flex flex-col items-center justify-center">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20" />
                 <Sparkles className="w-16 h-16 text-rose-200/50 mb-6 animate-pulse" />
                 <h3 className="text-rose-100/90 text-lg font-serif tracking-widest">点击揭晓</h3>
               </div>
-
-              {/* Front (结果) */}
-              <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col justify-between text-white p-8 
-                bg-gradient-to-br ${displayData ? displayData.cardStyle : 'from-gray-800 to-black'} backdrop-blur-xl border border-white/30`}>
-                
-                {displayData && (
+              <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col justify-between text-white p-8 bg-gradient-to-br ${RESULTS[results.primary] ? RESULTS[results.primary].cardStyle : 'from-gray-800 to-black'} backdrop-blur-xl border border-white/30`}>
+                {RESULTS[results.primary] && (
                   <div className="relative z-10 text-center mt-20">
-                      <div className="w-20 h-20 mx-auto mb-6 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
-                        {displayData.icon}
-                      </div>
+                      <div className="w-20 h-20 mx-auto mb-6 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">{RESULTS[results.primary].icon}</div>
                       <h2 className="text-4xl font-serif font-bold mb-2 drop-shadow-md">{results.primary}</h2>
                   </div>
                 )}
@@ -768,7 +752,7 @@ export default function SoulScan_StainedGlass() {
               onClick={handleCopyLink}
               className="flex-1 py-3 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
             >
-              <LinkIcon className="w-4 h-4" />
+              <Mail className="w-4 h-4" />
               复制心之密语 (微信用)
             </button>
           </div>
