@@ -1,10 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, Download, ChevronRight, BookOpen, Key, Feather, Search, Link as LinkIcon, Copy } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, Download, ChevronRight, BookOpen, Key, Feather, Search, Mail, Link as LinkIcon, Copy } from 'lucide-react';
 import Head from 'next/head';
 import { createClient } from '@supabase/supabase-js';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
+// 动态引入图表库，防止服务端渲染报错
+import dynamic from 'next/dynamic';
+const Radar = dynamic(() => import('recharts').then(mod => mod.Radar), { ssr: false });
+const RadarChart = dynamic(() => import('recharts').then(mod => mod.RadarChart), { ssr: false });
+const PolarGrid = dynamic(() => import('recharts').then(mod => mod.PolarGrid), { ssr: false });
+const PolarAngleAxis = dynamic(() => import('recharts').then(mod => mod.PolarAngleAxis), { ssr: false });
+const PolarRadiusAxis = dynamic(() => import('recharts').then(mod => mod.PolarRadiusAxis), { ssr: false });
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
 import html2canvas from 'html2canvas';
 
 // --- 1. 初始化配置 ---
@@ -12,7 +19,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// 你的网站域名 (用于生成右键的分享链接)
+// 你的网站域名
 const SITE_URL = "https://www.qingganyuwang.top"; 
 const XIAOHONGSHU_KEYWORD = "柚子的心理小屋";
 
@@ -25,7 +32,7 @@ const PARTS_CONFIG = [
   { startIndex: 32, title: "Part 3：灵魂图腾", quote: "“语言无法抵达的地方，直觉可以。”", desc: "欢迎来到你内心的最深处。接下来的问题不需要逻辑，仅凭直觉，选出你第一眼看到的那个答案。" }
 ];
 
-// 题目数据 (48题完整版)
+// 题目数据 (保持完整48题)
 const QUESTIONS = [
   { id: 1, question: "周末下午，伴侣突然失联了3个小时，发消息也没回。那一刻，你最真实的反应是？", options: [{ text: "下意识翻聊天记录，看是不是我说错话了？", type: "确定感" }, { text: "挺好的，刚好没人管我，专心做自己的事。", type: "自由感" }, { text: "推测原因，准备联系上后问清楚去向。", type: "掌控感" }, { text: "心里堵得慌。如果他够在意我，怎么舍得让我空等？", type: "被偏爱" }] },
   { id: 2, question: "伴侣最近工作压力极大，回家情绪低落一言不发。此时你心里的念头是？", options: [{ text: "看着心疼。倒杯水、切水果，让他知道有人照顾。", type: "被需要" }, { text: "他应该很烦。那我就识趣点躲远点，等他缓过来。", type: "安全距离" }, { text: "死气沉沉的沉默很难受。希望能聊聊。", type: "精神共鸣" }, { text: "在意接下来的安排：今晚怎么吃？计划还作数吗？", type: "秩序感" }] },
@@ -77,7 +84,7 @@ const QUESTIONS = [
   { id: 48, question: "最后，请凭直觉填空：爱是______。", options: [{ text: "定数。唯一不会更改的答案。", type: "确定感" }, { text: "认出。茫茫人海辨认出彼此是同类。", type: "精神共鸣" }, { text: "成全。不捆绑，拥有更广阔天空。", type: "自由感" }, { text: "治愈。看见你的破碎，甘愿做药。", type: "被需要" }] }
 ];
 
-// 结果数据 (完整内容，不删减)
+// 结果数据 (完整无删减)
 const RESULTS = {
   "确定感": {
     type: "确定感",
@@ -316,6 +323,15 @@ const RESULTS = {
   }
 };
 
+// 动态引入图表库，防止服务端渲染报错
+import dynamic from 'next/dynamic';
+const Radar = dynamic(() => import('recharts').then(mod => mod.Radar), { ssr: false });
+const RadarChart = dynamic(() => import('recharts').then(mod => mod.RadarChart), { ssr: false });
+const PolarGrid = dynamic(() => import('recharts').then(mod => mod.PolarGrid), { ssr: false });
+const PolarAngleAxis = dynamic(() => import('recharts').then(mod => mod.PolarAngleAxis), { ssr: false });
+const PolarRadiusAxis = dynamic(() => import('recharts').then(mod => mod.PolarRadiusAxis), { ssr: false });
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
+
 const ALL_DIMENSIONS = ["确定感", "被需要", "掌控感", "被偏爱", "精神共鸣", "自由感", "安全距离", "秩序感"];
 
 export default function SoulScan_StainedGlass() {
@@ -338,7 +354,7 @@ export default function SoulScan_StainedGlass() {
   const [activeTab, setActiveTab] = useState('base');
   const [saving, setSaving] = useState(false);
 
-  // --- 登录交互 (1次性码核销) ---
+  // --- 1. 登录交互 ---
   const handleVerify = async () => {
     setErrorMsg('');
     const inputCode = code.trim();
@@ -426,16 +442,22 @@ export default function SoulScan_StainedGlass() {
     }, 2500);
   };
 
+  // 卡片翻转 + 碎裂动画逻辑
   const handleCardClick = () => {
     if (flipped) return;
     setFlipped(true);
+    
+    // 1. 翻转后停留 1.5秒 (让用户看清背面)
     setTimeout(() => {
+      // 2. 开始碎裂/白屏动画
       setIsExploding(true);
+      
+      // 3. 动画结束后跳转 (给白光留 0.6秒)
       setTimeout(() => {
         setShowFinal(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 600);
-    }, 1800);
+    }, 1500);
   };
 
   // 1. 生成纯净海报 (左键)
@@ -620,9 +642,8 @@ export default function SoulScan_StainedGlass() {
       {showFinal && displayData && (
         <div className="flex-1 flex flex-col animate-fade-in bg-white pb-24">
           
-          {/* 📸 专门用于生成【纯净海报】的区域 (无二维码) */}
+          {/* 📸 纯净海报区域 (左键生成) */}
           <div id="clean-poster-area" className="bg-white relative">
-              {/* 海报卡牌区 */}
               <div className={`pt-16 pb-12 px-6 rounded-b-[3rem] shadow-xl bg-gradient-to-b ${displayData.cardStyle} text-white relative overflow-hidden`}>
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10" />
                 <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full bg-white/10 blur-[60px]" />
@@ -656,7 +677,7 @@ export default function SoulScan_StainedGlass() {
               </div>
           </div>
 
-          {/* 下方详细内容 (不截图) */}
+          {/* 下方详细内容 (网页展示，不截图) */}
           <div className="px-6 py-2 relative z-20">
              <div className="flex gap-2 overflow-x-auto pb-6 no-scrollbar">
                 {[{ id: 'base', label: '底色' }, { id: 'lightShadow', label: '光影' }, { id: 'partner', label: '致伴侣' }, { id: 'origins', label: '溯源' }, { id: 'reshape', label: '重塑' }].map(tab => (
@@ -701,13 +722,13 @@ export default function SoulScan_StainedGlass() {
                 {activeTab === 'partner' && <div className="space-y-3">{displayData.tabs.partner.map((l,i)=><div key={i} className="bg-white p-4 rounded-xl border border-stone-100 text-sm text-stone-600 shadow-sm"><span className={`font-serif italic text-xl ${displayData.accentColor} mr-2`}>{i+1}.</span>{l}</div>)}</div>}
                 {activeTab === 'origins' && <div className="bg-white p-6 rounded-2xl border border-stone-100 text-sm text-stone-600 leading-7 text-justify whitespace-pre-line shadow-sm"><h4 className="font-bold text-sm mb-4 text-stone-800 flex items-center gap-2 uppercase tracking-wider"><Search className="w-4 h-4" /> 童年溯源</h4>{displayData.tabs.origins}</div>}
                 {activeTab === 'reshape' && <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 text-sm text-emerald-800 leading-7 whitespace-pre-line"><h4 className="font-bold text-sm mb-4 text-emerald-800 flex items-center gap-2 uppercase tracking-wider"><Zap className="w-4 h-4" /> 能量重塑</h4>{displayData.tabs.reshape}</div>}
+             </div>
              
-                {/* 底部祝福 (所有Tabs下都显示) */}
-                <div className="mt-12 mb-8 text-center">
-                   <Feather className="w-5 h-5 text-stone-300 mx-auto mb-4" />
-                   <p className="font-serif italic text-stone-500 text-sm leading-8 px-4">{displayData.blessing}</p>
-                   <div className="w-12 h-[1px] bg-stone-200 mx-auto mt-6"></div>
-                </div>
+             {/* 底部祝福 (所有Tabs下都显示) */}
+             <div className="mt-8 mb-8 text-center animate-fade-in">
+                <Feather className="w-5 h-5 text-stone-300 mx-auto mb-4" />
+                <p className="font-serif italic text-stone-500 text-sm leading-8 px-4">{displayData.blessing}</p>
+                <div className="w-12 h-[1px] bg-stone-200 mx-auto mt-6"></div>
              </div>
           </div>
 
