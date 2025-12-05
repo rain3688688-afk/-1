@@ -1,21 +1,20 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, Download, ChevronRight, BookOpen, Key, Feather, Search, Mail, Link as LinkIcon, Copy, X } from 'lucide-react';
+import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, Download, ChevronRight, BookOpen, Key, Feather, Search, Link as LinkIcon, Copy } from 'lucide-react';
 import Head from 'next/head';
 import { createClient } from '@supabase/supabase-js';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import html2canvas from 'html2canvas';
-import { QRCodeSVG } from 'qrcode.react';
 
 // --- 1. 初始化配置 ---
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// 核心文案配置
-const SITE_URL = "https://www.qingganyuwang.top"; // 你的网址
-const XIAOHONGSHU_KEYWORD = "柚子的心理小屋"; // 小红书搜什么
+// 你的网站域名 (用于生成右键的分享链接)
+const SITE_URL = "https://www.qingganyuwang.top"; 
+const XIAOHONGSHU_KEYWORD = "柚子的心理小屋";
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -26,7 +25,7 @@ const PARTS_CONFIG = [
   { startIndex: 32, title: "Part 3：灵魂图腾", quote: "“语言无法抵达的地方，直觉可以。”", desc: "欢迎来到你内心的最深处。接下来的问题不需要逻辑，仅凭直觉，选出你第一眼看到的那个答案。" }
 ];
 
-// 题目数据 (完整48题)
+// 题目数据 (48题完整版)
 const QUESTIONS = [
   { id: 1, question: "周末下午，伴侣突然失联了3个小时，发消息也没回。那一刻，你最真实的反应是？", options: [{ text: "下意识翻聊天记录，看是不是我说错话了？", type: "确定感" }, { text: "挺好的，刚好没人管我，专心做自己的事。", type: "自由感" }, { text: "推测原因，准备联系上后问清楚去向。", type: "掌控感" }, { text: "心里堵得慌。如果他够在意我，怎么舍得让我空等？", type: "被偏爱" }] },
   { id: 2, question: "伴侣最近工作压力极大，回家情绪低落一言不发。此时你心里的念头是？", options: [{ text: "看着心疼。倒杯水、切水果，让他知道有人照顾。", type: "被需要" }, { text: "他应该很烦。那我就识趣点躲远点，等他缓过来。", type: "安全距离" }, { text: "死气沉沉的沉默很难受。希望能聊聊。", type: "精神共鸣" }, { text: "在意接下来的安排：今晚怎么吃？计划还作数吗？", type: "秩序感" }] },
@@ -78,7 +77,7 @@ const QUESTIONS = [
   { id: 48, question: "最后，请凭直觉填空：爱是______。", options: [{ text: "定数。唯一不会更改的答案。", type: "确定感" }, { text: "认出。茫茫人海辨认出彼此是同类。", type: "精神共鸣" }, { text: "成全。不捆绑，拥有更广阔天空。", type: "自由感" }, { text: "治愈。看见你的破碎，甘愿做药。", type: "被需要" }] }
 ];
 
-// 结果数据 (完整内容版)
+// 结果数据 (完整内容，不删减)
 const RESULTS = {
   "确定感": {
     type: "确定感",
@@ -87,7 +86,7 @@ const RESULTS = {
     quote: "万物皆流变，而我只要一种绝对的定数。",
     cardStyle: "from-blue-700/60 to-indigo-900/60 shadow-[0_0_40px_-5px_rgba(59,130,246,0.5)] border-blue-200/40",
     accentColor: "text-blue-700",
-    radarColor: "#3b82f6", 
+    radarColor: "#3b82f6",
     tabs: {
       base: `在亲密关系中，你核心的情感诉求是 “稳定与可预期”，始终坚守着对长期联结的极致追求。相较于外在条件的光鲜或浪漫形式的轰轰烈烈，你更看重关系中的确定性—— 凡事有交代、件件有着落、事事有回音，这种清晰、可靠的互动模式，是你构建情感安全感的基石。\n\n你的情感底色厚重且带着强烈的契约精神，对感情的投入从不浅尝辄止，而是带着 “认定即终身” 的郑重。只要对方传递的态度足够明确、信号足够清晰，你便会毫无保留地深度投入，愿意为关系的长久发展付出耐心与精力，包容差异、共担责任，将长期承诺作为情感的核心导向，而非一时的情绪冲动。\n\n这份对关系的厚重期待背后，潜藏着你对不确定性的极度敏感与对被抛弃的深层恐惧。你对关系中的距离变化、态度波动有着本能的警觉，任何模糊的信号、延迟的回应，都可能触发你内心的不安。你并非刻意试探或控制，所有看似执着的追问与确认，本质上都是为了在不确定的关系流动中，寻找一个稳定的情感锚点，反复确认自身在对方心中的重要性与不可替代性。`,
       lightShadow: [
@@ -338,46 +337,8 @@ export default function SoulScan_StainedGlass() {
   const [chartData, setChartData] = useState([]);
   const [activeTab, setActiveTab] = useState('base');
   const [saving, setSaving] = useState(false);
-  // 信封模式相关
-  const [envelopeMode, setEnvelopeMode] = useState(false);
-  const [letterOpened, setLetterOpened] = useState(false);
-  const [senderResult, setSenderResult] = useState(null);
-  const [typedText, setTypedText] = useState("");
 
-  // --- 初始化逻辑 ---
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const letterKey = params.get('letter');
-    
-    if (letterKey && RESULTS[letterKey]) {
-      setEnvelopeMode(true);
-      setSenderResult(letterKey);
-      // 准备朋友的雷达图数据
-      const mockData = ALL_DIMENSIONS.map(type => ({
-        subject: type,
-        A: type === letterKey ? 8 : 4,
-        fullMark: 8
-      }));
-      setChartData(mockData);
-    }
-  }, []);
-
-  // --- 打字机效果 ---
-  useEffect(() => {
-    if (letterOpened && senderResult) {
-      const senderQuote = RESULTS[senderResult].quote;
-      const fullText = `亲爱的，\n\n我刚刚窥探了自己的内心...\n我的欲望底色是：\n\n【${senderResult}】\n“${senderQuote}”\n\n这一刻，我好像更懂自己了。\n\n你也想看看，\n我们灵魂深处的契合度吗？`;
-      let i = 0;
-      const timer = setInterval(() => {
-        setTypedText(fullText.slice(0, i));
-        i++;
-        if (i > fullText.length) clearInterval(timer);
-      }, 40);
-      return () => clearInterval(timer);
-    }
-  }, [letterOpened, senderResult]);
-
-  // --- 登录交互 ---
+  // --- 登录交互 (1次性码核销) ---
   const handleVerify = async () => {
     setErrorMsg('');
     const inputCode = code.trim();
@@ -414,7 +375,6 @@ export default function SoulScan_StainedGlass() {
       }
       
       setIsLoading(false);
-      setEnvelopeMode(false);
       handlePartTransition(0);
 
     } catch (err) {
@@ -503,7 +463,7 @@ export default function SoulScan_StainedGlass() {
 
   // 2. 复制信封链接 (右键)
   const handleCopyLink = () => {
-    const link = `${SITE_URL}/?letter=${results.primary}`;
+    const link = `${SITE_URL}/letter?type=${results.primary}`;
     navigator.clipboard.writeText(link).then(() => {
       alert("💌 心之密语已复制！\n\n请私发给微信/QQ好友，邀请TA拆开这封信。（请勿发到小红书哦）");
     });
@@ -518,72 +478,6 @@ export default function SoulScan_StainedGlass() {
   const progress = ((currentQIndex + 1) / QUESTIONS.length) * 100;
   const displayData = RESULTS[results.primary];
 
-  // --- 渲染部分 ---
-  
-  // 1. 信封模式 (B用户视角)
-  if (envelopeMode && RESULTS[senderResult]) {
-    const senderData = RESULTS[senderResult];
-    return (
-      <div className="min-h-screen bg-stone-900 flex flex-col items-center justify-center p-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10" />
-        
-        {!letterOpened ? (
-          <div 
-            onClick={() => setLetterOpened(true)}
-            className="cursor-pointer animate-bounce-slow flex flex-col items-center"
-          >
-            <div className="w-64 h-40 bg-[#f3f0e7] rounded-lg shadow-2xl relative flex items-center justify-center border-t-4 border-rose-200 overflow-hidden">
-               <div className="absolute top-0 w-0 h-0 border-l-[128px] border-r-[128px] border-t-[80px] border-l-transparent border-r-transparent border-t-rose-100 opacity-80"></div>
-               <Heart className="w-12 h-12 text-rose-400 z-10 fill-current" />
-            </div>
-            <p className="text-rose-100/80 text-center mt-8 text-sm tracking-[0.2em] font-serif">有一封来自朋友的灵魂回信...</p>
-            <p className="text-stone-500 text-center mt-2 text-xs animate-pulse">(点击拆启)</p>
-          </div>
-        ) : (
-          <div className="w-full max-w-md bg-[#fffcf8] rounded-xl p-8 shadow-2xl animate-slide-up relative min-h-[500px] flex flex-col">
-             <button onClick={()=>setEnvelopeMode(false)} className="absolute top-4 right-4 text-stone-300 hover:text-stone-600"><X className="w-6 h-6"/></button>
-             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-rose-300 to-purple-300 rounded-t-xl" />
-             
-             {/* 打字机文本 */}
-             <div className="font-serif text-stone-700 leading-8 whitespace-pre-line mb-8 text-sm">
-               {typedText}
-               <span className="animate-pulse">|</span>
-             </div>
-             
-             {/* 朋友的雷达图 */}
-             {typedText.length > 30 && (
-               <div className="w-full h-[200px] mb-8 animate-fade-in opacity-0" style={{animationDelay: '1s', animationFillMode: 'forwards'}}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
-                      <PolarGrid stroke="#e5e7eb" />
-                      <PolarAngleAxis dataKey="subject" tick={{ fill: '#9ca3af', fontSize: 10 }} />
-                      <PolarRadiusAxis angle={30} domain={[0, 8]} tick={false} axisLine={false} />
-                      <Radar name="Friend" dataKey="A" stroke={senderData.radarColor} fill={senderData.radarColor} fillOpacity={0.4} />
-                    </RadarChart>
-                  </ResponsiveContainer>
-                  <div className="text-center mt-2">
-                     <p className="text-xs text-stone-400 tracking-widest uppercase">Soul Pattern</p>
-                  </div>
-               </div>
-             )}
-
-             <div className="mt-auto">
-                 <button 
-                   onClick={() => setEnvelopeMode(false)} 
-                   className="w-full py-4 bg-stone-900 text-white rounded-xl text-sm font-bold shadow-lg hover:scale-[1.02] transition-transform flex items-center justify-center gap-2 animate-fade-in opacity-0"
-                   style={{animationDelay: '2s', animationFillMode: 'forwards'}}
-                 >
-                   <Sparkles className="w-4 h-4" />
-                   我也要测 (查看契合度)
-                 </button>
-             </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // 2. 正常流程
   return (
     <div className="min-h-screen bg-[#FDFBF9] text-[#4A4A4A] font-sans selection:bg-rose-100 flex flex-col overflow-x-hidden">
       
