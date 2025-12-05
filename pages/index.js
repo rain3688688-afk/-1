@@ -76,7 +76,7 @@ const QUESTIONS = [
   { id: 48, question: "最后，请凭直觉填空：爱是______。", options: [{ text: "定数。唯一不会更改的答案。", type: "确定感" }, { text: "认出。茫茫人海辨认出彼此是同类。", type: "精神共鸣" }, { text: "成全。不捆绑，拥有更广阔天空。", type: "自由感" }, { text: "治愈。看见你的破碎，甘愿做药。", type: "被需要" }] }
 ];
 
-[cite_start]// 结果数据 [cite: 1-384] - 完整录入
+// 结果数据 (完整内容版)
 const RESULTS = {
   "确定感": {
     type: "确定感",
@@ -172,7 +172,7 @@ const RESULTS = {
     accentColor: "text-pink-600",
     radarColor: "#db2777",
     tabs: {
-      base: `你愿意毫无保留地付出，也能带着真心耐心经营，但这份投入有个隐形前提 —— 你的爱意需要被 “特殊对待” 来回应。如果有一天，你发现他的温柔开始平均分配，对别人的在意不比对你少，对你的倾斜慢慢消失，你的情绪会瞬间绷紧。这不是嫉妒，也不是小气，是你赖以生存的 “例外感” 被稀释了 —— 你怕的不是他对别人好，而是他对所有人都一样好，怕自己的深情最后只换来 “可有可无” 的待遇。\n\n你比谁都能精准捕捉感情里的温度波动，哪怕是一丝一毫的冷淡、敷衍或疏忽，都能触动你内心最敏感的神经。这份敏锐让你爱得格外深沉，能把关系经营得细腻又动人；但也让你格外脆弱，因为你所有的安全感，都扎根在 “我是你独一份的偏爱” 这个锚点上，一旦这个锚点松动，整段关系的安全感都会跟着崩塌。`,
+      base: `你愿意毫无保留地付出，也能带着真心耐心经营，但这份投入有个隐形前提 —— 你的爱意需要被 “特殊对待” 来回应。如果有一天，你发现他的温柔开始平均分配，对别人的在意不比对你少，对你的倾斜慢慢消失，你的情绪会瞬间绷紧。这不是嫉妒，也不是小气，是你赖以生存的 “例外感” 被稀释了。\n\n你比谁都能精准捕捉感情里的温度波动，哪怕是一丝一毫的冷淡、敷衍或疏忽，都能触动你内心最敏感的神经。这份敏锐让你爱得格外深沉，能把关系经营得细腻又动人；但也让你格外脆弱，因为你所有的安全感，都扎根在 “我是你独一份的偏爱” 这个锚点上，一旦这个锚点松动，整段关系的安全感都会跟着崩塌。`,
       lightShadow: [
         { label: "深情且坚定的专注度 (光)", text: "一旦认定一个人，你会全身心投入，给出稳定又纯粹的爱意回馈，不会轻易摇摆。你的爱不是泛泛的好，而是带着 “只对你” 的专属感，让对方能清晰感受到被珍视。" },
         { label: "细腻入微的洞察力 (光)", text: "你能捕捉到别人忽略的细节 —— 记得他随口提的喜好、察觉他没说出口的情绪、在意他隐藏的疲惫，这种 “被真正看见” 的体贴，让关系充满温度。" },
@@ -308,13 +308,14 @@ const RESULTS = {
         "2、长时间的模糊状态，会慢慢耗光我对关系的安全感\n如果你总用顺其自然、先这样吧回避聊关系本身，我只会越来越焦虑，最后不是想争吵，而是想抽身 —— 我不想在混沌里消耗彼此，只想拥有一段清晰笃定的关系。",
         "3、当我提议我们坐下来好好聊聊，请一定认真对待\n我不是要审判谁、指责谁，只是想把误会捋清、把委屈讲开，重新对齐彼此的节奏和边界。你如果愿意和我一起面对，而不是逃避冷战，我对这段关系的信心会成倍增加。"
       ],
-      origins: `深度溯源：看见那个靠秩序保护自己的小孩\n\n小时候的你，最怕没个准数的慌。可能是答应好的旅行说黄就黄，连句像样的解释都没有；可能是家里的规矩朝令夕改，今天允许的事明天就被否定，全看大人心情；也可能是遇事没人牵头，最后要么互相指责，要么让你一个小孩站在原地手足无措。你总在忐忑里猜：下一秒会不会又有意外？我该怎么做才不会出错？那种抓不住任何东西的无助，像小石子一样，悄悄在心里压了一层又一层。\n\n你慢慢发现，眼泪和求助都没用，只有自己给自己找章法才踏实：把玩具摆得整整齐齐，心里的乱就跟着少一点；提前定好第二天的小计划，就不怕被突然的安排打断；和小伙伴相处先说好几点见、玩什么，就不用反复猜来猜去。\n\n这份秩序感，从来不是死板的坚持，而是你捂热不安的温柔方式 —— 用清晰的规则挡住突如其来的乱，用可控的流程抵消不知道怎么办的慌。它是你在混乱里，亲手抓住的一根救命稻草，让你终于能从被动承受变成主动掌控，哪怕只是一点点掌控感，也够让你喘口气、安下心。\n\n长大后你把这份需求带进亲密关系，想要的从不是冷冰冰的条款，而是不用猜、不内耗的踏实。你怕的不是生活有变化，是毫无章法的混乱；怕的不是遇到问题，是没人和你一起解决的孤单。你要的秩序，本质上是有人和你一起稳住日子的安心 —— 不用再自己一个人扛着所有乱，不用再慌慌张张找方向，有人和你一起把日子捋顺、把心稳住，这才是你最深处的渴望。`,
-      reshape: `重塑：允许关系有温柔的留白\n\n1、接纳自己的秩序需求，它从不是过度理性\n不用因为凡事想捋清楚、喜欢有章法就苛责自己，也不用强迫自己刻意学浪漫。你对秩序的渴求，是保护自己也守护关系的珍贵能力 —— 清晰的边界、坦诚的沟通本就是长期关系的基石，你的需求一点都不过分，更不是需要修正的缺点。\n\n2、分清问题和情绪，给彼此缓冲空间\n下次遇到矛盾，别急着立刻推进解决。先问问自己：对方现在需要的是具体方案，还是只想被理解？试着先接住对方的情绪，比如轻轻说一句你现在肯定不好受，等情绪慢慢平复，再一起聊怎么处理。秩序感很重要，但情感的温度，和秩序感一样，都是关系能长久的底气。\n\n3、允许关系有暂时没答案的空白，但不接受逃避\n你不用要求所有事都立刻有结果，也可以允许彼此有慢慢梳理的时间，但这份空白不能成为对方回避沟通的借口。要拎得清：对方是真的需要时间消化，还是根本不愿面对问题？只要能看到对方的诚意，感受到他在努力靠近、愿意一起面对，偶尔慢一点、留白久一点，也没关系。`,
+      origins: `深度溯源：看见那个靠秩序保护自己的小孩\n\n小时候的你，最怕没个准数的慌。可能是答应好的旅行说黄就黄，连句像样的解释都没有；可能是家里的规矩朝令夕改，今天允许的事明天就被否定，全看大人心情；也可能是遇事没人牵头，让你一个小孩站在原地手足无措。那种抓不住任何东西的无助，悄悄在心里压了一层又一层。\n\n你慢慢发现，只有自己给自己找章法才踏实：把玩具摆得整整齐齐，心里的乱就跟着少一点。这份秩序感，从来不是死板的坚持，而是你捂热不安的温柔方式 —— 用清晰的规则挡住突如其来的乱，用可控的流程抵消不知道怎么办的慌。\n\n长大后你把这份需求带进亲密关系，想要的从不是冷冰冰的条款，而是不用猜、不内耗的踏实。你要的秩序，本质上是有人和你一起稳住日子的安心。`,
+      reshape: `重塑：允许关系有温柔的留白\n\n1、接纳自己的秩序需求，它从不是过度理性\n你对秩序的渴求，是保护自己也守护关系的珍贵能力 —— 清晰的边界、坦诚的沟通本就是长期关系的基石，你的需求一点都不过分，更不是需要修正的缺点。\n\n2、分清问题和情绪，给彼此缓冲空间\n下次遇到矛盾，别急着立刻推进解决。先问问自己：对方现在需要的是具体方案，还是只想被理解？试着先接住对方的情绪，比如轻轻说一句你现在肯定不好受，等情绪慢慢平复，再一起聊怎么处理。秩序感很重要，但情感的温度，和秩序感一样，都是关系能长久的底气。\n\n3、允许关系有暂时没答案的空白，但不接受逃避\n你不用要求所有事都立刻有结果，也可以允许彼此有慢慢梳理的时间，但这份空白不能成为对方回避沟通的借口。要拎得清：对方是真的需要时间消化，还是根本不愿面对问题？只要能看到对方的诚意，感受到他在努力靠近、愿意一起面对，偶尔慢一点、留白久一点，也没关系。`,
       blessing: `愿你遇见这样的同行者：不回避问题，不敷衍沟通，愿意和你一起把话说透、把日子捋顺，在亲密、友情、合作里，主动与你并肩分担 —— 不用你独自扛起混乱，而是一起把琐碎梳理成暖意，让秩序不再是负担，而是彼此安心的底气。\n\n也愿你始终懂得：你的清晰、原则与不将就的坚持，从来都是珍贵的礼物。有章法的相处少内耗，有共识的陪伴最绵长，这份踏实的温暖，会在岁月里慢慢沉淀，成为你最长久的幸福。`
     }
   }
 };
 
+// 雷达图的维度
 const ALL_DIMENSIONS = ["确定感", "被需要", "掌控感", "被偏爱", "精神共鸣", "自由感", "安全距离", "秩序感"];
 
 export default function SoulScan_StainedGlass() {
@@ -323,6 +324,7 @@ export default function SoulScan_StainedGlass() {
   const [code, setCode] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [scores, setScores] = useState({});
@@ -331,14 +333,20 @@ export default function SoulScan_StainedGlass() {
   
   // 动画与分享状态
   const [flipped, setFlipped] = useState(false);
-  const [isExploding, setIsExploding] = useState(false);
-  const [isShaking, setIsShaking] = useState(false); // 新增：晃动状态
+  const [isShaking, setIsShaking] = useState(false); // 震动
+  const [isExploding, setIsExploding] = useState(false); // 白光
   const [showFinal, setShowFinal] = useState(false);
+  
   const [chartData, setChartData] = useState([]);
   const [activeTab, setActiveTab] = useState('base');
   const [saving, setSaving] = useState(false);
 
-  // --- 登录交互 (1次性码核销) ---
+  // 解决 Hydration 报错
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // --- 1. 登录交互 ---
   const handleVerify = async () => {
     setErrorMsg('');
     const inputCode = code.trim();
@@ -426,29 +434,31 @@ export default function SoulScan_StainedGlass() {
     }, 2500);
   };
 
-  // 优化的卡牌转场动画
+  // 优化的转场动画逻辑
   const handleCardClick = () => {
     if (flipped) return;
-    setFlipped(true); // 1. 开始翻转
     
-    // 2. 翻转完成后 (0.8s) 开始剧烈晃动
+    // 阶段1：优雅翻转 (0s -> 0.8s)
+    setFlipped(true);
+    
+    // 阶段2：剧烈震动 (0.8s -> 2.3s)
     setTimeout(() => {
       setIsShaking(true);
     }, 800);
 
-    // 3. 晃动一阵子后 (2.0s) 开始白光爆炸
+    // 阶段3：白光炸裂 (2.3s -> 3.0s)
     setTimeout(() => {
       setIsExploding(true);
       
-      // 4. 白光散去后 (2.6s) 切换页面
+      // 阶段4：切换页面 (3.0s)
       setTimeout(() => {
         setShowFinal(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 600);
-    }, 2000);
+      }, 700); // 白光持续时间
+    }, 2300);
   };
 
-  // 1. 生成纯净海报 (左键)
+  // 1. 生成纯净海报
   const handleSavePoster = async () => {
     const element = document.getElementById('clean-poster-area');
     if (!element) return;
@@ -457,21 +467,21 @@ export default function SoulScan_StainedGlass() {
     try {
       const canvas = await html2canvas(element, {
         useCORS: true,
-        scale: 2,
+        scale: 2, // 高清
         backgroundColor: null,
       });
       const link = document.createElement('a');
       link.download = `我的欲望底色-${results.primary}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
-      alert("✅ 结果卡片已保存！\n快去小红书晒出你的结果吧~");
+      alert("✅ 结果卡片已保存！\n快去小红书评论区晒出你的结果吧~");
     } catch (err) {
       console.error('Poster failed', err);
     }
     setSaving(false);
   };
 
-  // 2. 复制信封链接 (右键)
+  // 2. 复制信封链接
   const handleCopyLink = () => {
     const link = `${SITE_URL}/letter?type=${results.primary}`;
     navigator.clipboard.writeText(link).then(() => {
@@ -485,8 +495,10 @@ export default function SoulScan_StainedGlass() {
     window.location.href = "https://www.xiaohongshu.com";
   };
 
+  if (!mounted) return null; // 防止 Hydration Error
+
   const progress = ((currentQIndex + 1) / QUESTIONS.length) * 100;
-  const displayData = RESULTS[results.primary];
+  const displayData = results.primary ? RESULTS[results.primary] : null;
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] text-[#4A4A4A] font-sans selection:bg-rose-100 flex flex-col overflow-x-hidden">
@@ -606,20 +618,41 @@ export default function SoulScan_StainedGlass() {
       {/* Result Step 1: Card Flip + Crack */}
       {step === 'result_card' && !showFinal && (
         <div className="flex-1 flex flex-col items-center justify-center animate-fade-in p-6 bg-stone-900 relative overflow-hidden">
-          <div className={`absolute inset-0 z-50 bg-white pointer-events-none transition-opacity duration-1000 ${isExploding ? 'opacity-100' : 'opacity-0'}`}></div>
+          
+          {/* 白光遮罩 */}
+          <div className={`absolute inset-0 z-50 bg-white pointer-events-none transition-opacity duration-700 ${isExploding ? 'opacity-100' : 'opacity-0'}`}></div>
+
           <p className={`text-center text-[10px] text-stone-400 mb-8 tracking-[0.2em] uppercase transition-opacity ${flipped ? 'opacity-0' : 'opacity-100'}`}>Tap to Reveal</p>
-          <div className="relative w-full max-w-sm aspect-[4/5] perspective-1000 cursor-pointer group" onClick={handleCardClick}>
-            <div className={`relative w-full h-full duration-1000 transform-style-3d transition-transform ${flipped ? 'rotate-y-180' : ''} ${isShaking ? 'animate-violent-shake' : ''}`}>
+          
+          <div 
+            className="relative w-full max-w-sm aspect-[4/5] perspective-1000 cursor-pointer group" 
+            onClick={handleCardClick}
+          >
+            {/* 核心动画容器：翻转 + 震动 */}
+            <div className={`relative w-full h-full duration-1000 transform-style-3d transition-transform 
+              ${flipped ? 'rotate-y-180' : ''} 
+              ${isShaking ? 'animate-violent-shake' : ''}`
+            }>
+              
+              {/* Back (封面) */}
               <div className="absolute inset-0 backface-hidden bg-stone-800 rounded-[2rem] shadow-2xl border border-white/10 flex flex-col items-center justify-center">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20" />
                 <Sparkles className="w-16 h-16 text-rose-200/50 mb-6 animate-pulse" />
                 <h3 className="text-rose-100/90 text-lg font-serif tracking-widest">点击揭晓</h3>
               </div>
-              <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col justify-between text-white p-8 bg-gradient-to-br ${RESULTS[results.primary].cardStyle} backdrop-blur-xl border border-white/30`}>
-                <div className="relative z-10 text-center mt-20">
-                    <div className="w-20 h-20 mx-auto mb-6 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">{RESULTS[results.primary].icon}</div>
-                    <h2 className="text-4xl font-serif font-bold mb-2 drop-shadow-md">{results.primary}</h2>
-                </div>
+
+              {/* Front (结果) */}
+              <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col justify-between text-white p-8 
+                bg-gradient-to-br ${displayData ? displayData.cardStyle : 'from-gray-800 to-black'} backdrop-blur-xl border border-white/30`}>
+                
+                {displayData && (
+                  <div className="relative z-10 text-center mt-20">
+                      <div className="w-20 h-20 mx-auto mb-6 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
+                        {displayData.icon}
+                      </div>
+                      <h2 className="text-4xl font-serif font-bold mb-2 drop-shadow-md">{results.primary}</h2>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -686,7 +719,7 @@ export default function SoulScan_StainedGlass() {
                     <div className="bg-amber-50/50 p-5 rounded-2xl border border-amber-100">
                         <h4 className="text-xs font-bold mb-4 flex items-center gap-2 text-amber-700"><Sun className="w-4 h-4" /> 你的光 (天赋优势)</h4>
                         <div className="space-y-4">
-                           {displayData.tabs.lightShadow.filter(i => i.label.includes('光')).map((item, idx) => (
+                           {displayData.tabs.lightShadow.filter(i => i.label.includes('(光)')).map((item, idx) => (
                              <div key={idx}>
                                <span className="text-xs font-bold text-amber-800 block mb-1">{item.label.split(' ')[0]}</span>
                                <p className="text-xs text-stone-600 leading-relaxed">{item.text}</p>
@@ -697,7 +730,7 @@ export default function SoulScan_StainedGlass() {
                     <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
                         <h4 className="text-xs font-bold mb-4 flex items-center gap-2 text-slate-600"><Moon className="w-4 h-4" /> 你的影 (成长挑战)</h4>
                         <div className="space-y-4">
-                           {displayData.tabs.lightShadow.filter(i => i.label.includes('影')).map((item, idx) => (
+                           {displayData.tabs.lightShadow.filter(i => i.label.includes('(影)')).map((item, idx) => (
                              <div key={idx}>
                                <span className="text-xs font-bold text-slate-700 block mb-1">{item.label.split(' ')[0]}</span>
                                <p className="text-xs text-stone-600 leading-relaxed">{item.text}</p>
@@ -735,7 +768,7 @@ export default function SoulScan_StainedGlass() {
               onClick={handleCopyLink}
               className="flex-1 py-3 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
             >
-              <Mail className="w-4 h-4" />
+              <LinkIcon className="w-4 h-4" />
               复制心之密语 (微信用)
             </button>
           </div>
