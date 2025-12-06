@@ -80,11 +80,9 @@ const RESULTS = {
     archetype: "风暴中的守夜人",
     icon: <Anchor className="w-8 h-8" />,
     quote: "万物皆流变，而我只要一种绝对的定数。",
-    // 背景：稍微提高亮度和通透度
     cardStyle: "from-blue-800 to-slate-900 shadow-[0_0_50px_-10px_rgba(30,58,138,0.4)] border-blue-800/30",
     accentColor: "text-blue-800",
     radarColor: "#1e40af",
-    // 撞色书签：深蓝配香槟金
     tabActiveColor: "bg-amber-100 text-blue-900 border-amber-200",
     tabInactiveColor: "bg-white/80 text-blue-900/50",
     themeColor: "bg-blue-800",
@@ -115,11 +113,9 @@ const RESULTS = {
     archetype: "以付出为锚的守护者",
     icon: <Heart className="w-8 h-8" />,
     quote: "没有你，我只是一片废墟。",
-    // 暖色系：琥珀色调
     cardStyle: "from-amber-500 to-orange-700 shadow-[0_0_50px_-10px_rgba(245,158,11,0.4)] border-amber-500/30",
     accentColor: "text-amber-700",
     radarColor: "#d97706",
-    // 撞色书签：暖橙配青黛色
     tabActiveColor: "bg-teal-50 text-orange-800 border-teal-200",
     tabInactiveColor: "bg-white/80 text-orange-800/50",
     themeColor: "bg-amber-600",
@@ -150,11 +146,9 @@ const RESULTS = {
     archetype: "为关系掌舵的同行者",
     icon: <Zap className="w-8 h-8" />,
     quote: "我抛开了所有理智，只求你结束我的痛苦。",
-    // 勃艮第红
     cardStyle: "from-red-800 to-slate-900 shadow-[0_0_50px_-10px_rgba(159,18,57,0.4)] border-rose-900/30",
     accentColor: "text-rose-900",
     radarColor: "#881337",
-    // 撞色书签：深红配冷灰白
     tabActiveColor: "bg-slate-100 text-rose-900 border-slate-200",
     tabInactiveColor: "bg-white/80 text-rose-900/50",
     themeColor: "bg-rose-900",
@@ -186,11 +180,9 @@ const RESULTS = {
     archetype: "渴求例外的驯养者",
     icon: <Sparkles className="w-8 h-8" />,
     quote: "你要永远为你驯服的东西负责。",
-    // 玫瑰金 & 浪漫粉
     cardStyle: "from-pink-400 to-rose-600 shadow-[0_0_50px_-10px_rgba(244,114,182,0.4)] border-pink-400/30",
     accentColor: "text-pink-600",
     radarColor: "#db2777",
-    // 撞色书签：粉色配冷调银
     tabActiveColor: "bg-slate-50 text-pink-700 border-slate-200",
     tabInactiveColor: "bg-white/80 text-pink-700/50",
     themeColor: "bg-pink-500",
@@ -223,11 +215,9 @@ const RESULTS = {
     archetype: "灵魂旷野的寻觅者",
     icon: <Eye className="w-8 h-8" />,
     quote: "我们相遇在精神的旷野，无需言语便已相通。",
-    // 极光紫 & 靛蓝
     cardStyle: "from-violet-600 to-indigo-900 shadow-[0_0_50px_-10px_rgba(124,58,237,0.4)] border-purple-500/30",
     accentColor: "text-purple-700",
     radarColor: "#9333ea",
-    // 撞色书签：紫色配亮黄
     tabActiveColor: "bg-yellow-50 text-purple-900 border-yellow-200",
     tabInactiveColor: "bg-white/80 text-purple-900/50",
     themeColor: "bg-purple-600",
@@ -260,11 +250,9 @@ const RESULTS = {
     archetype: "守望星空的风之子",
     icon: <Wind className="w-8 h-8" />,
     quote: "我爱你，却不愿用爱束缚你。",
-    // 天空蓝 & 纯净青
     cardStyle: "from-sky-400 to-blue-600 shadow-[0_0_50px_-10px_rgba(14,165,233,0.4)] border-sky-300/30",
     accentColor: "text-sky-600",
     radarColor: "#0284c7",
-    // 撞色书签：天蓝配纯白
     tabActiveColor: "bg-white text-sky-600 border-sky-100",
     tabInactiveColor: "bg-white/60 text-sky-800/50",
     themeColor: "bg-sky-500",
@@ -297,11 +285,9 @@ const RESULTS = {
     archetype: "迷雾中的试探者",
     icon: <Shield className="w-8 h-8" />,
     quote: "待人如执烛，太近灼手，太远暗生。",
-    // 森林绿 & 墨绿
     cardStyle: "from-emerald-600 to-teal-800 shadow-[0_0_50px_-10px_rgba(5,150,105,0.4)] border-emerald-600/30",
     accentColor: "text-emerald-700",
     radarColor: "#059669",
-    // 撞色书签：墨绿配米色
     tabActiveColor: "bg-orange-50 text-emerald-800 border-orange-100",
     tabInactiveColor: "bg-white/80 text-emerald-800/50",
     themeColor: "bg-emerald-700",
@@ -334,11 +320,9 @@ const RESULTS = {
     archetype: "构建未来的建筑师",
     icon: <Grid className="w-8 h-8" />,
     quote: "好的关系，是一起把日子过成有章法的温柔。",
-    // 普鲁士蓝灰 & 钢蓝
     cardStyle: "from-slate-700 to-gray-900 shadow-[0_0_50px_-10px_rgba(51,65,85,0.4)] border-slate-600/30",
     accentColor: "text-slate-700",
     radarColor: "#475569",
-    // 撞色书签：深灰配纯黑白
     tabActiveColor: "bg-white text-slate-800 border-gray-300",
     tabInactiveColor: "bg-white/70 text-slate-600/50",
     themeColor: "bg-slate-700",
@@ -478,7 +462,6 @@ export default function SoulScan_StainedGlass() {
     } else {
       const nextIndex = currentQIndex + 1;
       setCurrentQIndex(nextIndex);
-      // 切换题目时自动回到顶部
       if (scrollContainerRef.current) {
         scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
       }
@@ -531,7 +514,6 @@ export default function SoulScan_StainedGlass() {
     }, 2500);
   };
 
-  // --- 优化后的卡牌动画逻辑 ---
   const handleCardClick = () => {
     if (cardState !== 'idle') return;
     
@@ -696,9 +678,9 @@ export default function SoulScan_StainedGlass() {
 
         {/* --- Quiz --- */}
         {step === 'quiz' && (
-          <div className="min-h-full flex flex-col pt-20 px-6 animate-slide-up max-w-md mx-auto w-full relative">
+          <div className="min-h-full flex flex-col pt-14 px-6 animate-slide-up max-w-md mx-auto w-full relative">
             
-            <div className="w-full h-1 bg-stone-100 rounded-full mb-8 overflow-hidden flex-none">
+            <div className="w-full h-1 bg-stone-100 rounded-full mb-5 overflow-hidden flex-none">
               <div 
                 className="h-full bg-rose-400 transition-all duration-500 ease-out"
                 style={{ width: `${progress}%` }}
@@ -706,8 +688,8 @@ export default function SoulScan_StainedGlass() {
             </div>
             
             <div className="flex-1 flex flex-col pb-32">
-               <div className="mb-6">
-                 <span className="text-[10px] font-bold tracking-widest uppercase text-rose-400 bg-rose-50 px-2 py-1 rounded inline-block mb-4">
+               <div className="mb-4">
+                 <span className="text-[10px] font-bold tracking-widest uppercase text-rose-400 bg-rose-50 px-2 py-1 rounded inline-block mb-2">
                    {currentQIndex < 16 ? 'Reality' : currentQIndex < 32 ? 'Emotion' : 'Soul'}
                  </span>
                  <h2 className="text-lg font-serif font-medium leading-relaxed text-stone-800">
@@ -741,7 +723,7 @@ export default function SoulScan_StainedGlass() {
                </div>
                
                {/* 底部流式原创说明 */}
-               <div className="mt-auto pt-16 text-center opacity-60">
+               <div className="mt-auto pt-12 pb-4 text-center opacity-60">
                   <p className="text-[10px] text-stone-400 tracking-widest">柚子的心理小屋 · 原创出品</p>
                </div>
             </div>
@@ -972,7 +954,7 @@ export default function SoulScan_StainedGlass() {
                       )}
                   </div>
 
-                  {/* 底部版权 - 优化版 */}
+                  {/* 底部版权 */}
                   <div className="mt-12 mb-8 text-center px-6">
                       <p className="font-serif italic text-stone-400/80 text-xs mb-6">
                         {displayData.blessing}
