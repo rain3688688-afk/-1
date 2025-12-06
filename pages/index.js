@@ -80,9 +80,11 @@ const RESULTS = {
     archetype: "风暴中的守夜人",
     icon: <Anchor className="w-8 h-8" />,
     quote: "万物皆流变，而我只要一种绝对的定数。",
+    // 背景：稍微提高亮度和通透度
     cardStyle: "from-blue-800 to-slate-900 shadow-[0_0_50px_-10px_rgba(30,58,138,0.4)] border-blue-800/30",
     accentColor: "text-blue-800",
     radarColor: "#1e40af",
+    // 撞色书签：深蓝配香槟金
     tabActiveColor: "bg-amber-100 text-blue-900 border-amber-200",
     tabInactiveColor: "bg-white/80 text-blue-900/50",
     themeColor: "bg-blue-800",
@@ -113,9 +115,11 @@ const RESULTS = {
     archetype: "以付出为锚的守护者",
     icon: <Heart className="w-8 h-8" />,
     quote: "没有你，我只是一片废墟。",
+    // 暖色系：琥珀色调
     cardStyle: "from-amber-500 to-orange-700 shadow-[0_0_50px_-10px_rgba(245,158,11,0.4)] border-amber-500/30",
     accentColor: "text-amber-700",
     radarColor: "#d97706",
+    // 撞色书签：暖橙配青黛色
     tabActiveColor: "bg-teal-50 text-orange-800 border-teal-200",
     tabInactiveColor: "bg-white/80 text-orange-800/50",
     themeColor: "bg-amber-600",
@@ -146,9 +150,11 @@ const RESULTS = {
     archetype: "为关系掌舵的同行者",
     icon: <Zap className="w-8 h-8" />,
     quote: "我抛开了所有理智，只求你结束我的痛苦。",
+    // 勃艮第红
     cardStyle: "from-red-800 to-slate-900 shadow-[0_0_50px_-10px_rgba(159,18,57,0.4)] border-rose-900/30",
     accentColor: "text-rose-900",
     radarColor: "#881337",
+    // 撞色书签：深红配冷灰白
     tabActiveColor: "bg-slate-100 text-rose-900 border-slate-200",
     tabInactiveColor: "bg-white/80 text-rose-900/50",
     themeColor: "bg-rose-900",
@@ -180,9 +186,11 @@ const RESULTS = {
     archetype: "渴求例外的驯养者",
     icon: <Sparkles className="w-8 h-8" />,
     quote: "你要永远为你驯服的东西负责。",
+    // 玫瑰金 & 浪漫粉
     cardStyle: "from-pink-400 to-rose-600 shadow-[0_0_50px_-10px_rgba(244,114,182,0.4)] border-pink-400/30",
     accentColor: "text-pink-600",
     radarColor: "#db2777",
+    // 撞色书签：粉色配冷调银
     tabActiveColor: "bg-slate-50 text-pink-700 border-slate-200",
     tabInactiveColor: "bg-white/80 text-pink-700/50",
     themeColor: "bg-pink-500",
@@ -215,9 +223,11 @@ const RESULTS = {
     archetype: "灵魂旷野的寻觅者",
     icon: <Eye className="w-8 h-8" />,
     quote: "我们相遇在精神的旷野，无需言语便已相通。",
+    // 极光紫 & 靛蓝
     cardStyle: "from-violet-600 to-indigo-900 shadow-[0_0_50px_-10px_rgba(124,58,237,0.4)] border-purple-500/30",
     accentColor: "text-purple-700",
     radarColor: "#9333ea",
+    // 撞色书签：紫色配亮黄
     tabActiveColor: "bg-yellow-50 text-purple-900 border-yellow-200",
     tabInactiveColor: "bg-white/80 text-purple-900/50",
     themeColor: "bg-purple-600",
@@ -250,9 +260,11 @@ const RESULTS = {
     archetype: "守望星空的风之子",
     icon: <Wind className="w-8 h-8" />,
     quote: "我爱你，却不愿用爱束缚你。",
+    // 天空蓝 & 纯净青
     cardStyle: "from-sky-400 to-blue-600 shadow-[0_0_50px_-10px_rgba(14,165,233,0.4)] border-sky-300/30",
     accentColor: "text-sky-600",
     radarColor: "#0284c7",
+    // 撞色书签：天蓝配纯白
     tabActiveColor: "bg-white text-sky-600 border-sky-100",
     tabInactiveColor: "bg-white/60 text-sky-800/50",
     themeColor: "bg-sky-500",
@@ -285,9 +297,11 @@ const RESULTS = {
     archetype: "迷雾中的试探者",
     icon: <Shield className="w-8 h-8" />,
     quote: "待人如执烛，太近灼手，太远暗生。",
+    // 森林绿 & 墨绿
     cardStyle: "from-emerald-600 to-teal-800 shadow-[0_0_50px_-10px_rgba(5,150,105,0.4)] border-emerald-600/30",
     accentColor: "text-emerald-700",
     radarColor: "#059669",
+    // 撞色书签：墨绿配米色
     tabActiveColor: "bg-orange-50 text-emerald-800 border-orange-100",
     tabInactiveColor: "bg-white/80 text-emerald-800/50",
     themeColor: "bg-emerald-700",
@@ -320,9 +334,11 @@ const RESULTS = {
     archetype: "构建未来的建筑师",
     icon: <Grid className="w-8 h-8" />,
     quote: "好的关系，是一起把日子过成有章法的温柔。",
+    // 普鲁士蓝灰 & 钢蓝
     cardStyle: "from-slate-700 to-gray-900 shadow-[0_0_50px_-10px_rgba(51,65,85,0.4)] border-slate-600/30",
     accentColor: "text-slate-700",
     radarColor: "#475569",
+    // 撞色书签：深灰配纯黑白
     tabActiveColor: "bg-white text-slate-800 border-gray-300",
     tabInactiveColor: "bg-white/70 text-slate-600/50",
     themeColor: "bg-slate-700",
@@ -372,7 +388,7 @@ export default function SoulScan_StainedGlass() {
   const [isLoading, setIsLoading] = useState(false);
   
   const [currentQIndex, setCurrentQIndex] = useState(0);
-  const [answers, setAnswers] = useState({}); // 记录每一题的选择: { qId: 'type' }
+  const [answers, setAnswers] = useState({}); 
   const [results, setResults] = useState({ primary: null });
   const [currentPart, setCurrentPart] = useState(null);
   const [showPartModal, setShowPartModal] = useState(false);
@@ -433,10 +449,7 @@ export default function SoulScan_StainedGlass() {
   };
 
   const handlePartTransition = (index) => {
-    // 查找当前题目属于哪个 Part
     const part = PARTS_CONFIG.find(p => index >= p.startIndex && index <= p.endIndex);
-    
-    // 如果是新 Part 的第一题，且之前没有进入过这个 Part 介绍页
     const isPartStart = part && index === part.startIndex;
     
     if (isPartStart) {
@@ -447,7 +460,6 @@ export default function SoulScan_StainedGlass() {
     }
   };
 
-  // 选中答案（不自动跳转）
   const handleSelectOption = (type) => {
     setAnswers(prev => ({
       ...prev,
@@ -455,44 +467,35 @@ export default function SoulScan_StainedGlass() {
     }));
   };
 
-  // 下一题逻辑
   const handleNext = () => {
-    // 必须先选择答案
     if (!answers[currentQIndex]) return;
 
-    // 检查是否是 Part 的最后一题
     const currentPartConfig = PARTS_CONFIG.find(p => currentQIndex >= p.startIndex && currentQIndex <= p.endIndex);
     const isEndOfPart = currentPartConfig && currentQIndex === currentPartConfig.endIndex;
 
     if (isEndOfPart) {
-      setShowPartModal(true); // 触发 Part 确认弹窗
+      setShowPartModal(true); 
     } else {
       const nextIndex = currentQIndex + 1;
       setCurrentQIndex(nextIndex);
-      // 只有在新 Part 开始时才触发介绍页，普通题目切换不需要
-      // 已经在 handlePartTransition 处理了 Part 逻辑，但这里是普通题目切换
-      // 普通题目切换不需要特殊处理，直接滚动置顶
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
-  // 确认进入下一 Part
   const confirmNextPart = () => {
     setShowPartModal(false);
     const nextIndex = currentQIndex + 1;
     
     if (nextIndex < QUESTIONS.length) {
       setCurrentQIndex(nextIndex);
-      handlePartTransition(nextIndex); // 这里会检测是否展示新 Part 介绍页
+      handlePartTransition(nextIndex); 
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       finishQuiz();
     }
   };
 
-  // 上一题逻辑
   const handlePrev = () => {
-    // 获取当前 Part 的起始索引，不允许跨越 Part 返回
     const currentPartConfig = PARTS_CONFIG.find(p => currentQIndex >= p.startIndex && currentQIndex <= p.endIndex);
     if (currentPartConfig && currentQIndex > currentPartConfig.startIndex) {
       setCurrentQIndex(currentQIndex - 1);
@@ -502,7 +505,6 @@ export default function SoulScan_StainedGlass() {
   const finishQuiz = () => {
     setStep('analyzing');
     
-    // 统计分数
     const finalScores = {};
     Object.values(answers).forEach(type => {
       finalScores[type] = (finalScores[type] || 0) + 1;
@@ -546,13 +548,13 @@ export default function SoulScan_StainedGlass() {
                 setShowFinal(true);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }, 800);
-         }, 1200); // 震动时间缩短
+         }, 1200); 
 
        }, 2000);
     }, 1000);
   };
 
-  // 结果页自动弹窗：屏幕绝对居中
+  // 结果页自动弹窗：屏幕 Top 35% 显眼位置
   useEffect(() => {
     if (showFinal) {
         const timer = setTimeout(() => {
@@ -712,7 +714,7 @@ export default function SoulScan_StainedGlass() {
                  const isSelected = answers[currentQIndex] === opt.type;
                  return (
                    <button
-                     key={`${currentQIndex}-${idx}`} // 使用 currentQIndex 作为 key 的一部分，强制重新渲染，清除残留状态
+                     key={`${currentQIndex}-${idx}`} 
                      onClick={() => handleSelectOption(opt.type)}
                      className={`w-full text-left p-5 border rounded-2xl shadow-sm transition-all duration-200 active:scale-[0.98] group relative overflow-hidden
                        ${isSelected 
@@ -834,14 +836,24 @@ export default function SoulScan_StainedGlass() {
                 <p className="absolute bottom-8 text-[10px] text-white/20">柚子的心理小屋</p>
               </div>
 
-              <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col justify-between text-white p-8 
+              <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col items-center justify-center text-white p-8 
                 bg-gradient-to-br ${RESULTS[results.primary].cardStyle} backdrop-blur-xl border border-white/30 relative h-full w-full`}>
-                <div className="absolute inset-0 bg-white/10 mix-blend-overlay" />
-                <div className="relative z-10 text-center mt-20">
-                    <div className="w-20 h-20 mx-auto mb-6 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
+                
+                {/* 噪点纹理叠加 */}
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/noise.png')] opacity-10 mix-blend-overlay" />
+                
+                <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center">
+                    <div className="w-24 h-24 mb-8 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
                       {RESULTS[results.primary].icon}
                     </div>
-                    <h2 className="text-4xl font-serif font-bold mb-2 drop-shadow-md">{results.primary}</h2>
+                    <h2 className="text-4xl font-serif font-bold mb-6 drop-shadow-lg tracking-wider">{results.primary}</h2>
+                    
+                    {/* 判词装饰线 */}
+                    <div className="w-12 h-[1px] bg-white/40 mb-6"></div>
+                    
+                    <p className="text-sm font-serif italic text-white/90 leading-7 opacity-90 max-w-[80%]">
+                      {RESULTS[results.primary].quote}
+                    </p>
                 </div>
               </div>
             </div>
@@ -851,7 +863,7 @@ export default function SoulScan_StainedGlass() {
 
       {/* --- Result Step 2: Final Share Page (Poster Optimized) --- */}
       {showFinal && displayData && (
-        <div className="flex-1 flex flex-col animate-fade-in-slow bg-[#FAFAFA] pb-12">
+        <div className="flex-1 flex flex-col animate-fade-in-slow bg-[#FAFAFA] pb-12 relative">
           
           <div id="poster-area" className="bg-[#FAFAFA] relative">
               <div className={`pt-14 pb-16 px-6 rounded-b-[3.5rem] shadow-2xl bg-gradient-to-b ${displayData.cardStyle} text-white relative overflow-hidden`}>
@@ -1013,6 +1025,7 @@ export default function SoulScan_StainedGlass() {
                     )}
                 </div>
 
+                {/* 底部版权 - 优化版 */}
                 <div className="mt-12 mb-8 text-center px-6">
                     <p className="font-serif italic text-stone-400/80 text-xs mb-6">
                       {displayData.blessing}
@@ -1025,31 +1038,24 @@ export default function SoulScan_StainedGlass() {
               </div>
           </div>
 
-          {/* 截图提示弹窗 (绝对居中) */}
+          {/* 截图提示弹窗 (屏幕 Top 35% 显眼位置) */}
           {showScreenshotTip && (
-             <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
-                {/* 遮罩，点击可关闭 */}
-                <div 
-                  className="absolute inset-0 bg-black/30 backdrop-blur-sm animate-fade-in"
-                  onClick={() => setShowScreenshotTip(false)}
-                />
-                
-                {/* 弹窗主体 */}
-                <div className="bg-white/90 backdrop-blur-xl border border-white/60 px-6 py-5 rounded-2xl shadow-2xl flex flex-col items-center gap-4 animate-slide-up relative z-10 w-full max-w-xs text-center">
-                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center text-rose-500 shadow-sm">
-                     <Camera className="w-6 h-6 animate-pulse" />
+             <div className="fixed top-[35%] left-1/2 -translate-x-1/2 z-[100] w-[85%] max-w-xs animate-slide-up">
+                <div className="bg-white/95 backdrop-blur-2xl border border-white/60 px-6 py-6 rounded-3xl shadow-[0_20px_50px_-10px_rgba(0,0,0,0.2)] flex flex-col items-center gap-4 relative text-center">
+                   <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-rose-100 to-orange-50 flex items-center justify-center text-rose-500 shadow-inner mb-1">
+                     <Camera className="w-7 h-7 animate-pulse" />
                    </div>
                    <div>
-                     <h4 className="text-sm font-bold text-stone-800 mb-1">测试已完成</h4>
-                     <p className="text-xs text-stone-500 leading-relaxed">
-                       请长按屏幕或截图<br/>保存你的专属结果海报
+                     <h4 className="text-sm font-bold text-stone-800 mb-2">测试报告已生成</h4>
+                     <p className="text-xs text-stone-500 leading-relaxed px-2">
+                       该页面包含动态交互<br/>请<span className="font-bold text-rose-500">长按屏幕</span>或<span className="font-bold text-rose-500">截图</span>保存海报
                      </p>
                    </div>
                    <button 
                      onClick={() => setShowScreenshotTip(false)}
-                     className="mt-2 text-stone-400 hover:text-stone-600 p-2 bg-stone-100 rounded-full transition-colors"
+                     className="absolute top-4 right-4 text-stone-300 hover:text-stone-500 p-1"
                    >
-                     <X className="w-4 h-4" />
+                     <X className="w-5 h-5" />
                    </button>
                 </div>
              </div>
