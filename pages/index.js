@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, Lock, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, ChevronRight, BookOpen, Key, Feather, Search, X, Camera, CheckCircle2, ArrowLeft, ArrowRight, AlertCircle } from 'lucide-react';
+import { Sparkles, Lock, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, ChevronRight, BookOpen, Key, Feather, Search, X, Camera, CheckCircle2, ArrowLeft, ArrowRight, AlertCircle, Share2, Copy, Link as LinkIcon } from 'lucide-react';
 import Head from 'next/head';
 import { createClient } from '@supabase/supabase-js';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
@@ -12,7 +12,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// 章节配置 (定义每个Part的起始和结束索引)
+// 章节配置
 const PARTS_CONFIG = [
   { id: 1, startIndex: 0, endIndex: 15, title: "Part 1：现实切片", quote: "“爱不仅仅是誓言，更是下意识的本能。”", desc: "先让我们从生活的琐碎里，捕捉你在亲密关系中那些最真实的条件反射。" },
   { id: 2, startIndex: 16, endIndex: 31, title: "Part 2：情绪暗涌", quote: "“日常的表象之下，藏着我们未曾说出口的渴望。”", desc: "现在的你，已经脱去了社交伪装。让我们再往下潜一点，去触碰那些让你感到不安、委屈或满足的瞬间。" },
@@ -73,18 +73,16 @@ const QUESTIONS = [
   { id: 48, question: "最后，请凭直觉填空：爱是______。", options: [{ text: "定数。唯一不会更改的答案。", type: "确定感" }, { text: "认出。茫茫人海辨认出彼此是同类。", type: "精神共鸣" }, { text: "成全。不捆绑，拥有更广阔天空。", type: "自由感" }, { text: "治愈。看见你的破碎，甘愿做药。", type: "被需要" }] }
 ];
 
-// --- 结果配置 (全面优化：轻盈感 + 撞色书签 + 雷达图高亮) ---
+// --- 结果配置 (全面优化) ---
 const RESULTS = {
   "确定感": {
     type: "确定感",
     archetype: "风暴中的守夜人",
     icon: <Anchor className="w-8 h-8" />,
     quote: "万物皆流变，而我只要一种绝对的定数。",
-    // 背景：稍微提高亮度和通透度
     cardStyle: "from-blue-800 to-slate-900 shadow-[0_0_50px_-10px_rgba(30,58,138,0.4)] border-blue-800/30",
     accentColor: "text-blue-800",
     radarColor: "#1e40af",
-    // 撞色书签：深蓝配香槟金
     tabActiveColor: "bg-amber-100 text-blue-900 border-amber-200",
     tabInactiveColor: "bg-white/80 text-blue-900/50",
     themeColor: "bg-blue-800",
@@ -115,11 +113,9 @@ const RESULTS = {
     archetype: "以付出为锚的守护者",
     icon: <Heart className="w-8 h-8" />,
     quote: "没有你，我只是一片废墟。",
-    // 暖色系：琥珀色调
     cardStyle: "from-amber-500 to-orange-700 shadow-[0_0_50px_-10px_rgba(245,158,11,0.4)] border-amber-500/30",
     accentColor: "text-amber-700",
     radarColor: "#d97706",
-    // 撞色书签：暖橙配青黛色
     tabActiveColor: "bg-teal-50 text-orange-800 border-teal-200",
     tabInactiveColor: "bg-white/80 text-orange-800/50",
     themeColor: "bg-amber-600",
@@ -150,11 +146,9 @@ const RESULTS = {
     archetype: "为关系掌舵的同行者",
     icon: <Zap className="w-8 h-8" />,
     quote: "我抛开了所有理智，只求你结束我的痛苦。",
-    // 勃艮第红
     cardStyle: "from-red-800 to-slate-900 shadow-[0_0_50px_-10px_rgba(159,18,57,0.4)] border-rose-900/30",
     accentColor: "text-rose-900",
     radarColor: "#881337",
-    // 撞色书签：深红配冷灰白
     tabActiveColor: "bg-slate-100 text-rose-900 border-slate-200",
     tabInactiveColor: "bg-white/80 text-rose-900/50",
     themeColor: "bg-rose-900",
@@ -186,11 +180,9 @@ const RESULTS = {
     archetype: "渴求例外的驯养者",
     icon: <Sparkles className="w-8 h-8" />,
     quote: "你要永远为你驯服的东西负责。",
-    // 玫瑰金 & 浪漫粉
     cardStyle: "from-pink-400 to-rose-600 shadow-[0_0_50px_-10px_rgba(244,114,182,0.4)] border-pink-400/30",
     accentColor: "text-pink-600",
     radarColor: "#db2777",
-    // 撞色书签：粉色配冷调银
     tabActiveColor: "bg-slate-50 text-pink-700 border-slate-200",
     tabInactiveColor: "bg-white/80 text-pink-700/50",
     themeColor: "bg-pink-500",
@@ -223,11 +215,9 @@ const RESULTS = {
     archetype: "灵魂旷野的寻觅者",
     icon: <Eye className="w-8 h-8" />,
     quote: "我们相遇在精神的旷野，无需言语便已相通。",
-    // 极光紫 & 靛蓝
     cardStyle: "from-violet-600 to-indigo-900 shadow-[0_0_50px_-10px_rgba(124,58,237,0.4)] border-purple-500/30",
     accentColor: "text-purple-700",
     radarColor: "#9333ea",
-    // 撞色书签：紫色配亮黄
     tabActiveColor: "bg-yellow-50 text-purple-900 border-yellow-200",
     tabInactiveColor: "bg-white/80 text-purple-900/50",
     themeColor: "bg-purple-600",
@@ -260,11 +250,9 @@ const RESULTS = {
     archetype: "守望星空的风之子",
     icon: <Wind className="w-8 h-8" />,
     quote: "我爱你，却不愿用爱束缚你。",
-    // 天空蓝 & 纯净青
     cardStyle: "from-sky-400 to-blue-600 shadow-[0_0_50px_-10px_rgba(14,165,233,0.4)] border-sky-300/30",
     accentColor: "text-sky-600",
     radarColor: "#0284c7",
-    // 撞色书签：天蓝配纯白
     tabActiveColor: "bg-white text-sky-600 border-sky-100",
     tabInactiveColor: "bg-white/60 text-sky-800/50",
     themeColor: "bg-sky-500",
@@ -297,11 +285,9 @@ const RESULTS = {
     archetype: "迷雾中的试探者",
     icon: <Shield className="w-8 h-8" />,
     quote: "待人如执烛，太近灼手，太远暗生。",
-    // 森林绿 & 墨绿
     cardStyle: "from-emerald-600 to-teal-800 shadow-[0_0_50px_-10px_rgba(5,150,105,0.4)] border-emerald-600/30",
     accentColor: "text-emerald-700",
     radarColor: "#059669",
-    // 撞色书签：墨绿配米色
     tabActiveColor: "bg-orange-50 text-emerald-800 border-orange-100",
     tabInactiveColor: "bg-white/80 text-emerald-800/50",
     themeColor: "bg-emerald-700",
@@ -334,11 +320,9 @@ const RESULTS = {
     archetype: "构建未来的建筑师",
     icon: <Grid className="w-8 h-8" />,
     quote: "好的关系，是一起把日子过成有章法的温柔。",
-    // 普鲁士蓝灰 & 钢蓝
     cardStyle: "from-slate-700 to-gray-900 shadow-[0_0_50px_-10px_rgba(51,65,85,0.4)] border-slate-600/30",
     accentColor: "text-slate-700",
     radarColor: "#475569",
-    // 撞色书签：深灰配纯黑白
     tabActiveColor: "bg-white text-slate-800 border-gray-300",
     tabInactiveColor: "bg-white/70 text-slate-600/50",
     themeColor: "bg-slate-700",
@@ -401,6 +385,7 @@ export default function SoulScan_StainedGlass() {
   
   // 弹窗状态
   const [showScreenshotTip, setShowScreenshotTip] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // --- 1. 登录交互 ---
   const handleVerify = async () => {
@@ -526,7 +511,6 @@ export default function SoulScan_StainedGlass() {
     }, 2500);
   };
 
-  // --- 优化后的卡牌动画逻辑 ---
   const handleCardClick = () => {
     if (cardState !== 'idle') return;
     
@@ -554,7 +538,7 @@ export default function SoulScan_StainedGlass() {
     }, 1000);
   };
 
-  // 结果页自动弹窗：屏幕 Top 35% 显眼位置
+  // 结果页自动截图提示 (3秒后左侧滑出)
   useEffect(() => {
     if (showFinal) {
         const timer = setTimeout(() => {
@@ -563,6 +547,14 @@ export default function SoulScan_StainedGlass() {
         return () => clearTimeout(timer);
     }
   }, [showFinal]);
+
+  const copyLink = () => {
+    const dummyLink = "https://soulscan.app/result/share"; 
+    navigator.clipboard.writeText(dummyLink).then(() => {
+        alert("链接已复制！请粘贴给好友");
+        setShowShareModal(false);
+    });
+  };
 
   const progress = ((currentQIndex + 1) / QUESTIONS.length) * 100;
   const displayData = RESULTS[results.primary];
@@ -687,6 +679,10 @@ export default function SoulScan_StainedGlass() {
                <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
              </button>
            </div>
+           
+           <div className="absolute bottom-6 left-0 w-full text-center">
+              <p className="text-[10px] text-stone-500 tracking-widest opacity-40">柚子的心理小屋 · 原创出品</p>
+           </div>
         </div>
       )}
 
@@ -760,6 +756,10 @@ export default function SoulScan_StainedGlass() {
                  下一题 <ArrowRight className="w-4 h-4" />
                </button>
              </div>
+          </div>
+          
+          <div className="absolute bottom-24 left-0 w-full text-center pb-4">
+             <p className="text-[9px] text-stone-300 tracking-wider">柚子的心理小屋 · 原创出品</p>
           </div>
 
           {/* Part 确认弹窗 */}
@@ -838,19 +838,14 @@ export default function SoulScan_StainedGlass() {
 
               <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col items-center justify-center text-white p-8 
                 bg-gradient-to-br ${RESULTS[results.primary].cardStyle} backdrop-blur-xl border border-white/30 relative h-full w-full`}>
-                
-                {/* 噪点纹理叠加 */}
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/noise.png')] opacity-10 mix-blend-overlay" />
-                
                 <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center">
                     <div className="w-24 h-24 mb-8 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
                       {RESULTS[results.primary].icon}
                     </div>
+                    <p className="text-[10px] tracking-[0.2em] uppercase text-white/60 mb-2">你的情感欲望是——</p>
                     <h2 className="text-4xl font-serif font-bold mb-6 drop-shadow-lg tracking-wider">{results.primary}</h2>
-                    
-                    {/* 判词装饰线 */}
                     <div className="w-12 h-[1px] bg-white/40 mb-6"></div>
-                    
                     <p className="text-sm font-serif italic text-white/90 leading-7 opacity-90 max-w-[80%]">
                       {RESULTS[results.primary].quote}
                     </p>
@@ -863,7 +858,7 @@ export default function SoulScan_StainedGlass() {
 
       {/* --- Result Step 2: Final Share Page (Poster Optimized) --- */}
       {showFinal && displayData && (
-        <div className="flex-1 flex flex-col animate-fade-in-slow bg-[#FAFAFA] pb-12 relative">
+        <div className="flex-1 flex flex-col animate-fade-in-slow bg-[#FAFAFA] pb-24 relative">
           
           <div id="poster-area" className="bg-[#FAFAFA] relative">
               <div className={`pt-14 pb-16 px-6 rounded-b-[3.5rem] shadow-2xl bg-gradient-to-b ${displayData.cardStyle} text-white relative overflow-hidden`}>
@@ -871,9 +866,7 @@ export default function SoulScan_StainedGlass() {
                 <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full bg-white/10 blur-[80px]" />
                 
                 <div className="relative z-10 flex flex-col items-center">
-                  <p className="text-[9px] font-bold tracking-[0.4em] mb-4 uppercase border border-white/30 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md">
-                    Soul Scan Result
-                  </p>
+                  <p className="text-[10px] font-medium tracking-[0.2em] mb-2 text-white/80">你的情感欲望是——</p>
                   <h1 className="text-5xl font-serif font-bold mb-8 drop-shadow-xl tracking-wider text-center">
                     {results.primary}
                   </h1>
@@ -1025,7 +1018,6 @@ export default function SoulScan_StainedGlass() {
                     )}
                 </div>
 
-                {/* 底部版权 - 优化版 */}
                 <div className="mt-12 mb-8 text-center px-6">
                     <p className="font-serif italic text-stone-400/80 text-xs mb-6">
                       {displayData.blessing}
@@ -1038,27 +1030,68 @@ export default function SoulScan_StainedGlass() {
               </div>
           </div>
 
-          {/* 截图提示弹窗 (屏幕 Top 35% 显眼位置) */}
+          {/* 底部悬浮分享按钮 */}
+          <div className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-md border-t border-stone-100 p-4 z-40">
+             <button 
+                onClick={() => setShowShareModal(true)}
+                className="w-full bg-stone-900 text-white py-3.5 rounded-xl font-bold text-xs shadow-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+             >
+                <Share2 className="w-4 h-4" /> 一键分享测试结果
+             </button>
+          </div>
+
+          {/* 截图提示弹窗 (从左滑出) */}
           {showScreenshotTip && (
-             <div className="fixed top-[35%] left-1/2 -translate-x-1/2 z-[100] w-[85%] max-w-xs animate-slide-up">
-                <div className="bg-white/95 backdrop-blur-2xl border border-white/60 px-6 py-6 rounded-3xl shadow-[0_20px_50px_-10px_rgba(0,0,0,0.2)] flex flex-col items-center gap-4 relative text-center">
-                   <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-rose-100 to-orange-50 flex items-center justify-center text-rose-500 shadow-inner mb-1">
-                     <Camera className="w-7 h-7 animate-pulse" />
+             <div className="fixed top-[20%] left-4 z-[50] animate-slide-right w-[85%] max-w-xs pointer-events-none">
+                <div className="bg-white/95 backdrop-blur-2xl border border-rose-100 px-5 py-4 rounded-r-3xl rounded-bl-3xl shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] flex items-center gap-4 relative pointer-events-auto">
+                   <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 flex-shrink-0">
+                     <Camera className="w-5 h-5 animate-pulse" />
                    </div>
-                   <div>
-                     <h4 className="text-sm font-bold text-stone-800 mb-2">测试报告已生成</h4>
-                     <p className="text-xs text-stone-500 leading-relaxed px-2">
-                       该页面包含动态交互<br/>请<span className="font-bold text-rose-500">长按屏幕</span>或<span className="font-bold text-rose-500">截图</span>保存海报
-                     </p>
+                   <div className="flex-1">
+                     <h4 className="text-xs font-bold text-stone-800 mb-0.5">测试报告已生成</h4>
+                     <p className="text-[10px] text-stone-500">长按屏幕保存专属结果海报</p>
                    </div>
                    <button 
                      onClick={() => setShowScreenshotTip(false)}
-                     className="absolute top-4 right-4 text-stone-300 hover:text-stone-500 p-1"
+                     className="text-stone-300 hover:text-stone-500 p-1"
                    >
-                     <X className="w-5 h-5" />
+                     <X className="w-4 h-4" />
                    </button>
                 </div>
              </div>
+          )}
+
+          {/* 分享弹窗 (Modal) */}
+          {showShareModal && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center px-6 animate-fade-in">
+               <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowShareModal(false)} />
+               <div className="bg-white w-full max-w-sm rounded-2xl p-6 relative z-10 shadow-2xl animate-slide-up text-center">
+                  <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-500">
+                    <LinkIcon className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-bold text-lg text-stone-800 mb-2">分享给好友</h3>
+                  <div className="bg-stone-50 p-4 rounded-xl text-left mb-6 border border-stone-100">
+                    <p className="text-xs text-stone-600 leading-relaxed mb-2">
+                      此链接包含精美的动态交互报告，适合在微信私聊或朋友圈分享。
+                    </p>
+                    <p className="text-[10px] text-rose-500 font-bold bg-rose-50 px-2 py-1 rounded inline-block">
+                      ⚠️ 含外链，请勿直接发布到小红书
+                    </p>
+                  </div>
+                  <button 
+                    onClick={copyLink}
+                    className="w-full py-3 rounded-xl bg-stone-900 text-white text-xs font-bold shadow-lg flex items-center justify-center gap-2"
+                  >
+                    <Copy className="w-4 h-4" /> 复制专属链接
+                  </button>
+                  <button 
+                    onClick={() => setShowShareModal(false)}
+                    className="mt-4 text-xs text-stone-400 underline"
+                  >
+                    暂不分享
+                  </button>
+               </div>
+            </div>
           )}
 
         </div>
@@ -1077,6 +1110,11 @@ export default function SoulScan_StainedGlass() {
           to { opacity: 1; transform: translateY(0); }
         }
 
+        @keyframes slideRight {
+          from { opacity: 0; transform: translateX(-20px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+
         @keyframes violent-shake {
           0% { transform: rotateY(180deg) translate(0, 0) rotate(0deg); }
           10% { transform: rotateY(180deg) translate(-5px, -5px) rotate(-3deg); }
@@ -1092,6 +1130,7 @@ export default function SoulScan_StainedGlass() {
         }
         
         .animate-slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-slide-right { animation: slideRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-fade-in { animation: slideUp 0.8s ease-out forwards; }
         .animate-fade-in-slow { animation: slideUp 1.2s ease-out forwards; }
         .animate-violent-shake { animation: violent-shake 0.5s infinite; }
