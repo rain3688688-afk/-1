@@ -73,7 +73,7 @@ const QUESTIONS = [
   { id: 48, question: "最后，请凭直觉填空：爱是______。", options: [{ text: "定数。唯一不会更改的答案。", type: "确定感" }, { text: "认出。茫茫人海辨认出彼此是同类。", type: "精神共鸣" }, { text: "成全。不捆绑，拥有更广阔天空。", type: "自由感" }, { text: "治愈。看见你的破碎，甘愿做药。", type: "被需要" }] }
 ];
 
-// --- 结果配置 (全面优化：轻盈感 + 撞色书签 + 雷达图高亮) ---
+// --- 结果配置 (全面优化) ---
 const RESULTS = {
   "确定感": {
     type: "确定感",
@@ -531,6 +531,7 @@ export default function SoulScan_StainedGlass() {
     }, 2500);
   };
 
+  // --- 优化后的卡牌动画逻辑 ---
   const handleCardClick = () => {
     if (cardState !== 'idle') return;
     
@@ -695,16 +696,17 @@ export default function SoulScan_StainedGlass() {
 
         {/* --- Quiz --- */}
         {step === 'quiz' && (
-          <div className="min-h-full flex flex-col pt-24 px-6 animate-slide-up max-w-md mx-auto w-full relative pb-8">
-            <div className="w-full h-1 bg-stone-100 rounded-full mb-10 overflow-hidden flex-none">
+          <div className="min-h-full flex flex-col pt-20 px-6 animate-slide-up max-w-md mx-auto w-full relative">
+            
+            <div className="w-full h-1 bg-stone-100 rounded-full mb-8 overflow-hidden flex-none">
               <div 
                 className="h-full bg-rose-400 transition-all duration-500 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>
             
-            <div className="flex-1 flex flex-col">
-               <div className="mb-2">
+            <div className="flex-1 flex flex-col pb-32">
+               <div className="mb-6">
                  <span className="text-[10px] font-bold tracking-widest uppercase text-rose-400 bg-rose-50 px-2 py-1 rounded inline-block mb-4">
                    {currentQIndex < 16 ? 'Reality' : currentQIndex < 32 ? 'Emotion' : 'Soul'}
                  </span>
@@ -713,7 +715,7 @@ export default function SoulScan_StainedGlass() {
                  </h2>
                </div>
                
-               <div className="space-y-3 mt-8">
+               <div className="space-y-3">
                  {QUESTIONS[currentQIndex].options.map((opt, idx) => {
                    const isSelected = answers[currentQIndex] === opt.type;
                    return (
@@ -1059,11 +1061,6 @@ export default function SoulScan_StainedGlass() {
           to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes slideRight {
-          from { opacity: 0; transform: translateX(-20px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-
         @keyframes violent-shake {
           0% { transform: rotateY(180deg) translate(0, 0) rotate(0deg); }
           10% { transform: rotateY(180deg) translate(-5px, -5px) rotate(-3deg); }
@@ -1079,7 +1076,6 @@ export default function SoulScan_StainedGlass() {
         }
         
         .animate-slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .animate-slide-right { animation: slideRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-fade-in { animation: slideUp 0.8s ease-out forwards; }
         .animate-fade-in-slow { animation: slideUp 1.2s ease-out forwards; }
         .animate-violent-shake { animation: violent-shake 0.5s infinite; }
