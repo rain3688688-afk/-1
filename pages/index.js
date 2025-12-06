@@ -671,7 +671,7 @@ export default function SoulScan_StainedGlass() {
              <div className="space-y-3 mt-8">
                {QUESTIONS[currentQIndex].options.map((opt, idx) => (
                  <button
-                   key={idx}
+                   key={`q${currentQIndex}-${idx}`}
                    onClick={() => handleAnswer(opt.type)}
                    className="w-full text-left p-5 bg-white border border-stone-100 rounded-2xl shadow-sm hover:border-rose-300 hover:shadow-md hover:bg-rose-50/30 transition-all duration-200 active:scale-[0.98] group relative overflow-hidden"
                  >
@@ -730,7 +730,7 @@ export default function SoulScan_StainedGlass() {
             >
               
               {/* Back (封面) */}
-              <div className="absolute inset-0 backface-hidden bg-stone-800 rounded-[2rem] shadow-2xl border border-white/10 flex flex-col items-center justify-center">
+              <div className="absolute inset-0 backface-hidden bg-stone-800 rounded-[2rem] shadow-2xl border border-white/10 flex flex-col items-center justify-center h-full w-full">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20" />
                 <Sparkles className="w-16 h-16 text-rose-200/50 mb-6 animate-pulse" />
                 <h3 className="text-rose-100/90 text-lg font-serif tracking-widest">点击揭晓</h3>
@@ -739,7 +739,7 @@ export default function SoulScan_StainedGlass() {
 
               {/* Front (结果页 - 翻转后预览) */}
               <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col justify-between text-white p-8 
-                bg-gradient-to-br ${RESULTS[results.primary].cardStyle} backdrop-blur-xl border border-white/30 relative`}>
+                bg-gradient-to-br ${RESULTS[results.primary].cardStyle} backdrop-blur-xl border border-white/30 relative h-full w-full`}>
                 
                 <div className="absolute inset-0 bg-white/10 mix-blend-overlay" />
                 
