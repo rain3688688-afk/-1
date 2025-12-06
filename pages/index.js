@@ -73,7 +73,7 @@ const QUESTIONS = [
   { id: 48, question: "最后，请凭直觉填空：爱是______。", options: [{ text: "定数。唯一不会更改的答案。", type: "确定感" }, { text: "认出。茫茫人海辨认出彼此是同类。", type: "精神共鸣" }, { text: "成全。不捆绑，拥有更广阔天空。", type: "自由感" }, { text: "治愈。看见你的破碎，甘愿做药。", type: "被需要" }] }
 ];
 
-// --- 结果配置 (全面优化) ---
+// --- 结果配置 (全面优化：轻盈感 + 撞色书签 + 雷达图高亮) ---
 const RESULTS = {
   "确定感": {
     type: "确定感",
@@ -399,8 +399,8 @@ export default function SoulScan_StainedGlass() {
   const [chartData, setChartData] = useState([]);
   const [activeTab, setActiveTab] = useState('base');
   
-  // 弹窗状态
-  const [showScreenshotTip, setShowScreenshotTip] = useState(false);
+  // 滚动容器 Ref
+  const scrollContainerRef = useRef(null);
 
   // --- 1. 登录交互 ---
   const handleVerify = async () => {
@@ -478,7 +478,10 @@ export default function SoulScan_StainedGlass() {
     } else {
       const nextIndex = currentQIndex + 1;
       setCurrentQIndex(nextIndex);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // 切换题目时自动回到顶部
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
   };
 
@@ -489,7 +492,9 @@ export default function SoulScan_StainedGlass() {
     if (nextIndex < QUESTIONS.length) {
       setCurrentQIndex(nextIndex);
       handlePartTransition(nextIndex); 
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     } else {
       finishQuiz();
     }
@@ -526,7 +531,6 @@ export default function SoulScan_StainedGlass() {
     }, 2500);
   };
 
-  // --- 优化后的卡牌动画逻辑 ---
   const handleCardClick = () => {
     if (cardState !== 'idle') return;
     
@@ -546,7 +550,9 @@ export default function SoulScan_StainedGlass() {
             
             setTimeout(() => {
                 setShowFinal(true);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                if (scrollContainerRef.current) {
+                    scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+                }
             }, 800);
          }, 1200); 
 
@@ -554,23 +560,13 @@ export default function SoulScan_StainedGlass() {
     }, 1000);
   };
 
-  // 结果页自动弹窗：3秒后出现
-  useEffect(() => {
-    if (showFinal) {
-        const timer = setTimeout(() => {
-            setShowScreenshotTip(true);
-        }, 3000);
-        return () => clearTimeout(timer);
-    }
-  }, [showFinal]);
-
   const progress = ((currentQIndex + 1) / QUESTIONS.length) * 100;
   const displayData = RESULTS[results.primary];
   const currentPartConfig = PARTS_CONFIG.find(p => currentQIndex >= p.startIndex && currentQIndex <= p.endIndex);
   const isPartFirstQuestion = currentPartConfig && currentQIndex === currentPartConfig.startIndex;
 
   return (
-    <div className="min-h-screen bg-[#FDFBF9] text-[#4A4A4A] font-sans selection:bg-rose-100 flex flex-col overflow-x-hidden">
+    <div className="h-[100dvh] flex flex-col bg-[#FDFBF9] text-[#4A4A4A] font-sans selection:bg-rose-100 overflow-hidden">
       
       <Head>
         <script src="https://cdn.tailwindcss.com"></script>
@@ -579,7 +575,7 @@ export default function SoulScan_StainedGlass() {
 
       {/* 顶部栏 */}
       {step !== 'landing' && step !== 'partIntro' && !showFinal && (
-        <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-stone-100 px-6 py-4 flex justify-between items-center">
+        <nav className="flex-none w-full bg-white/80 backdrop-blur-md z-50 border-b border-stone-100 px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-rose-400" />
             <span className="font-serif font-bold tracking-widest text-stone-800 text-xs">SOUL SCAN</span>
@@ -592,475 +588,461 @@ export default function SoulScan_StainedGlass() {
         </nav>
       )}
 
-      {/* --- Landing Page --- */}
-      {step === 'landing' && (
-        <div className="flex-1 flex flex-col relative overflow-hidden">
-          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-rose-200/40 to-orange-100/40 blur-[80px]" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-gradient-to-tl from-blue-200/40 to-purple-100/40 blur-[80px]" />
+      {/* --- Main Content Area (Scrollable) --- */}
+      <main ref={scrollContainerRef} className="flex-1 overflow-y-auto relative scroll-smooth">
+        
+        {/* --- Landing Page --- */}
+        {step === 'landing' && (
+          <div className="min-h-full flex flex-col relative overflow-hidden">
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-rose-200/40 to-orange-100/40 blur-[80px]" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-gradient-to-tl from-blue-200/40 to-purple-100/40 blur-[80px]" />
 
-          <div className="flex-1 flex flex-col justify-center items-center px-8 z-10 animate-fade-in relative">
-            <div className="mb-8 p-4 bg-white/50 backdrop-blur-sm rounded-2xl shadow-sm border border-white/60">
-               <Lock className="w-8 h-8 text-stone-700 opacity-80" />
-            </div>
-            
-            <div className="text-center space-y-4 mb-12">
-              <h1 className="text-4xl font-serif font-bold text-stone-800 tracking-wide">
-                情感欲望图鉴
-              </h1>
-              <p className="text-sm font-light text-stone-500 tracking-[0.2em] uppercase">
-                Unlock Your Hidden Desires
-              </p>
-              <p className="text-sm text-stone-600 leading-relaxed max-w-xs mx-auto pt-4">
-                48道潜意识扫描，揭示你的双重欲望。<br/>
-                探索那些未被说出口的渴望。
-              </p>
-            </div>
+            <div className="flex-1 flex flex-col justify-center items-center px-8 z-10 animate-fade-in relative py-12">
+              <div className="mb-8 p-4 bg-white/50 backdrop-blur-sm rounded-2xl shadow-sm border border-white/60">
+                 <Lock className="w-8 h-8 text-stone-700 opacity-80" />
+              </div>
+              
+              <div className="text-center space-y-4 mb-12">
+                <h1 className="text-4xl font-serif font-bold text-stone-800 tracking-wide">
+                  情感欲望图鉴
+                </h1>
+                <p className="text-sm font-light text-stone-500 tracking-[0.2em] uppercase">
+                  Unlock Your Hidden Desires
+                </p>
+                <p className="text-sm text-stone-600 leading-relaxed max-w-xs mx-auto pt-4">
+                  48道潜意识扫描，揭示你的双重欲望。<br/>
+                  探索那些未被说出口的渴望。
+                </p>
+              </div>
 
-            <div className="w-full max-w-xs space-y-4 min-h-[140px]">
-              {!showInput ? (
-                <button 
-                  onClick={() => setShowInput(true)}
-                  className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold text-sm shadow-xl hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  <Key className="w-4 h-4" />
-                  我已有兑换码
-                </button>
-              ) : (
-                <div className="space-y-3 animate-slide-up">
-                  <input 
-                    type="text" 
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    placeholder="请输入你在小红书获得的兑换码"
-                    className="w-full p-4 bg-white/80 border border-stone-200 rounded-xl outline-none text-center focus:ring-2 focus:ring-rose-200 transition-all placeholder:text-xs"
-                  />
+              <div className="w-full max-w-xs space-y-4 min-h-[140px]">
+                {!showInput ? (
                   <button 
-                    onClick={handleVerify}
-                    disabled={isLoading}
-                    className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold text-sm shadow-lg hover:bg-stone-800 transition-colors flex items-center justify-center gap-2"
+                    onClick={() => setShowInput(true)}
+                    className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold text-sm shadow-xl hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2"
                   >
-                    {isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : '开始解锁'}
+                    <Key className="w-4 h-4" />
+                    我已有兑换码
                   </button>
-                  {errorMsg && (
-                    <p className="text-xs text-red-500 text-center bg-red-50 py-2 rounded-lg">
-                      {errorMsg}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
+                ) : (
+                  <div className="space-y-3 animate-slide-up">
+                    <input 
+                      type="text" 
+                      value={code}
+                      onChange={(e) => setCode(e.target.value)}
+                      placeholder="请输入你在小红书获得的兑换码"
+                      className="w-full p-4 bg-white/80 border border-stone-200 rounded-xl outline-none text-center focus:ring-2 focus:ring-rose-200 transition-all placeholder:text-xs"
+                    />
+                    <button 
+                      onClick={handleVerify}
+                      disabled={isLoading}
+                      className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold text-sm shadow-lg hover:bg-stone-800 transition-colors flex items-center justify-center gap-2"
+                    >
+                      {isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : '开始解锁'}
+                    </button>
+                    {errorMsg && (
+                      <p className="text-xs text-red-500 text-center bg-red-50 py-2 rounded-lg">
+                        {errorMsg}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
 
-            <div className="mt-16 text-center">
-              <p className="text-xs text-stone-400 mb-2">如何获得兑换码？</p>
-              <div className="inline-flex items-center gap-1 text-xs text-rose-500 bg-rose-50 px-3 py-1.5 rounded-full cursor-pointer hover:bg-rose-100 transition-colors">
-                <Search className="w-3 h-3" />
-                <span>前往小红书搜索【柚子的心理小屋】</span>
+              <div className="mt-16 text-center">
+                <p className="text-xs text-stone-400 mb-2">如何获得兑换码？</p>
+                <div className="inline-flex items-center gap-1 text-xs text-rose-500 bg-rose-50 px-3 py-1.5 rounded-full cursor-pointer hover:bg-rose-100 transition-colors">
+                  <Search className="w-3 h-3" />
+                  <span>前往小红书搜索【柚子的心理小屋】</span>
+                </div>
+              </div>
+              
+              <div className="mt-auto pt-12 text-center">
+                 <p className="text-[10px] text-stone-300 tracking-widest opacity-60">柚子的心理小屋 · 原创出品</p>
               </div>
             </div>
-            
-            <div className="absolute bottom-6 left-0 w-full text-center">
-               <p className="text-[10px] text-stone-300 tracking-widest opacity-60">柚子的心理小屋 · 原创出品</p>
+          </div>
+        )}
+
+        {/* --- Part Intro --- */}
+        {step === 'partIntro' && currentPart && (
+          <div className="min-h-full bg-stone-900 flex flex-col justify-center items-center text-center p-8 animate-fade-in relative overflow-hidden">
+             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10" />
+             <div className="relative z-10 max-w-sm flex-1 flex flex-col justify-center">
+               <span className="text-rose-300/80 text-[10px] tracking-[0.4em] uppercase mb-6 block">Chapter</span>
+               <h2 className="text-2xl font-serif font-bold mb-6 text-rose-50 tracking-wide">{currentPart.title}</h2>
+               <div className="w-8 h-1 bg-rose-500/50 mx-auto mb-8 rounded-full"></div>
+               <p className="text-lg font-serif italic text-white/90 mb-8 leading-relaxed px-4">
+                 {currentPart.quote}
+               </p>
+               <p className="text-xs text-stone-400 leading-6 mb-12 px-6">
+                 {currentPart.desc}
+               </p>
+               <button 
+                 onClick={() => setStep('quiz')}
+                 className="group flex items-center gap-2 mx-auto text-rose-200 border border-rose-200/20 px-8 py-3 rounded-full hover:bg-rose-200/10 transition-all text-xs tracking-widest"
+               >
+                 CONTINUE
+                 <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+               </button>
+             </div>
+             
+             <div className="flex-none pt-8 pb-4 w-full text-center">
+                <p className="text-[10px] text-stone-500 tracking-widest opacity-40">柚子的心理小屋 · 原创出品</p>
+             </div>
+          </div>
+        )}
+
+        {/* --- Quiz --- */}
+        {step === 'quiz' && (
+          <div className="min-h-full flex flex-col pt-24 px-6 animate-slide-up max-w-md mx-auto w-full relative pb-8">
+            <div className="w-full h-1 bg-stone-100 rounded-full mb-10 overflow-hidden flex-none">
+              <div 
+                className="h-full bg-rose-400 transition-all duration-500 ease-out"
+                style={{ width: `${progress}%` }}
+              />
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* --- Part Intro --- */}
-      {step === 'partIntro' && currentPart && (
-        <div className="flex-1 bg-stone-900 flex flex-col justify-center items-center text-center p-8 animate-fade-in relative overflow-hidden">
-           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10" />
-           <div className="relative z-10 max-w-sm">
-             <span className="text-rose-300/80 text-[10px] tracking-[0.4em] uppercase mb-6 block">Chapter</span>
-             <h2 className="text-2xl font-serif font-bold mb-6 text-rose-50 tracking-wide">{currentPart.title}</h2>
-             <div className="w-8 h-1 bg-rose-500/50 mx-auto mb-8 rounded-full"></div>
-             <p className="text-lg font-serif italic text-white/90 mb-8 leading-relaxed px-4">
-               {currentPart.quote}
-             </p>
-             <p className="text-xs text-stone-400 leading-6 mb-12 px-6">
-               {currentPart.desc}
-             </p>
-             <button 
-               onClick={() => setStep('quiz')}
-               className="group flex items-center gap-2 mx-auto text-rose-200 border border-rose-200/20 px-8 py-3 rounded-full hover:bg-rose-200/10 transition-all text-xs tracking-widest"
-             >
-               CONTINUE
-               <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-             </button>
-           </div>
-           
-           <div className="absolute bottom-6 left-0 w-full text-center">
-              <p className="text-[10px] text-stone-500 tracking-widest opacity-40">柚子的心理小屋 · 原创出品</p>
-           </div>
-        </div>
-      )}
-
-      {/* --- Quiz --- */}
-      {step === 'quiz' && (
-        <div className="flex-1 flex flex-col pt-24 px-6 animate-slide-up max-w-md mx-auto w-full relative">
-          <div className="w-full h-1 bg-stone-100 rounded-full mb-10 overflow-hidden">
-            <div 
-              className="h-full bg-rose-400 transition-all duration-500 ease-out"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <div className="flex-1 flex flex-col justify-center pb-32">
-             <div className="mb-2">
-               <span className="text-[10px] font-bold tracking-widest uppercase text-rose-400 bg-rose-50 px-2 py-1 rounded inline-block mb-4">
-                 {currentQIndex < 16 ? 'Reality' : currentQIndex < 32 ? 'Emotion' : 'Soul'}
-               </span>
-               <h2 className="text-lg font-serif font-medium leading-relaxed text-stone-800">
-                 {QUESTIONS[currentQIndex].question}
-               </h2>
-             </div>
-             
-             <div className="space-y-3 mt-8">
-               {QUESTIONS[currentQIndex].options.map((opt, idx) => {
-                 const isSelected = answers[currentQIndex] === opt.type;
-                 return (
-                   <button
-                     key={`${currentQIndex}-${idx}`} 
-                     onClick={() => handleSelectOption(opt.type)}
-                     className={`w-full text-left p-5 border rounded-2xl shadow-sm transition-all duration-200 active:scale-[0.98] group relative overflow-hidden
-                       ${isSelected 
-                         ? 'bg-rose-50 border-rose-400 shadow-md' 
-                         : 'bg-white border-stone-100 hover:border-rose-200'}`}
-                   >
-                     <div className="relative z-10 flex items-start gap-3">
-                       <div className={`w-4 h-4 rounded-full border mt-0.5 flex-shrink-0 transition-colors 
-                         ${isSelected ? 'border-rose-500 bg-rose-500' : 'border-stone-300'}`} 
-                       />
-                       <span className={`text-sm leading-relaxed ${isSelected ? 'text-rose-900 font-medium' : 'text-stone-600'}`}>
-                         {opt.text}
-                       </span>
-                     </div>
-                   </button>
-                 );
-               })}
-             </div>
-             
-             {/* 原创说明 (流式布局，不遮挡) */}
-             <div className="mt-auto pt-12 pb-4 text-center opacity-60">
-                <p className="text-[10px] text-stone-400 tracking-widest">柚子的心理小屋 · 原创出品</p>
-             </div>
-          </div>
-
-          {/* 底部导航栏 */}
-          <div className="fixed bottom-0 left-0 w-full bg-white border-t border-stone-100 p-4 pb-8 z-40">
-             <div className="flex gap-4 max-w-md mx-auto">
-               <button
-                 onClick={handlePrev}
-                 disabled={isPartFirstQuestion}
-                 className={`flex-1 py-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-colors
-                   ${isPartFirstQuestion 
-                     ? 'bg-stone-50 text-stone-300 border-stone-100 cursor-not-allowed' 
-                     : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'}`}
-               >
-                 <ArrowLeft className="w-4 h-4" /> 上一题
-               </button>
+            
+            <div className="flex-1 flex flex-col">
+               <div className="mb-2">
+                 <span className="text-[10px] font-bold tracking-widest uppercase text-rose-400 bg-rose-50 px-2 py-1 rounded inline-block mb-4">
+                   {currentQIndex < 16 ? 'Reality' : currentQIndex < 32 ? 'Emotion' : 'Soul'}
+                 </span>
+                 <h2 className="text-lg font-serif font-medium leading-relaxed text-stone-800">
+                   {QUESTIONS[currentQIndex].question}
+                 </h2>
+               </div>
                
-               <button
-                 onClick={handleNext}
-                 disabled={!answers[currentQIndex]}
-                 className={`flex-1 py-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all
-                   ${!answers[currentQIndex]
-                     ? 'bg-stone-200 text-white cursor-not-allowed'
-                     : 'bg-stone-900 text-white active:scale-[0.98]'}`}
-               >
-                 下一题 <ArrowRight className="w-4 h-4" />
-               </button>
-             </div>
-          </div>
-
-          {/* Part 确认弹窗 */}
-          {showPartModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center px-6 animate-fade-in">
-               <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-               <div className="bg-white w-full max-w-sm rounded-2xl p-6 relative z-10 shadow-2xl animate-slide-up text-center">
-                  <div className="w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-500">
-                    <AlertCircle className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-bold text-lg text-stone-800 mb-2">确认提交本章节？</h3>
-                  <p className="text-xs text-stone-500 mb-6 leading-relaxed">
-                    提交后将无法返回修改本章节的答案。<br/>即将进入下一阶段的深度探索。
-                  </p>
-                  <div className="flex gap-3">
-                    <button 
-                      onClick={() => setShowPartModal(false)}
-                      className="flex-1 py-3 rounded-xl border border-stone-200 text-stone-600 text-xs font-bold"
-                    >
-                      再检查一下
-                    </button>
-                    <button 
-                      onClick={confirmNextPart}
-                      className="flex-1 py-3 rounded-xl bg-stone-900 text-white text-xs font-bold shadow-lg"
-                    >
-                      确认提交
-                    </button>
-                  </div>
+               <div className="space-y-3 mt-8">
+                 {QUESTIONS[currentQIndex].options.map((opt, idx) => {
+                   const isSelected = answers[currentQIndex] === opt.type;
+                   return (
+                     <button
+                       key={`${currentQIndex}-${idx}`} 
+                       onClick={() => handleSelectOption(opt.type)}
+                       className={`w-full text-left p-5 border rounded-2xl shadow-sm transition-all duration-200 active:scale-[0.98] group relative overflow-hidden
+                         ${isSelected 
+                           ? 'bg-rose-50 border-rose-400 shadow-md' 
+                           : 'bg-white border-stone-100 hover:border-rose-200'}`}
+                     >
+                       <div className="relative z-10 flex items-start gap-3">
+                         <div className={`w-4 h-4 rounded-full border mt-0.5 flex-shrink-0 transition-colors 
+                           ${isSelected ? 'border-rose-500 bg-rose-500' : 'border-stone-300'}`} 
+                         />
+                         <span className={`text-sm leading-relaxed ${isSelected ? 'text-rose-900 font-medium' : 'text-stone-600'}`}>
+                           {opt.text}
+                         </span>
+                       </div>
+                     </button>
+                   );
+                 })}
+               </div>
+               
+               {/* 底部流式原创说明 */}
+               <div className="mt-auto pt-16 text-center opacity-60">
+                  <p className="text-[10px] text-stone-400 tracking-widest">柚子的心理小屋 · 原创出品</p>
                </div>
             </div>
-          )}
-        </div>
-      )}
-
-      {/* --- Analysis --- */}
-      {step === 'analyzing' && (
-        <div className="flex-1 flex flex-col justify-center items-center text-center bg-stone-900 text-white">
-          <div className="relative w-24 h-24">
-            <div className="absolute inset-0 border-2 border-stone-800 rounded-full" />
-            <div className="absolute inset-0 border-2 border-rose-400 rounded-full border-t-transparent animate-spin" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-rose-300 animate-pulse" />
-            </div>
           </div>
-          <h3 className="mt-8 text-base font-serif font-bold text-rose-50 tracking-wide">生成欲望图谱...</h3>
-          <p className="text-[10px] text-stone-500 mt-2 font-mono tracking-widest uppercase">Calculating</p>
-        </div>
-      )}
+        )}
 
-      {/* --- Result Step 1: Card Reveal Animation --- */}
-      {step === 'result_card' && !showFinal && (
-        <div className="flex-1 flex flex-col items-center justify-center animate-fade-in p-6 bg-stone-900 relative overflow-hidden">
-          
-          <div className={`absolute inset-0 z-50 bg-white pointer-events-none transition-opacity duration-[800ms] ease-in ${cardState === 'exploding' ? 'opacity-100' : 'opacity-0'}`}></div>
+        {/* --- Analysis --- */}
+        {step === 'analyzing' && (
+          <div className="min-h-full flex flex-col justify-center items-center text-center bg-stone-900 text-white">
+            <div className="relative w-24 h-24">
+              <div className="absolute inset-0 border-2 border-stone-800 rounded-full" />
+              <div className="absolute inset-0 border-2 border-rose-400 rounded-full border-t-transparent animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Sparkles className="w-8 h-8 text-rose-300 animate-pulse" />
+              </div>
+            </div>
+            <h3 className="mt-8 text-base font-serif font-bold text-rose-50 tracking-wide">生成欲望图谱...</h3>
+            <p className="text-[10px] text-stone-500 mt-2 font-mono tracking-widest uppercase">Calculating</p>
+          </div>
+        )}
 
-          <p className={`text-center text-[10px] text-stone-400 mb-8 tracking-[0.2em] uppercase transition-opacity ${cardState !== 'idle' ? 'opacity-0' : 'opacity-100'}`}>
-             Tap to Reveal
-          </p>
-          
-          <div 
-            className="relative w-full max-w-sm aspect-[3/5] perspective-1000 cursor-pointer group"
-            onClick={handleCardClick}
-          >
-            <div className={`relative w-full h-full transform-style-3d 
-                ${cardState !== 'idle' ? 'rotate-y-180' : ''} 
-                ${cardState === 'shaking' ? 'animate-violent-shake' : ''}
-               `}
-               style={{ transition: 'transform 1.0s cubic-bezier(0.6, -0.28, 0.735, 0.045)' }}
+        {/* --- Result Step 1: Card Reveal Animation --- */}
+        {step === 'result_card' && !showFinal && (
+          <div className="min-h-full flex flex-col items-center justify-center animate-fade-in p-6 bg-stone-900 relative overflow-hidden">
+            
+            <div className={`absolute inset-0 z-50 bg-white pointer-events-none transition-opacity duration-[800ms] ease-in ${cardState === 'exploding' ? 'opacity-100' : 'opacity-0'}`}></div>
+
+            <p className={`text-center text-[10px] text-stone-400 mb-8 tracking-[0.2em] uppercase transition-opacity ${cardState !== 'idle' ? 'opacity-0' : 'opacity-100'}`}>
+               Tap to Reveal
+            </p>
+            
+            <div 
+              className="relative w-full max-w-sm aspect-[3/5] perspective-1000 cursor-pointer group"
+              onClick={handleCardClick}
             >
-              <div className="absolute inset-0 backface-hidden bg-stone-800 rounded-[2rem] shadow-2xl border border-white/10 flex flex-col items-center justify-center h-full w-full">
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20" />
-                <Sparkles className="w-16 h-16 text-rose-200/50 mb-6 animate-pulse" />
-                <h3 className="text-rose-100/90 text-lg font-serif tracking-widest">点击揭晓</h3>
-                <p className="absolute bottom-8 text-[10px] text-white/20">柚子的心理小屋</p>
-              </div>
+              <div className={`relative w-full h-full transform-style-3d 
+                  ${cardState !== 'idle' ? 'rotate-y-180' : ''} 
+                  ${cardState === 'shaking' ? 'animate-violent-shake' : ''}
+                 `}
+                 style={{ transition: 'transform 1.0s cubic-bezier(0.6, -0.28, 0.735, 0.045)' }}
+              >
+                <div className="absolute inset-0 backface-hidden bg-stone-800 rounded-[2rem] shadow-2xl border border-white/10 flex flex-col items-center justify-center h-full w-full">
+                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20" />
+                  <Sparkles className="w-16 h-16 text-rose-200/50 mb-6 animate-pulse" />
+                  <h3 className="text-rose-100/90 text-lg font-serif tracking-widest">点击揭晓</h3>
+                  <p className="absolute bottom-8 text-[10px] text-white/20">柚子的心理小屋</p>
+                </div>
 
-              <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col items-center justify-center text-white p-8 
-                bg-gradient-to-br ${RESULTS[results.primary].cardStyle} backdrop-blur-xl border border-white/30 relative h-full w-full`}>
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/noise.png')] opacity-10 mix-blend-overlay" />
-                <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center">
-                    <div className="w-24 h-24 mb-8 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-                      {RESULTS[results.primary].icon}
-                    </div>
-                    <p className="text-[10px] tracking-[0.2em] uppercase text-white/60 mb-2">你的情感欲望是——</p>
-                    <h2 className="text-4xl font-serif font-bold mb-6 drop-shadow-lg tracking-wider">{results.primary}</h2>
-                    <div className="w-12 h-[1px] bg-white/40 mb-6"></div>
-                    <p className="text-sm font-serif italic text-white/90 leading-7 opacity-90 max-w-[80%]">
-                      {RESULTS[results.primary].quote}
-                    </p>
+                <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col items-center justify-center text-white p-8 
+                  bg-gradient-to-br ${RESULTS[results.primary].cardStyle} backdrop-blur-xl border border-white/30 relative h-full w-full`}>
+                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/noise.png')] opacity-10 mix-blend-overlay" />
+                  <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center">
+                      <div className="w-24 h-24 mb-8 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                        {RESULTS[results.primary].icon}
+                      </div>
+                      <p className="text-[10px] tracking-[0.2em] uppercase text-white/60 mb-2">你的情感欲望是——</p>
+                      <h2 className="text-4xl font-serif font-bold mb-6 drop-shadow-lg tracking-wider">{results.primary}</h2>
+                      <div className="w-12 h-[1px] bg-white/40 mb-6"></div>
+                      <p className="text-sm font-serif italic text-white/90 leading-7 opacity-90 max-w-[80%]">
+                        {RESULTS[results.primary].quote}
+                      </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+        )}
+
+        {/* --- Result Step 2: Final Share Page (Poster Optimized) --- */}
+        {showFinal && displayData && (
+          <div className="min-h-full flex flex-col animate-fade-in-slow bg-[#FAFAFA] pb-12 relative">
+            
+            <div id="poster-area" className="bg-[#FAFAFA] relative">
+                <div className={`pt-14 pb-16 px-6 rounded-b-[3.5rem] shadow-2xl bg-gradient-to-b ${displayData.cardStyle} text-white relative overflow-hidden`}>
+                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/noise.png')] opacity-[0.03]" />
+                  <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full bg-white/10 blur-[80px]" />
+                  
+                  <div className="relative z-10 flex flex-col items-center">
+                    <p className="text-[10px] font-medium tracking-[0.2em] mb-2 text-white/80">你的情感欲望是——</p>
+                    <h1 className="text-5xl font-serif font-bold mb-8 drop-shadow-xl tracking-wider text-center">
+                      {results.primary}
+                    </h1>
+                    
+                    <div className="w-full max-w-sm text-center px-4 mb-8 relative">
+                       <span className="absolute -top-4 left-4 text-4xl font-serif opacity-20">“</span>
+                       <p className="font-serif italic text-white/95 text-base leading-relaxed py-2 inline-block relative z-10">
+                         {displayData.quote}
+                       </p>
+                       <span className="absolute -bottom-8 right-4 text-4xl font-serif opacity-20">”</span>
+                    </div>
+
+                    <div className="w-full max-w-xs h-[260px] bg-white/10 backdrop-blur-sm rounded-[2rem] border border-white/20 p-4 shadow-inner relative mt-4">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RadarChart cx="50%" cy="50%" outerRadius="65%" data={chartData}>
+                            <PolarGrid stroke="rgba(255,255,255,0.3)" />
+                            <PolarAngleAxis dataKey="subject" tick={{ fill: 'white', fontSize: 10, fontWeight: 600, opacity: 0.9 }} />
+                            <PolarRadiusAxis angle={30} domain={[0, 8]} tick={false} axisLine={false} />
+                            <Radar
+                              name="My Desire"
+                              dataKey="A"
+                              stroke="#fff" 
+                              strokeWidth={3}
+                              fill="#fff"
+                              fillOpacity={0.6} 
+                            />
+                          </RadarChart>
+                        </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="px-5 -mt-10 relative z-20">
+                  <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 pl-2">
+                     {RESULT_TABS.map((tab) => (
+                       <button
+                         key={tab.id}
+                         onClick={() => setActiveTab(tab.id)}
+                         className={`flex-shrink-0 px-4 py-2 rounded-full text-[11px] font-bold transition-all duration-300 border backdrop-blur-md shadow-sm
+                           ${activeTab === tab.id 
+                             ? `${displayData.tabActiveColor} scale-105 shadow-md` 
+                             : `${displayData.tabInactiveColor} border-transparent`}`}
+                       >
+                         {tab.label}
+                       </button>
+                     ))}
+                  </div>
+
+                  <div className="bg-white/90 backdrop-blur-xl rounded-[2rem] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] border border-white p-7 min-h-[340px] mt-4 relative overflow-hidden">
+                      <div className={`absolute top-0 right-0 w-32 h-32 ${displayData.themeColor} opacity-[0.05] rounded-full blur-3xl pointer-events-none`}></div>
+
+                      {activeTab === 'base' && (
+                        <div className="animate-fade-in space-y-5">
+                          <div className="flex items-center gap-3 mb-2">
+                             <div className={`p-2 rounded-lg ${displayData.themeColor} bg-opacity-10`}>
+                               <BookOpen className={`w-5 h-5 ${displayData.accentColor.replace('text-', 'text-opacity-90 text-')}`} />
+                             </div>
+                             <h3 className="font-serif font-bold text-lg text-stone-800">
+                               {displayData.archetype}
+                             </h3>
+                          </div>
+                          <p className="text-[13px] text-stone-600 leading-7 text-justify whitespace-pre-line font-light">
+                            {displayData.content.base}
+                          </p>
+                        </div>
+                      )}
+
+                      {activeTab === 'light_shadow' && (
+                        <div className="animate-fade-in space-y-8">
+                           <div>
+                              <h4 className="text-xs font-bold text-amber-600 mb-4 flex items-center gap-2 uppercase tracking-wide bg-amber-50 inline-block px-3 py-1 rounded-full">
+                                 <Sun className="w-3 h-3" /> 你的光 · 核心天赋
+                              </h4>
+                              <div className="space-y-3 pl-1">
+                                {displayData.content.light.map((item, idx) => (
+                                  <div key={idx} className="relative pl-4 border-l-2 border-amber-200">
+                                    <span className="block text-xs font-bold text-stone-800 mb-1">{item.label}</span>
+                                    <span className="text-[11px] text-stone-500 leading-5 block text-justify">{item.text}</span>
+                                  </div>
+                                ))}
+                              </div>
+                           </div>
+                           <div className="pt-2">
+                              <h4 className="text-xs font-bold text-indigo-600 mb-4 flex items-center gap-2 uppercase tracking-wide bg-indigo-50 inline-block px-3 py-1 rounded-full">
+                                 <Moon className="w-3 h-3" /> 你的影 · 隐性挑战
+                              </h4>
+                              <div className="space-y-3 pl-1">
+                                {displayData.content.shadow.map((item, idx) => (
+                                  <div key={idx} className="relative pl-4 border-l-2 border-indigo-200">
+                                    <span className="block text-xs font-bold text-stone-800 mb-1">{item.label}</span>
+                                    <span className="text-[11px] text-stone-500 leading-5 block text-justify">{item.text}</span>
+                                  </div>
+                                ))}
+                              </div>
+                           </div>
+                        </div>
+                      )}
+
+                      {activeTab === 'partner' && (
+                        <div className="animate-fade-in">
+                          <div className="bg-rose-50 border border-rose-100 rounded-xl p-4 mb-6 text-center">
+                             <p className="text-xs text-rose-600 font-bold">
+                               💡 截图发给TA，能减少80%的争吵
+                             </p>
+                          </div>
+                          <div className="space-y-6">
+                            {displayData.content.partner.map((text, idx) => (
+                              <div key={idx} className="flex gap-4">
+                                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center text-[10px] font-bold font-serif border border-stone-200">
+                                   {idx + 1}
+                                 </span>
+                                 <p className="text-[13px] text-stone-600 leading-6 text-justify">
+                                   {text}
+                                 </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {activeTab === 'self' && (
+                        <div className="animate-fade-in space-y-4">
+                          <div className="flex items-center gap-3 mb-4">
+                             <div className="p-2 bg-rose-100 rounded-lg">
+                               <Heart className="w-5 h-5 text-rose-500" />
+                             </div>
+                             <h3 className="font-bold text-stone-800">如何更温柔地爱自己</h3>
+                          </div>
+                          <p className="text-[13px] text-stone-600 leading-7 text-justify whitespace-pre-line p-5 bg-stone-50 rounded-2xl border border-stone-100">
+                            {displayData.content.self}
+                          </p>
+                        </div>
+                      )}
+
+                      {activeTab === 'reshape' && (
+                        <div className="animate-fade-in space-y-4">
+                           <div className="flex items-center gap-3 mb-4">
+                             <div className="p-2 bg-emerald-100 rounded-lg">
+                               <Zap className="w-5 h-5 text-emerald-600" />
+                             </div>
+                             <h3 className="font-bold text-stone-800">能量重塑建议</h3>
+                          </div>
+                          <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100">
+                             <p className="text-[13px] text-emerald-900/80 leading-7 text-justify whitespace-pre-line">
+                               {displayData.content.reshape}
+                             </p>
+                          </div>
+                        </div>
+                      )}
+                  </div>
+
+                  {/* 底部版权 - 优化版 */}
+                  <div className="mt-12 mb-8 text-center px-6">
+                      <p className="font-serif italic text-stone-400/80 text-xs mb-6">
+                        {displayData.blessing}
+                      </p>
+                      <div className="w-8 h-[1px] bg-stone-200 mx-auto mb-4"></div>
+                      <p className="text-[9px] text-stone-300 uppercase tracking-[0.3em] font-medium">
+                         柚子的心理小屋 · 原创出品
+                      </p>
+                  </div>
+                </div>
+            </div>
+          </div>
+        )}
+
+      </main>
+
+      {/* 底部导航栏 (Quiz Mode Only) */}
+      {step === 'quiz' && (
+        <div className="flex-none w-full bg-white border-t border-stone-100 p-4 z-40">
+           <div className="flex gap-4 max-w-md mx-auto">
+             <button
+               onClick={handlePrev}
+               disabled={isPartFirstQuestion}
+               className={`flex-1 py-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-colors
+                 ${isPartFirstQuestion 
+                   ? 'bg-stone-50 text-stone-300 border-stone-100 cursor-not-allowed' 
+                   : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'}`}
+             >
+               <ArrowLeft className="w-4 h-4" /> 上一题
+             </button>
+             
+             <button
+               onClick={handleNext}
+               disabled={!answers[currentQIndex]}
+               className={`flex-1 py-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all
+                 ${!answers[currentQIndex]
+                   ? 'bg-stone-200 text-white cursor-not-allowed'
+                   : 'bg-stone-900 text-white active:scale-[0.98]'}`}
+             >
+               下一题 <ArrowRight className="w-4 h-4" />
+             </button>
+           </div>
         </div>
       )}
 
-      {/* --- Result Step 2: Final Share Page (Poster Optimized) --- */}
-      {showFinal && displayData && (
-        <div className="flex-1 flex flex-col animate-fade-in-slow bg-[#FAFAFA] pb-12 relative">
-          
-          <div id="poster-area" className="bg-[#FAFAFA] relative">
-              <div className={`pt-14 pb-16 px-6 rounded-b-[3.5rem] shadow-2xl bg-gradient-to-b ${displayData.cardStyle} text-white relative overflow-hidden`}>
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/noise.png')] opacity-[0.03]" />
-                <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full bg-white/10 blur-[80px]" />
-                
-                <div className="relative z-10 flex flex-col items-center">
-                  <p className="text-[10px] font-medium tracking-[0.2em] mb-2 text-white/80">你的情感欲望是——</p>
-                  <h1 className="text-5xl font-serif font-bold mb-8 drop-shadow-xl tracking-wider text-center">
-                    {results.primary}
-                  </h1>
-                  
-                  <div className="w-full max-w-sm text-center px-4 mb-8 relative">
-                     <span className="absolute -top-4 left-4 text-4xl font-serif opacity-20">“</span>
-                     <p className="font-serif italic text-white/95 text-base leading-relaxed py-2 inline-block relative z-10">
-                       {displayData.quote}
-                     </p>
-                     <span className="absolute -bottom-8 right-4 text-4xl font-serif opacity-20">”</span>
-                  </div>
-
-                  <div className="w-full max-w-xs h-[260px] bg-white/10 backdrop-blur-sm rounded-[2rem] border border-white/20 p-4 shadow-inner relative mt-4">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <RadarChart cx="50%" cy="50%" outerRadius="65%" data={chartData}>
-                          <PolarGrid stroke="rgba(255,255,255,0.3)" />
-                          <PolarAngleAxis dataKey="subject" tick={{ fill: 'white', fontSize: 10, fontWeight: 600, opacity: 0.9 }} />
-                          <PolarRadiusAxis angle={30} domain={[0, 8]} tick={false} axisLine={false} />
-                          <Radar
-                            name="My Desire"
-                            dataKey="A"
-                            stroke="#fff" 
-                            strokeWidth={3}
-                            fill="#fff"
-                            fillOpacity={0.6} 
-                          />
-                        </RadarChart>
-                      </ResponsiveContainer>
-                  </div>
-                </div>
+      {/* Part 确认弹窗 */}
+      {showPartModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6 animate-fade-in">
+           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+           <div className="bg-white w-full max-w-sm rounded-2xl p-6 relative z-10 shadow-2xl animate-slide-up text-center">
+              <div className="w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-500">
+                <AlertCircle className="w-6 h-6" />
               </div>
-
-              <div className="px-5 -mt-10 relative z-20">
-                <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 pl-2">
-                   {RESULT_TABS.map((tab) => (
-                     <button
-                       key={tab.id}
-                       onClick={() => setActiveTab(tab.id)}
-                       className={`flex-shrink-0 px-4 py-2 rounded-full text-[11px] font-bold transition-all duration-300 border backdrop-blur-md shadow-sm
-                         ${activeTab === tab.id 
-                           ? `${displayData.tabActiveColor} scale-105 shadow-md` 
-                           : `${displayData.tabInactiveColor} border-transparent`}`}
-                     >
-                       {tab.label}
-                     </button>
-                   ))}
-                </div>
-
-                <div className="bg-white/90 backdrop-blur-xl rounded-[2rem] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] border border-white p-7 min-h-[340px] mt-4 relative overflow-hidden">
-                    <div className={`absolute top-0 right-0 w-32 h-32 ${displayData.themeColor} opacity-[0.05] rounded-full blur-3xl pointer-events-none`}></div>
-
-                    {activeTab === 'base' && (
-                      <div className="animate-fade-in space-y-5">
-                        <div className="flex items-center gap-3 mb-2">
-                           <div className={`p-2 rounded-lg ${displayData.themeColor} bg-opacity-10`}>
-                             <BookOpen className={`w-5 h-5 ${displayData.accentColor.replace('text-', 'text-opacity-90 text-')}`} />
-                           </div>
-                           <h3 className="font-serif font-bold text-lg text-stone-800">
-                             {displayData.archetype}
-                           </h3>
-                        </div>
-                        <p className="text-[13px] text-stone-600 leading-7 text-justify whitespace-pre-line font-light">
-                          {displayData.content.base}
-                        </p>
-                      </div>
-                    )}
-
-                    {activeTab === 'light_shadow' && (
-                      <div className="animate-fade-in space-y-8">
-                         <div>
-                            <h4 className="text-xs font-bold text-amber-600 mb-4 flex items-center gap-2 uppercase tracking-wide bg-amber-50 inline-block px-3 py-1 rounded-full">
-                               <Sun className="w-3 h-3" /> 你的光 · 核心天赋
-                            </h4>
-                            <div className="space-y-3 pl-1">
-                              {displayData.content.light.map((item, idx) => (
-                                <div key={idx} className="relative pl-4 border-l-2 border-amber-200">
-                                  <span className="block text-xs font-bold text-stone-800 mb-1">{item.label}</span>
-                                  <span className="text-[11px] text-stone-500 leading-5 block text-justify">{item.text}</span>
-                                </div>
-                              ))}
-                            </div>
-                         </div>
-                         <div className="pt-2">
-                            <h4 className="text-xs font-bold text-indigo-600 mb-4 flex items-center gap-2 uppercase tracking-wide bg-indigo-50 inline-block px-3 py-1 rounded-full">
-                               <Moon className="w-3 h-3" /> 你的影 · 隐性挑战
-                            </h4>
-                            <div className="space-y-3 pl-1">
-                              {displayData.content.shadow.map((item, idx) => (
-                                <div key={idx} className="relative pl-4 border-l-2 border-indigo-200">
-                                  <span className="block text-xs font-bold text-stone-800 mb-1">{item.label}</span>
-                                  <span className="text-[11px] text-stone-500 leading-5 block text-justify">{item.text}</span>
-                                </div>
-                              ))}
-                            </div>
-                         </div>
-                      </div>
-                    )}
-
-                    {activeTab === 'partner' && (
-                      <div className="animate-fade-in">
-                        <div className="bg-rose-50 border border-rose-100 rounded-xl p-4 mb-6 text-center">
-                           <p className="text-xs text-rose-600 font-bold">
-                             💡 截图发给TA，能减少80%的争吵
-                           </p>
-                        </div>
-                        <div className="space-y-6">
-                          {displayData.content.partner.map((text, idx) => (
-                            <div key={idx} className="flex gap-4">
-                               <span className="flex-shrink-0 w-6 h-6 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center text-[10px] font-bold font-serif border border-stone-200">
-                                 {idx + 1}
-                               </span>
-                               <p className="text-[13px] text-stone-600 leading-6 text-justify">
-                                 {text}
-                               </p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {activeTab === 'self' && (
-                      <div className="animate-fade-in space-y-4">
-                        <div className="flex items-center gap-3 mb-4">
-                           <div className="p-2 bg-rose-100 rounded-lg">
-                             <Heart className="w-5 h-5 text-rose-500" />
-                           </div>
-                           <h3 className="font-bold text-stone-800">如何更温柔地爱自己</h3>
-                        </div>
-                        <p className="text-[13px] text-stone-600 leading-7 text-justify whitespace-pre-line p-5 bg-stone-50 rounded-2xl border border-stone-100">
-                          {displayData.content.self}
-                        </p>
-                      </div>
-                    )}
-
-                    {activeTab === 'reshape' && (
-                      <div className="animate-fade-in space-y-4">
-                         <div className="flex items-center gap-3 mb-4">
-                           <div className="p-2 bg-emerald-100 rounded-lg">
-                             <Zap className="w-5 h-5 text-emerald-600" />
-                           </div>
-                           <h3 className="font-bold text-stone-800">能量重塑建议</h3>
-                        </div>
-                        <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100">
-                           <p className="text-[13px] text-emerald-900/80 leading-7 text-justify whitespace-pre-line">
-                             {displayData.content.reshape}
-                           </p>
-                        </div>
-                      </div>
-                    )}
-                </div>
-
-                {/* 底部版权 */}
-                <div className="mt-12 mb-8 text-center px-6">
-                    <p className="font-serif italic text-stone-400/80 text-xs mb-6">
-                      {displayData.blessing}
-                    </p>
-                    <div className="w-8 h-[1px] bg-stone-200 mx-auto mb-4"></div>
-                    <p className="text-[9px] text-stone-300 uppercase tracking-[0.3em] font-medium">
-                       柚子的心理小屋 · 原创出品
-                    </p>
-                </div>
+              <h3 className="font-bold text-lg text-stone-800 mb-2">确认提交本章节？</h3>
+              <p className="text-xs text-stone-500 mb-6 leading-relaxed">
+                提交后将无法返回修改本章节的答案。<br/>即将进入下一阶段的深度探索。
+              </p>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setShowPartModal(false)}
+                  className="flex-1 py-3 rounded-xl border border-stone-200 text-stone-600 text-xs font-bold"
+                >
+                  再检查一下
+                </button>
+                <button 
+                  onClick={confirmNextPart}
+                  className="flex-1 py-3 rounded-xl bg-stone-900 text-white text-xs font-bold shadow-lg"
+                >
+                  确认提交
+                </button>
               </div>
-          </div>
-
-          {/* 截图提示弹窗 (从左滑出) */}
-          {showScreenshotTip && (
-             <div className="fixed top-[25%] left-6 z-[100] animate-slide-right w-[85%] max-w-xs pointer-events-none">
-                <div className="bg-white/95 backdrop-blur-2xl border border-rose-100 px-5 py-4 rounded-r-3xl rounded-bl-3xl shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] flex items-center gap-4 relative pointer-events-auto">
-                   <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 flex-shrink-0">
-                     <Camera className="w-5 h-5 animate-pulse" />
-                   </div>
-                   <div className="flex-1">
-                     <h4 className="text-xs font-bold text-stone-800 mb-0.5">测试报告已生成</h4>
-                     <p className="text-[10px] text-stone-500">请截图保存你的专属结果海报</p>
-                   </div>
-                   <button 
-                     onClick={() => setShowScreenshotTip(false)}
-                     className="text-stone-300 hover:text-stone-500 p-1"
-                   >
-                     <X className="w-4 h-4" />
-                   </button>
-                </div>
-             </div>
-          )}
-
+           </div>
         </div>
       )}
 
