@@ -80,9 +80,11 @@ const RESULTS = {
     archetype: "风暴中的守夜人",
     icon: <Anchor className="w-8 h-8" />,
     quote: "万物皆流变，而我只要一种绝对的定数。",
+    // 背景：稍微提高亮度和通透度
     cardStyle: "from-blue-800 to-slate-900 shadow-[0_0_50px_-10px_rgba(30,58,138,0.4)] border-blue-800/30",
     accentColor: "text-blue-800",
     radarColor: "#1e40af",
+    // 撞色书签：深蓝配香槟金
     tabActiveColor: "bg-amber-100 text-blue-900 border-amber-200",
     tabInactiveColor: "bg-white/80 text-blue-900/50",
     themeColor: "bg-blue-800",
@@ -266,7 +268,7 @@ const RESULTS = {
       ],
       shadow: [
         { label: "对“过度靠近”的本能抗拒", text: "只要对方表现出过度依赖、频繁追问、或是试图掌控你的节奏，哪怕没有恶意，你也会下意识想后退，容易让对方误以为你 “不够爱”。" },
-        { label: "习惯“独自消化”的封闭性", text: "你太擅长自己处理情绪和问题，常常忘了对方也希望参与你的世界 ——哪怕只是听你吐槽、陪你分担，你也会下意识说 “没事”。" },
+        { label: "习惯“独自消化”的封闭性", text: "你太擅长自己处理情绪和问题，常常忘了对方也希望参与你的世界 —— 哪怕只是听你吐槽、陪你分担，你也会下意识说 “没事”。" },
         { label: "对“束缚”的过度预判", text: "只要稍微感受到一点被期待、被要求的压力，你就会立刻警觉，甚至提前撤退，把 “可能被束缚” 的预判当成事实。" },
         { label: "“清淡表达”的误解风险", text: "你在意一个人时，表达方式也不会太浓烈。这种清淡的态度，很容易让对方感受不到你的在意，陷入 “他到底爱不爱我” 的猜疑。" }
       ],
@@ -543,6 +545,16 @@ export default function SoulScan_StainedGlass() {
     }, 1000);
   };
 
+  // 结果页自动弹窗：3秒后出现
+  useEffect(() => {
+    if (showFinal) {
+        const timer = setTimeout(() => {
+            setShowScreenshotTip(true);
+        }, 3000);
+        return () => clearTimeout(timer);
+    }
+  }, [showFinal]);
+
   const progress = ((currentQIndex + 1) / QUESTIONS.length) * 100;
   const displayData = RESULTS[results.primary];
   const currentPartConfig = PARTS_CONFIG.find(p => currentQIndex >= p.startIndex && currentQIndex <= p.endIndex);
@@ -688,14 +700,13 @@ export default function SoulScan_StainedGlass() {
             </div>
             
             <div className="flex-1 flex flex-col pb-32">
-               <div className="mb-2">
-                 <span className="text-[10px] font-bold tracking-widest uppercase text-rose-400 bg-rose-50 px-2 py-1 rounded inline-block mb-2">
-                   {currentQIndex < 16 ? 'Reality' : currentQIndex < 32 ? 'Emotion' : 'Soul'}
+               {/* 题干部分 - 优化排版 */}
+               <h2 className="text-lg font-serif font-medium leading-relaxed text-stone-800 text-justify mb-4">
+                 <span className="inline-block text-[10px] font-bold tracking-widest uppercase text-rose-500 bg-rose-50 px-2 py-0.5 rounded mr-2 align-middle border border-rose-100/50 relative -top-0.5">
+                   {currentQIndex < 16 ? 'REALITY' : currentQIndex < 32 ? 'EMOTION' : 'SOUL'}
                  </span>
-                 <h2 className="text-base font-medium leading-snug text-stone-800">
-                   {QUESTIONS[currentQIndex].question}
-                 </h2>
-               </div>
+                 {QUESTIONS[currentQIndex].question}
+               </h2>
                
                <div className="space-y-2">
                  {QUESTIONS[currentQIndex].options.map((opt, idx) => {
@@ -969,66 +980,85 @@ export default function SoulScan_StainedGlass() {
           </div>
         )}
 
-      </main>
+        {/* 底部导航栏 (Quiz Mode Only) */}
+        {step === 'quiz' && (
+          <div className="flex-none w-full bg-white border-t border-stone-100 p-4 z-40">
+             <div className="flex gap-4 max-w-md mx-auto">
+               <button
+                 onClick={handlePrev}
+                 disabled={isPartFirstQuestion}
+                 className={`flex-1 py-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-colors
+                   ${isPartFirstQuestion 
+                     ? 'bg-stone-50 text-stone-300 border-stone-100 cursor-not-allowed' 
+                     : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'}`}
+               >
+                 <ArrowLeft className="w-4 h-4" /> 上一题
+               </button>
+               
+               <button
+                 onClick={handleNext}
+                 disabled={!answers[currentQIndex]}
+                 className={`flex-1 py-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all
+                   ${!answers[currentQIndex]
+                     ? 'bg-stone-200 text-white cursor-not-allowed'
+                     : 'bg-stone-900 text-white active:scale-[0.98]'}`}
+               >
+                 下一题 <ArrowRight className="w-4 h-4" />
+               </button>
+             </div>
+          </div>
+        )}
 
-      {/* 底部导航栏 (Quiz Mode Only) */}
-      {step === 'quiz' && (
-        <div className="flex-none w-full bg-white border-t border-stone-100 p-4 z-40">
-           <div className="flex gap-4 max-w-md mx-auto">
-             <button
-               onClick={handlePrev}
-               disabled={isPartFirstQuestion}
-               className={`flex-1 py-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-colors
-                 ${isPartFirstQuestion 
-                   ? 'bg-stone-50 text-stone-300 border-stone-100 cursor-not-allowed' 
-                   : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'}`}
-             >
-               <ArrowLeft className="w-4 h-4" /> 上一题
-             </button>
-             
-             <button
-               onClick={handleNext}
-               disabled={!answers[currentQIndex]}
-               className={`flex-1 py-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all
-                 ${!answers[currentQIndex]
-                   ? 'bg-stone-200 text-white cursor-not-allowed'
-                   : 'bg-stone-900 text-white active:scale-[0.98]'}`}
-             >
-               下一题 <ArrowRight className="w-4 h-4" />
-             </button>
-           </div>
-        </div>
-      )}
+        {/* Part 确认弹窗 */}
+        {showPartModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-6 animate-fade-in">
+             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+             <div className="bg-white w-full max-w-sm rounded-2xl p-6 relative z-10 shadow-2xl animate-slide-up text-center">
+                <div className="w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-500">
+                  <AlertCircle className="w-6 h-6" />
+                </div>
+                <h3 className="font-bold text-lg text-stone-800 mb-2">确认提交本章节？</h3>
+                <p className="text-xs text-stone-500 mb-6 leading-relaxed">
+                  提交后将无法返回修改本章节的答案。<br/>即将进入下一阶段的深度探索。
+                </p>
+                <div className="flex gap-3">
+                  <button 
+                    onClick={() => setShowPartModal(false)}
+                    className="flex-1 py-3 rounded-xl border border-stone-200 text-stone-600 text-xs font-bold"
+                  >
+                    再检查一下
+                  </button>
+                  <button 
+                    onClick={confirmNextPart}
+                    className="flex-1 py-3 rounded-xl bg-stone-900 text-white text-xs font-bold shadow-lg"
+                  >
+                    确认提交
+                  </button>
+                </div>
+             </div>
+          </div>
+        )}
 
-      {/* Part 确认弹窗 */}
-      {showPartModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-6 animate-fade-in">
-           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-           <div className="bg-white w-full max-w-sm rounded-2xl p-6 relative z-10 shadow-2xl animate-slide-up text-center">
-              <div className="w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-500">
-                <AlertCircle className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-lg text-stone-800 mb-2">确认提交本章节？</h3>
-              <p className="text-xs text-stone-500 mb-6 leading-relaxed">
-                提交后将无法返回修改本章节的答案。<br/>即将进入下一阶段的深度探索。
-              </p>
-              <div className="flex gap-3">
-                <button 
-                  onClick={() => setShowPartModal(false)}
-                  className="flex-1 py-3 rounded-xl border border-stone-200 text-stone-600 text-xs font-bold"
-                >
-                  再检查一下
-                </button>
-                <button 
-                  onClick={confirmNextPart}
-                  className="flex-1 py-3 rounded-xl bg-stone-900 text-white text-xs font-bold shadow-lg"
-                >
-                  确认提交
-                </button>
+        {/* 截图提示弹窗 (从左滑出) */}
+        {showScreenshotTip && (
+           <div className="fixed top-[25%] left-6 z-[100] animate-slide-right w-[85%] max-w-xs pointer-events-none">
+              <div className="bg-white/95 backdrop-blur-2xl border border-rose-100 px-5 py-4 rounded-r-3xl rounded-bl-3xl shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] flex items-center gap-4 relative pointer-events-auto">
+                 <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 flex-shrink-0">
+                   <Camera className="w-5 h-5 animate-pulse" />
+                 </div>
+                 <div className="flex-1">
+                   <h4 className="text-xs font-bold text-stone-800 mb-0.5">测试报告已生成</h4>
+                   <p className="text-[10px] text-stone-500">请截图保存你的专属结果海报</p>
+                 </div>
+                 <button 
+                   onClick={() => setShowScreenshotTip(false)}
+                   className="text-stone-300 hover:text-stone-500 p-1"
+                 >
+                   <X className="w-4 h-4" />
+                 </button>
               </div>
            </div>
-        </div>
-      )}
+        )}
 
       <style jsx global>{`
         .perspective-1000 { perspective: 1000px; }
@@ -1041,6 +1071,11 @@ export default function SoulScan_StainedGlass() {
         @keyframes slideUp {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideRight {
+          from { opacity: 0; transform: translateX(-20px); }
+          to { opacity: 1; transform: translateX(0); }
         }
 
         @keyframes violent-shake {
@@ -1058,6 +1093,7 @@ export default function SoulScan_StainedGlass() {
         }
         
         .animate-slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-slide-right { animation: slideRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-fade-in { animation: slideUp 0.8s ease-out forwards; }
         .animate-fade-in-slow { animation: slideUp 1.2s ease-out forwards; }
         .animate-violent-shake { animation: violent-shake 0.5s infinite; }
