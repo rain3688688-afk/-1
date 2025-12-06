@@ -266,7 +266,7 @@ const RESULTS = {
       ],
       shadow: [
         { label: "对“过度靠近”的本能抗拒", text: "只要对方表现出过度依赖、频繁追问、或是试图掌控你的节奏，哪怕没有恶意，你也会下意识想后退，容易让对方误以为你 “不够爱”。" },
-        { label: "习惯“独自消化”的封闭性", text: "你太擅长自己处理情绪和问题，常常忘了对方也希望参与你的世界 —— 哪怕只是听你吐槽、陪你分担，你也会下意识说 “没事”。" },
+        { label: "习惯“独自消化”的封闭性", text: "你太擅长自己处理情绪和问题，常常忘了对方也希望参与你的世界 ——哪怕只是听你吐槽、陪你分担，你也会下意识说 “没事”。" },
         { label: "对“束缚”的过度预判", text: "只要稍微感受到一点被期待、被要求的压力，你就会立刻警觉，甚至提前撤退，把 “可能被束缚” 的预判当成事实。" },
         { label: "“清淡表达”的误解风险", text: "你在意一个人时，表达方式也不会太浓烈。这种清淡的态度，很容易让对方感受不到你的在意，陷入 “他到底爱不爱我” 的猜疑。" }
       ],
@@ -688,23 +688,23 @@ export default function SoulScan_StainedGlass() {
             </div>
             
             <div className="flex-1 flex flex-col pb-32">
-               <div className="mb-4">
+               <div className="mb-2">
                  <span className="text-[10px] font-bold tracking-widest uppercase text-rose-400 bg-rose-50 px-2 py-1 rounded inline-block mb-2">
                    {currentQIndex < 16 ? 'Reality' : currentQIndex < 32 ? 'Emotion' : 'Soul'}
                  </span>
-                 <h2 className="text-lg font-serif font-medium leading-relaxed text-stone-800">
+                 <h2 className="text-base font-medium leading-snug text-stone-800">
                    {QUESTIONS[currentQIndex].question}
                  </h2>
                </div>
                
-               <div className="space-y-3">
+               <div className="space-y-2">
                  {QUESTIONS[currentQIndex].options.map((opt, idx) => {
                    const isSelected = answers[currentQIndex] === opt.type;
                    return (
                      <button
                        key={`${currentQIndex}-${idx}`} 
                        onClick={() => handleSelectOption(opt.type)}
-                       className={`w-full text-left p-5 border rounded-2xl shadow-sm transition-all duration-200 active:scale-[0.98] group relative overflow-hidden
+                       className={`w-full text-left p-3.5 border rounded-xl shadow-sm transition-all duration-200 active:scale-[0.98] group relative overflow-hidden
                          ${isSelected 
                            ? 'bg-rose-50 border-rose-400 shadow-md' 
                            : 'bg-white border-stone-100 hover:border-rose-200'}`}
