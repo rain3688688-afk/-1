@@ -703,7 +703,7 @@ export default function SoulScan_StainedGlass() {
               style={{ width: `${progress}%` }}
             />
           </div>
-          <div className="flex-1 flex flex-col justify-center pb-20">
+          <div className="flex-1 flex flex-col justify-center pb-32">
              <div className="mb-2">
                <span className="text-[10px] font-bold tracking-widest uppercase text-rose-400 bg-rose-50 px-2 py-1 rounded inline-block mb-4">
                  {currentQIndex < 16 ? 'Reality' : currentQIndex < 32 ? 'Emotion' : 'Soul'}
@@ -738,8 +738,8 @@ export default function SoulScan_StainedGlass() {
                })}
              </div>
              
-             {/* 原创说明 (修复位置) */}
-             <div className="mt-12 text-center pb-8 opacity-60">
+             {/* 原创说明 (流式布局，不遮挡) */}
+             <div className="mt-auto pt-12 pb-4 text-center opacity-60">
                 <p className="text-[10px] text-stone-400 tracking-widest">柚子的心理小屋 · 原创出品</p>
              </div>
           </div>
@@ -875,9 +875,7 @@ export default function SoulScan_StainedGlass() {
                 <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full bg-white/10 blur-[80px]" />
                 
                 <div className="relative z-10 flex flex-col items-center">
-                  <p className="text-[9px] font-bold tracking-[0.4em] mb-4 uppercase border border-white/30 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md">
-                    Soul Scan Result
-                  </p>
+                  <p className="text-[10px] font-medium tracking-[0.2em] mb-2 text-white/80">你的情感欲望是——</p>
                   <h1 className="text-5xl font-serif font-bold mb-8 drop-shadow-xl tracking-wider text-center">
                     {results.primary}
                   </h1>
@@ -1029,6 +1027,7 @@ export default function SoulScan_StainedGlass() {
                     )}
                 </div>
 
+                {/* 底部版权 */}
                 <div className="mt-12 mb-8 text-center px-6">
                     <p className="font-serif italic text-stone-400/80 text-xs mb-6">
                       {displayData.blessing}
@@ -1041,24 +1040,22 @@ export default function SoulScan_StainedGlass() {
               </div>
           </div>
 
-          {/* 截图提示弹窗 (屏幕 Top 35% 显眼位置) */}
+          {/* 截图提示弹窗 (从左滑出) */}
           {showScreenshotTip && (
-             <div className="fixed top-[35%] left-1/2 -translate-x-1/2 z-[100] w-[85%] max-w-xs animate-slide-up">
-                <div className="bg-white/95 backdrop-blur-2xl border border-white/60 px-6 py-6 rounded-3xl shadow-[0_20px_50px_-10px_rgba(0,0,0,0.2)] flex flex-col items-center gap-4 relative text-center">
-                   <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-rose-100 to-orange-50 flex items-center justify-center text-rose-500 shadow-inner mb-1">
-                     <Camera className="w-7 h-7 animate-pulse" />
+             <div className="fixed top-[25%] left-6 z-[100] animate-slide-right w-[85%] max-w-xs pointer-events-none">
+                <div className="bg-white/95 backdrop-blur-2xl border border-rose-100 px-5 py-4 rounded-r-3xl rounded-bl-3xl shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] flex items-center gap-4 relative pointer-events-auto">
+                   <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 flex-shrink-0">
+                     <Camera className="w-5 h-5 animate-pulse" />
                    </div>
-                   <div>
-                     <h4 className="text-sm font-bold text-stone-800 mb-2">测试报告已生成</h4>
-                     <p className="text-xs text-stone-500 leading-relaxed px-2">
-                       请截图保存你的专属结果海报
-                     </p>
+                   <div className="flex-1">
+                     <h4 className="text-xs font-bold text-stone-800 mb-0.5">测试报告已生成</h4>
+                     <p className="text-[10px] text-stone-500">请截图保存你的专属结果海报</p>
                    </div>
                    <button 
                      onClick={() => setShowScreenshotTip(false)}
-                     className="absolute top-4 right-4 text-stone-300 hover:text-stone-500 p-1"
+                     className="text-stone-300 hover:text-stone-500 p-1"
                    >
-                     <X className="w-5 h-5" />
+                     <X className="w-4 h-4" />
                    </button>
                 </div>
              </div>
@@ -1080,6 +1077,11 @@ export default function SoulScan_StainedGlass() {
           to { opacity: 1; transform: translateY(0); }
         }
 
+        @keyframes slideRight {
+          from { opacity: 0; transform: translateX(-20px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+
         @keyframes violent-shake {
           0% { transform: rotateY(180deg) translate(0, 0) rotate(0deg); }
           10% { transform: rotateY(180deg) translate(-5px, -5px) rotate(-3deg); }
@@ -1095,6 +1097,7 @@ export default function SoulScan_StainedGlass() {
         }
         
         .animate-slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-slide-right { animation: slideRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-fade-in { animation: slideUp 0.8s ease-out forwards; }
         .animate-fade-in-slow { animation: slideUp 1.2s ease-out forwards; }
         .animate-violent-shake { animation: violent-shake 0.5s infinite; }
