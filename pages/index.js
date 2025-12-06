@@ -1,77 +1,29 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, Download, ChevronRight, BookOpen, Key, Feather, Search, X, Copy, Image as ImageIcon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sparkles, Lock, Share2, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, Download, ChevronRight, BookOpen, Key, Feather, Search, Mail, Link as LinkIcon, Copy } from 'lucide-react';
+import Head from 'next/head';
+import { createClient } from '@supabase/supabase-js';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
+import html2canvas from 'html2canvas';
 
-// =========================================================================
-// ⚠️【复制说明】请在你的本地项目中，取消下面 3 行代码的注释，并删除下方的 [预览模拟] 代码块
-// =========================================================================
+// --- 1. 初始化配置 ---
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-// import Head from 'next/head';
-// import { createClient } from '@supabase/supabase-js';
-// import html2canvas from 'html2canvas';
+const SITE_URL = "https://www.qingganyuwang.top"; 
+const XIAOHONGSHU_KEYWORD = "柚子的心理小屋";
 
-// =========================================================================
-// 🚧 [预览模拟] 开始 (上线时请删除从这里到 "预览模拟结束" 的所有代码)
-// =========================================================================
-const html2canvas = async (element, options) => {
-  console.log("Mock: html2canvas 生成海报...");
-  return { toDataURL: () => "data:image/png;base64,mock" }; // 模拟返回图片
-};
-
-// 模拟 Supabase (你在本地跑时，删掉这个 mockSupabase，用真实的 createClient)
-const mockSupabase = {
-  from: (table) => ({
-    select: (columns) => ({
-      eq: (column, value) => ({
-        single: async () => {
-            // 模拟验证兑换码成功
-            if (table === 'codes') return { data: { used_count: 0, max_uses: 1, code: value }, error: null };
-            return { data: null, error: null };
-        }
-      }),
-      insert: async (data) => ({
-          select: () => ({
-              single: async () => ({ data: { id: 'mock-uuid-1234' }, error: null })
-          })
-      })
-    }),
-    update: (data) => ({
-        eq: (column, value) => Promise.resolve({ error: null })
-    }),
-    insert: (data) => ({
-        select: () => ({
-            single: async () => {
-                console.log("Mock: 数据已存入 Supabase", data);
-                return { data: { id: 'mock-result-id-5678' }, error: null };
-            }
-        })
-    })
-  })
-};
-const supabase = mockSupabase; 
-// =========================================================================
-// 🚧 [预览模拟] 结束
-// =========================================================================
-
-
-// --- 真实 Supabase 初始化 (上线时请取消注释并使用这个) ---
-// const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-// const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-// const supabase = createClient(supabaseUrl, supabaseKey);
-
-
-// --- 章节配置 ---
+// 章节配置
 const PARTS_CONFIG = [
   { startIndex: 0, title: "Part 1：现实切片", quote: "“爱不仅仅是誓言，更是下意识的本能。”", desc: "先让我们从生活的琐碎里，捕捉你在亲密关系中那些最真实的条件反射。" },
   { startIndex: 16, title: "Part 2：情绪暗涌", quote: "“日常的表象之下，藏着我们未曾说出口的渴望。”", desc: "现在的你，已经脱去了社交伪装。让我们再往下潜一点，去触碰那些让你感到不安、委屈或满足的瞬间。" },
   { startIndex: 32, title: "Part 3：灵魂图腾", quote: "“语言无法抵达的地方，直觉可以。”", desc: "欢迎来到你内心的最深处。接下来的问题不需要逻辑，仅凭直觉，选出你第一眼看到的那个答案。" }
 ];
 
-// --- 完整题目数据 (48题) ---
+// 题目数据
 const QUESTIONS = [
-  // --- Part 1 ---
   { id: 1, question: "周末下午，伴侣突然失联了3个小时，发消息也没回。那一刻，你最真实的反应是？", options: [{ text: "下意识翻聊天记录，看是不是我说错话了？", type: "确定感" }, { text: "挺好的，刚好没人管我，专心做自己的事。", type: "自由感" }, { text: "推测原因，准备联系上后问清楚去向。", type: "掌控感" }, { text: "心里堵得慌。如果他够在意我，怎么舍得让我空等？", type: "被偏爱" }] },
   { id: 2, question: "伴侣最近工作压力极大，回家情绪低落一言不发。此时你心里的念头是？", options: [{ text: "看着心疼。倒杯水、切水果，让他知道有人照顾。", type: "被需要" }, { text: "他应该很烦。那我就识趣点躲远点，等他缓过来。", type: "安全距离" }, { text: "死气沉沉的沉默很难受。希望能聊聊。", type: "精神共鸣" }, { text: "在意接下来的安排：今晚怎么吃？计划还作数吗？", type: "秩序感" }] },
   { id: 3, question: "因为一件琐事发生了激烈的争吵，甚至有些冷场。你心里那个过不去的点主要是？", options: [{ text: "态度冷冰冰。那种随时要放弃我的感觉最让我害怕。", type: "确定感" }, { text: "没复盘。到底谁对谁错，以后按谁的来？", type: "秩序感" }, { text: "心软了。看他气得脸色发白，输赢不重要，想哄哄他。", type: "被需要" }, { text: "无法沟通。不立刻解决问题翻篇，我就没法安心做事。", type: "掌控感" }] },
@@ -88,8 +40,6 @@ const QUESTIONS = [
   { id: 14, question: "在一起久了，关系进入平淡模式，每天除了吃饭睡觉没别的话题。你会觉得？", options: [{ text: "慢性死亡。没有思想交流，只剩空壳。", type: "精神共鸣" }, { text: "有点失落。好像我这个人在不在家对他没差别了。", type: "被需要" }, { text: "求之不得。不用费劲维系激情，各干各的最舒服。", type: "自由感" }, { text: "这很正常。稳定的、可预测的生活节奏让我踏实。", type: "秩序感" }] },
   { id: 15, question: "你有一个非常痴迷的小爱好，但伴侣完全不感兴趣。你希望他的态度是？", options: [{ text: "别干涉我。这是我的自留地，请离远点。", type: "安全距离" }, { text: "尊重我的投入。别总质疑我不务正业。", type: "掌控感" }, { text: "试着懂我一点。明白为什么这个东西能打动我。", type: "精神共鸣" }, { text: "陪我一起玩。哪怕不喜欢，也希望能为了我参与一下。", type: "被偏爱" }] },
   { id: 16, question: "大吵一架终于和好了。为了让这页彻底翻过去，你最需要的一个“收尾动作”是？", options: [{ text: "反复确认。“你真的不生气了吗？我们真的没事了吗？”", type: "确定感" }, { text: "某种补偿行为。比如给他做顿好吃的。", type: "被需要" }, { text: "彻底不提。赶紧回归正常，把这尴尬的一页揭过去。", type: "安全距离" }, { text: "得到一个小惊喜。买个礼物或者带我吃顿好的。", type: "被偏爱" }] },
-  
-  // --- Part 2 ---
   { id: 17, question: "在一段关系里，最让你感到心慌、不踏实的那种时刻，其实是？", options: [{ text: "不知道下一秒会发生什么。内心悬空的感觉最折磨人。", type: "确定感" }, { text: "感觉透不过气。那种被严密包裹的窒息感，让我只想逃。", type: "自由感" }, { text: "事情脱离了轨迹。局面完全乱套，无法把握方向。", type: "掌控感" }, { text: "像在演独角戏。面对面心却连不上的孤独感。", type: "精神共鸣" }] },
   { id: 18, question: "当你在感情里觉得特别委屈时，脑海里那个挥之不去的念头是？", options: [{ text: "“好像我没什么价值。” 觉得自己很多余。", type: "被需要" }, { text: "“我就知道会受伤。” 本能地想立刻缩回去。", type: "安全距离" }, { text: "“这不公平。” 为什么总是我在妥协？", type: "秩序感" }, { text: "“原来我和别人没区别。” 我并没有被放在例外的位置上。", type: "被偏爱" }] },
   { id: 19, question: "你理想中最好的爱，给你的直接感觉应该是？", options: [{ text: "轻松。没有压力，没有强制要求。", type: "自由感" }, { text: "踏实。不管发生什么，都知道你不会走。", type: "确定感" }, { text: "默契。不用费劲解释，你也懂。", type: "精神共鸣" }, { text: "清晰。一切都在计划中稳步推进。", type: "掌控感" }] },
@@ -106,8 +56,6 @@ const QUESTIONS = [
   { id: 30, question: "如果给你自己写一份“恋爱使用说明书”，你最希望标注的核心法则是？", options: [{ text: "“请坚定地选择我。” 别犹豫，别摇摆。", type: "确定感" }, { text: "“请允许我做自己。” 别打着为我好的名义改造我。", type: "自由感" }, { text: "“请看见我的付出。” 别把一切都当成空气。", type: "被需要" }, { text: "“请给我一点时间。” 别一上来就掏心掏肺。", type: "安全距离" }] },
   { id: 31, question: "如果让你用一个词来定义你理想中的“关系形态”，你希望你们是？", options: [{ text: "合伙人。账目分明，分工明确，高效努力。", type: "秩序感" }, { text: "船长与领航员。有明确方向，有问题迅速解决。", type: "掌控感" }, { text: "灵魂伴侣。不用磨合的默契，眼神一对就知道。", type: "精神共鸣" }, { text: "两条平行的河。有交集，又互不吞没。", type: "自由感" }] },
   { id: 32, question: "在你看来，一个人爱你的最高级表现是？", options: [{ text: "例外。他对世界冷漠，唯独对我不一样。", type: "被偏爱" }, { text: "托底。无论我变成什么样，他永远站在我身后。", type: "确定感" }, { text: "依赖。愿意把最脆弱的一面给我看，只让我照顾。", type: "被需要" }, { text: "尊重。懂得站在安全线以外守护我。", type: "安全距离" }] },
-
-  // --- Part 3 ---
   { id: 33, question: "如果要把你向往的亲密关系画成一幅画，它最像什么？", options: [{ text: "深深扎进土里的树根。地下紧紧纠缠。", type: "确定感" }, { text: "两朵飘在天上的云。聚散都随风。", type: "自由感" }, { text: "一条笔直的高速公路。全速驶向同一个终点。", type: "掌控感" }, { text: "两面互相照映的镜子。看着你就能看见自己。", type: "精神共鸣" }] },
   { id: 34, question: "如果要把自己比喻成一种动物，在爱人面前，你更像？", options: [{ text: "温顺的大金毛。你感受到陪伴我就满足。", type: "被需要" }, { text: "被驯服的小狐狸。我只认你这一个“驯养员”。", type: "被偏爱" }, { text: "屯松果的松鼠。未雨绸缪，规划好过冬。", type: "秩序感" }, { text: "林间的小鹿。生性敏感，试探着靠近。", type: "安全距离" }] },
   { id: 35, question: "闭上眼，你觉得最让你感到安稳的那个空间是？", options: [{ text: "暴雨夜的屋子。你在身边，门窗紧闭。", type: "确定感" }, { text: "巨大的落地窗。视野通透，没有围栏。", type: "自由感" }, { text: "深夜书房。安静私密，只有书和思想。", type: "精神共鸣" }, { text: "私有王国。关上门，这里就是我们的国度。", type: "掌控感" }] },
@@ -126,40 +74,276 @@ const QUESTIONS = [
   { id: 48, question: "最后，请凭直觉填空：爱是______。", options: [{ text: "定数。唯一不会更改的答案。", type: "确定感" }, { text: "认出。茫茫人海辨认出彼此是同类。", type: "精神共鸣" }, { text: "成全。不捆绑，拥有更广阔天空。", type: "自由感" }, { text: "治愈。看见你的破碎，甘愿做药。", type: "被需要" }] }
 ];
 
-// --- 结果页Tab配置 ---
-const RESULT_TABS = [
-  { id: 'base', label: '亲密底色', icon: BookOpen },
-  { id: 'lightShadow', label: '光影图谱', icon: Sun },
-  { id: 'partner', label: '伴侣指南', icon: Heart },
-  { id: 'reshape', label: '自我重塑', icon: Feather },
-];
+// 结果数据 (包含所有文案，无删减)
+const RESULTS = {
+  "确定感": {
+    type: "确定感",
+    archetype: "风暴中的守夜人",
+    icon: <Anchor className="w-8 h-8" />,
+    quote: "“万物皆流变，而我只要一种绝对的定数。”",
+    cardStyle: "from-blue-700/60 to-indigo-900/60 shadow-[0_0_40px_-5px_rgba(59,130,246,0.5)] border-blue-200/40",
+    accentColor: "text-blue-700",
+    radarColor: "#3b82f6",
+    tabs: {
+      base: `在亲密关系中，你核心的情感诉求是 “稳定与可预期”，始终坚守着对长期联结的极致追求。相较于外在条件的光鲜或浪漫形式的轰轰烈烈，你更看重关系中的确定性—— 凡事有交代、件件有着落、事事有回音，这种清晰、可靠的互动模式，是你构建情感安全感的基石。\n\n你的情感底色厚重且带着强烈的契约精神，对感情的投入从不浅尝辄止，而是带着 “认定即终身” 的郑重。只要对方传递的态度足够明确、信号足够清晰，你便会毫无保留地深度投入，愿意为关系的长久发展付出耐心与精力，包容差异、共担责任，将长期承诺作为情感的核心导向，而非一时的情绪冲动。\n\n这份对关系的厚重期待背后，潜藏着你对不确定性的极度敏感与对被抛弃的深层恐惧。你对关系中的距离变化、态度波动有着本能的警觉，任何模糊的信号、延迟的回应，都可能触发你内心的不安。你并非刻意试探或控制，所有看似执着的追问与确认，本质上都是为了在不确定的关系流动中，寻找一个稳定的情感锚点，反复确认自身在对方心中的重要性与不可替代性。`,
+      lightShadow: [
+        { label: "稳定的情感支撑力 (光)", text: "你是关系中定海神针般的存在，具备极强的抗风险韧性。不会因短期矛盾或外界波动轻易放弃联结，始终以长期视角对待关系，能为对方提供可依赖的情感锚点，尤其在关系遭遇压力时，更能展现出坚定的守护姿态。" },
+        { label: "纯粹的情感忠诚度 (光)", text: "你的情感投入具有极强的排他性与专注度，拒绝 “骑驴找马”“留退路” 等模糊模式。一旦确立联结，便会毫无保留地全心投入，将 “忠诚” 内化为关系的核心准则，这份纯粹性让对方能感受到强烈的被重视感。" },
+        { label: "主动的关系修复力 (光)", text: "面对关系裂痕，你倾向于解决问题而非逃避冲突。具备主动沟通、磨合调整的意识，愿意为关系的长久性付出精力，始终以 “巩固联结、延续稳定” 为目标，展现出务实的经营能力。" },
+        { label: "对模糊信号的过度敏感 (影)", text: "难以耐受关系中的信息空白，当对方出现沉默、回避等不确定行为时，易陷入过度解读与自我归因，将中性信号转化为被否定、被厌倦的负面预判，进而引发内心焦虑。" },
+        { label: "以体谅为名的需求压抑 (影)", text: "因恐惧成为对方的 “负担”，常以 “懂事”“体谅” 为借口，刻意隐藏自身的情感需求与不安。表面上的 “没事，你去忙”，本质是对真实情绪的压抑，长期积累易导致自我消耗与关系失衡。" },
+        { label: "对未来的焦虑性预判 (影)", text: "受怕失去的深层恐惧驱动，习惯对关系走向做负面预设，难以全然接纳当下的美好。这种对 稳定感的过度渴求，会转化为持续的焦虑，阻碍你沉浸式体验关系中的正向反馈与快乐。" }
+      ],
+      partner: [
+        "1、你的追问，从不是找茬，是在求一份安心。\n当你反复问 “去哪了”“在干嘛”“爱不爱我” 时，别嫌我烦 —— 那一刻我正被不安包裹。你不用跟我讲道理，只要抱抱我说 “我在，别怕”，就够了。",
+        "2、你的 “报备”，是我的定心丸。\n我不要求你秒回消息，但真的怕你突然失联。如果你要忙、或者心情不好想静一静，提前说一句 “我忙会儿，晚点找你”，就能让我从心慌落到踏实。",
+        "3、关键时刻，请坚定地偏向我。\n我不用你对抗全世界，但需要知道：在我和别人之间，你会本能地护着我。任何犹豫、迟疑，或是 “先讲道理再顾我”，在我眼里都会变成 “我不重要” 的信号。"
+      ],
+      origins: `深度溯源：看见那个时刻在 “扫雷” 的小孩\n\n从依恋理论视角来看，你对确定感的极致渴求，本质是焦虑型依恋模式的典型呈现 —— 这种模式在人群中约占 28%，核心特征正是对关系稳定性的持续焦虑，以及对 “被抛弃” 的深层恐惧。\n\n你一定有过这样的童年记忆：那个重要的照顾者（父母或长辈），对你的态度从来没有固定的规律。他们的爱不是稳定的滋养，有时会在你哭闹时立刻抱起安抚，把你宠成掌心的宝贝；有时却对你的需求视而不见，甚至会因为自己的情绪不佳，对你莫名冷淡或责备。\n\n这种反复无常的对待，让小小的你始终搞不懂：“为什么前一刻还好好的，爱就突然消失了？”这份童年里的不安，不是因为你不够好，而是源于照料者不稳定的回应模式。它在你心里埋下了一颗种子：“爱随时可能消失，我随时可能被丢下”。`,
+      reshape: `重塑：把“锚”抛回自己手里\n\n1. 练习事实归因：停止对模糊信号的灾难化解读。\n当对方沉默时，别想 “他厌倦我了”，而是告诉自己：“他现在没说话（事实），可能是工作累了 / 在处理私事（合理假设），和我们的关系无关”。\n\n2. 建立爱的韧性认知：相信关系的稳定性不依赖即时回应。\n偶尔的沉默、疏离，只是暂时的能量补给，不是电量耗尽；关系的稳固，不在于没有矛盾，而在于经历波动后依然能回归。\n\n3. 构建自我价值支撑体系：把情绪重心从对方身上收回。\n培养独立于关系的快乐来源，关注自我需求的满足。当你自身的 “快乐账户” 足够充盈，就不会再依赖对方的 “情绪转账”。`,
+      blessing: `愿你在世事浮沉的人间，能遇见一个懂你敏感、护你不安的人 —— 他不必为你画地为牢，却愿意为你停下匆忙的脚步；不必许你永远，却能在你慌慌张张试探时，给你一份 “我一直都在” 的笃定。\n\n更愿你修炼出一颗稳稳的内心：不再把安全感寄托于他人的回应，不再把价值感捆绑于关系的稳定。当你真正相信 “无论是否被坚定选择，我本身就值得被好好爱着”，便会发现 —— 最坚实的依靠从不是别人的承诺，而是自己给的底气；最恒久的确定感，也从不是来自外界的安稳，而是源于内心的自洽与从容。\n\n往后余生，既有被人稳稳偏爱的幸运，也有独自安然前行的勇气。`
+    }
+  },
+  "被需要": {
+    type: "被需要",
+    archetype: "以付出为锚的守护者",
+    icon: <Heart className="w-8 h-8" />,
+    quote: "没有你，我只是一片废墟。",
+    cardStyle: "from-orange-600/60 to-red-800/60 shadow-[0_0_40px_-5px_rgba(234,88,12,0.5)] border-orange-200/40",
+    accentColor: "text-orange-700",
+    radarColor: "#ea580c",
+    tabs: {
+      base: `在亲密关系里，你最核心的需求是靠被对方依赖来确认自己的价值。对别人来说，爱可能是鲜花、情话和浪漫仪式，但对你而言，爱从来都是实打实的联结 —— 是“我能为你做什么”，是 “我的存在能让你少操心”。\n\n你的情感底色里，藏着一种付出才值得被爱的本能认知。你会本能地盯着对方的生活细节：他加班晚了，你会提前煮好热饭；他遇到麻烦了，你会第一时间凑上去帮忙。这些付出不是刻意讨好，只是真心想成为他生活里离不了的人。\n\n可这份对 “被需要” 的执念背后，藏着你最怕的事 —— 怕自己是可有可无的。要是对方凡事都自己扛，你心里会悄悄空落落的：“原来没有我，他也能过得挺好”。你不是想控制谁，只是需要通过一次次被他需要的小事，反复确认自己在他心里的分量。`,
+      lightShadow: [
+        { label: "靠谱的务实支撑力 (光)", text: "你是对方生活里最踏实的后盾，从来不会只说漂亮话。比起口头安慰，你更愿意用实打实的行动帮忙，那种 “不管有事没事，我都在” 的态度，能让他真真切切感受到安全感。" },
+        { label: "暖心的情感联结力 (光)", text: "你总能通过付出和被依赖，把感情粘得很牢。你特别会察言观色，能捕捉到他没说出口的需求。这种被看见、被照顾的感觉，会让他越来越依赖你。" },
+        { label: "清醒的互惠平衡感 (光)", text: "你不是那种一味付出的傻好人，心里很清楚感情需要你来我往。你愿意为关系兜底，但也盼着对方能看见你的付出，偶尔也回应你的需求。" },
+        { label: "价值感绑在“被需要”上 (影)", text: "你总不自觉把 “他需不需要我” 和 “我重不重要” 绑在一起。要是他暂时能自己处理事情，没怎么依赖你，你就容易胡思乱想，甚至悄悄觉得自己没那么有价值了。" },
+        { label: "不敢直说“我也想被你需要” (影)", text: "你心里其实很期待他主动找你帮忙，但又怕说出来会给对方压力，更怕被拒绝。所以你宁愿默默付出，等着对方主动来需要自己，慢慢就变成了失落和委屈。" },
+        { label: "过度承担把自己累垮 (影)", text: "因为悄悄担心他累着，也怕他不再需要自己，你会不自觉把好多活都揽过来。久而久之，付出变成了沉重的负担，你陷入 “越付出越累，越累越怕他离开” 的循环里。" }
+      ],
+      partner: [
+        "1、TA 说我来吧，其实是最直接的爱意表达\n当 TA 主动提出帮你处理琐事、分担压力时，别随口说不用不用。在 TA 心里，接受这份帮助从来不是麻烦，而是对 TA 自身价值的肯定，你越是拒绝，TA 心里越容易悄悄怀疑自己是不是多余的。",
+        "2、主动向 TA 求助，是最珍贵的认可\n你不必假装什么都能扛，偶尔说一句搞不定，会让 TA 瞬间感受到被信任、被需要的重量。",
+        "3、TA 的过度照顾，背后藏着怕失去你的不安\n当你觉得 TA 做得太多时，别直接反驳。更温柔的方式是抱住 TA，告诉 TA 我知道你心疼我，但你已经很重要了，不用这么拼命。"
+      ],
+      origins: `深度溯源：看见那个 “懂事才被爱” 的小孩\n\n根据核心关系动机理论，你对被需要的极致渴求，本质是核心关系动机在早期成长中被塑形的结果 —— 这种情感欲望的根源，往往与童年里懂事才能被爱的成长体验深度绑定。\n\n你可能记得，小时候的你很早就学会了体谅。可能是父母工作忙碌，你悄悄学着做家务；可能是长辈情绪起伏不定，你慢慢练就察言观色的本事。你渐渐发现，只有当自己能帮上忙、会照顾人时，才能获得更多关注和肯定。一句你真懂事，就成了童年里最温暖的回馈。\n\n久而久之，能帮上忙就会被他人需要，被他人需要才能被爱，这样的认知慢慢沉淀在你的潜意识里。`,
+      reshape: `重塑：把价值从 “付出” 里解放出来\n\n1. 先学会不付出，也敢安心被爱。\n你习惯了用自己能做什么来证明重要性，却忘了关系的核心是彼此需要，而非自己必须有用。每天睡前花两分钟，回想当天自己没付出却依然被惦记、被关心的小事。\n\n2. 坦然说我也需要被照顾，不用硬撑万能者。\n你总怕麻烦别人，习惯了扮演照顾他人的角色，却忘了核心关系动机里的连结，从来都是双向流动的。你可以试着主动表达自己的需求，不用觉得提要求是自私。\n\n3. 拓展自我价值的边界，不止于被他人需要。\n根据人际关系理论，一个人的价值感越多元，就越不会在单一关系里过度焦虑。投入工作、深耕爱好，你会发现除了爱情，还有很多人在乎你、需要你。`,
+      blessing: `愿你遇见这样一个人：他会珍惜你为他做的每一件事，也会主动为你分担疲惫；他会依赖你的照顾，也会把你的需求放在心上。更愿你慢慢活成自己的底气：不用靠付出换爱，不用靠有用换存在感，哪怕什么都不做，也能坦然相信 “我值得被好好爱着”。`
+    }
+  },
+  "掌控感": {
+    type: "掌控感",
+    archetype: "为关系掌舵的同行者",
+    icon: <Zap className="w-8 h-8" />,
+    quote: "我抛开了所有理智，只求你结束我的痛苦。",
+    cardStyle: "from-rose-700/60 to-red-900/60 shadow-[0_0_40px_-5px_rgba(225,29,72,0.5)] border-rose-200/40",
+    accentColor: "text-rose-700",
+    radarColor: "#be123c",
+    tabs: {
+      base: `在亲密关系里，你最核心的需求从不是控制对方，而是关系的可预期、可沟通、可协同。亲密更像两人共掌舵的船，得提前校准航向、明确规则、同步节奏，你才能放下顾虑，放心交付自己。\n\n你对关系章法的执念，藏着对无序失控的恐惧。模糊的界限、反复的态度、没说清的期待，在你眼里都是隐患。如果对方凭情绪做事，你不会觉得是性格不合，反而会格外孤独 —— 像独自驾着没罗盘的船，既要稳住方向，又要拉扯对方节奏。\n\n你真正想要的是双向协作：不用你单方面提要求，而是对方愿意主动对齐目标。你要的从不是掌控权，而是我们始终站在同一边的笃定。`,
+      lightShadow: [
+        { label: "清晰的关系梳理力 (光)", text: "你总能一眼看穿矛盾的关键，不会让误会越积越深。不管是彼此的界限划分、相处节奏的调整，你都擅长把模糊的事说清楚，推动双方找到都认可的方式。" },
+        { label: "务实的问题突破力 (光)", text: "面对关系里的卡点，你从不会拖着或逃避。你行动力强，更愿意主动想办法、做调整，而不是任由问题发酵。这份不推活、敢担当的态度，让关系总带着 “往前推进” 的方向感。" },
+        { label: "靠谱的关系托底力 (光)", text: "和你在一起，对方会觉得特别踏实。你不会让感情停留在 “凑活过” 的状态，会主动规划未来、协调遇到的矛盾，用理性和行动为这段关系兜底。" },
+        { label: "对无序的极致焦虑 (影)", text: "一旦关系脱离预设的轨道 —— 比如对方做事没计划、总回避深入沟通，你会比常人更容易陷入慌乱，觉得整段关系都在摇晃。" },
+        { label: "独自掌舵的疲惫感 (影)", text: "你习惯了做关系里 “把舵的人”，默默扛起梳理节奏、解决问题、规划方向的责任。久而久之，身心俱疲却很难放手，总担心自己一松劲，这段关系就会乱成一团。" },
+        { label: "同步期待带来的压力 (影)", text: "你对自己要求严格，也会不自觉地期待对方能跟上。当对方跟不上你的步调时，你容易感到失望甚至烦躁，却忘了每个人都有自己的处事节奏。" },
+        { label: "理性掩盖下的情绪忽视 (影)", text: "你太擅长用逻辑分析问题，以至于自己的委屈、疲惫常常被忽略。你习惯了先处理事情，再照顾情绪，甚至忘了自己也需要被看见。" }
+      ],
+      partner: [
+        "1、TA 不是想控制你，而是怕关系乱了阵脚\n当 TA 主动说想聊聊，只是想和你一起把关系捋顺，拉回彼此都安心的状态，不用各自猜来猜去。",
+        "2、TA 要的是一起扛的合作感，不是单方面的听话\n你可以有自己的想法和节奏，但请坦诚说出来，让 TA 知道你也在为这段关系用心。",
+        "3、你可以温柔地告诉 TA，先不着急解决问题，就单纯陪一陪\nTA 面对矛盾的本能是先找答案，有时会不小心忽略你的情绪。"
+      ],
+      origins: `深度溯源：看见那个 “必须懂事扛事” 的小孩\n\n你对掌控感的执念，从来不是天生爱操心，而是小时候在无序的环境里，慢慢被逼出来的一种生存本能 —— 那种没人牵头，一切就会乱成一团的不安，成了你心里最深刻的印记。\n\n小时候的成长里，或许总有些让人心里没底的时刻：可能环境里少了清晰的规则，遇事没人定调，大家慌慌张张没个准头。你慢慢发现，想要不被这种混乱裹挟，只能自己站出来：主动把事情捋顺、把规则理清。不是你想当 “小大人”，而是那种看着一切脱离轨道、没人托底的无力感，实在太让人害怕了。\n\n后来你长大了，这种建立秩序的本能，自然带进了亲密关系里。`,
+      reshape: `重塑：允许关系有 “不掌控” 的空间\n\n1. 接纳适度失控，关系不必事事精准。\n不用逼自己抓牢所有细节，偶尔偏离预期不是出错。给关系一点缓冲的余地，也给自己松松紧绷的神经。\n\n2. 放下全能责任，学会把担子分出去。\n你不是关系里唯一的责任人。当你又习惯性想包揽所有事时，试着停一停，把部分责任交出去。学会依赖，学会放手，才是对自己的温柔。\n\n3. 允许自己不懂事，暴露脆弱从来不是软弱。\n你不用永远做那个最清醒、最能扛的人。累到撑不住的时候，不用硬撑着说没事。承认自己的无力，不是软弱，而是敢对自己诚实。`,
+      blessing: "愿你遇见一个能和你并肩扛事、一起决策的人，不用再让你独自做那个 “负责全局的大人”。往后余生，既有掌舵的底气，也有被照顾的福气，让世界在你稳住别人的同时，也悄悄稳住你。"
+    }
+  },
+  "被偏爱": {
+    type: "被偏爱",
+    archetype: "渴求例外的驯养者",
+    icon: <Sparkles className="w-8 h-8" />,
+    quote: "你要永远为你驯服的东西负责。",
+    cardStyle: "from-pink-600/60 to-fuchsia-800/60 shadow-[0_0_40px_-5px_rgba(219,39,119,0.5)] border-pink-200/40",
+    accentColor: "text-pink-600",
+    radarColor: "#db2777",
+    tabs: {
+      base: `你愿意毫无保留地付出，也能带着真心耐心经营，但这份投入有个隐形前提 —— 你的爱意需要被 “特殊对待” 来回应。如果有一天，你发现他的温柔开始平均分配，对别人的在意不比对你少，你的情绪会瞬间绷紧。这不是嫉妒，也不是小气，是你赖以生存的 “例外感” 被稀释了。\n\n你比谁都能精准捕捉感情里的温度波动，哪怕是一丝一毫的冷淡、敷衍或疏忽，都能触动你内心最敏感的神经。这份敏锐让你爱得格外深沉，但也让你格外脆弱，因为你所有的安全感，都扎根在 “我是你独一份的偏爱” 这个锚点上。`,
+      lightShadow: [
+        { label: "深情且坚定的专注度 (光)", text: "一旦认定一个人，你会全身心投入，给出稳定又纯粹的爱意回馈。你的爱不是泛泛的好，而是带着 “只对你” 的专属感，让对方能清晰感受到被珍视。" },
+        { label: "细腻入微的洞察力 (光)", text: "你能捕捉到别人忽略的细节 —— 记得他随口提的喜好、察觉他没说出口的情绪。这种 “被真正看见” 的体贴，让关系充满温度。" },
+        { label: "用心经营独特联结 (光)", text: "你擅长创造属于你们的专属记忆，可能是只有彼此懂的暗号，可能是优先考虑对方的习惯，这些 “别人没有” 的小细节，让关系变得格外深刻动人。" },
+        { label: "推动关系真诚深度 (光)", text: "你的认真会带动对方更坦诚地对待感情，不敷衍、不模糊，逼着彼此直面内心的需求，让关系在真实的互动里越走越近。" },
+        { label: "对差别对待的极致敏感 (影)", text: "对方对别人多一份耐心、多一句关心、多一次迁就，你心里的天平就会悄悄倾斜。不是小气，是怕自己的 “特别” 被稀释，怕那份独有的偏爱慢慢消失。" },
+        { label: "陷入过度求证的内耗 (影)", text: "你会忍不住反复琢磨他的言行，哪怕是一句随口的话，都要从中寻找 “他到底有没有更在乎我” 的答案，越想越焦虑。" },
+        { label: "怕落空的防御性退缩 (影)", text: "一旦感觉自己不再特别，你会下意识收回深情。不是冷漠，是怕自己毫无保留地付出，最后只换来和别人一样的待遇。" },
+        { label: "小事放大的不安触发 (影)", text: "一个敷衍的回应、一次被排在后面的选择，在你眼里都会变成 “我不够重要” 的信号，轻易就触动内心的敏感神经。" }
+      ],
+      partner: [
+        "1、TA 要的从不是更多，而是独一份\n不用送昂贵的礼物，但若你记得她随口提的喜好，或是在众人面前下意识护着她，这种只对她有的用心，才是最让她安心的偏爱。",
+        "2、别用“你想太多”否定她的敏感\n当 TA 因为小事委屈时，先抱抱她，比讲道理管用得多。",
+        "3、主动表达偏爱是她的刚需，不是加分项\n偶尔说一句你在我心里和别人不一样，能帮她赶走所有 “我是不是可替代” 的不安。"
+      ],
+      origins: `深度溯源：看见那个渴望 “被优先选择” 的小孩\n\n你对偏爱的执着，并非贪心或矫情，而是核心情感欲望在早期成长中被反复强化的结果 —— 这份对独一份的渴求，往往源于那些自己的在意没被优先回应的成长时刻。\n\n小时候的你，或许总处在一种关注被分摊的环境里：可能是身边人的注意力被其他事占据，你的需求常常要排在后面。慢慢你发现，只有当自己得到不一样的对待 —— 比如一份独属于自己的关注、一次优先考虑的选择，才能真切感受到 “我是重要的”。\n\n那些稀缺的特殊时刻，成了童年里最珍贵的心理养分。这份源于早年的心理缺口，让你在亲密关系中格外执着于差别对待 —— 你并非计较对方对别人好，而是想通过那份只对我这样的例外感，补上童年没被坚定选择的遗憾。`,
+      reshape: `重塑：先学会自己偏爱自己\n\n1. 接纳敏感，它不是缺点。\n不用骂自己小心眼，你的敏感只是因为太在乎被特别对待。当你因为小事难过时，先对自己说一句我知道你只是怕没被偏爱，这份情绪没有错。\n\n2. 自己先给足自己独一份的宠爱。\n别总等着别人来证明你的特别，你可以先主动偏爱自己：想吃的东西不用等别人买，自己去尝；想做的事不用盼着别人陪，自己去做。你值得被偏爱，这份偏爱不用依赖任何人。\n\n3. 学会直白表达需求，不用猜来猜去。\n不用让对方费力猜测你的想法，直接说出来更省心。清晰的需求才能换来精准的回应，直白表达从来都不是自私，是对自己的负责。`,
+      blessing: "愿你遇见明目张胆的偏爱，有人把你放在心尖上，让你清清楚楚感受到，自己就是那个不可替代的例外。更愿你自带自我偏爱的底气，不用依赖别人的特殊对待，也能笃定自己值得所有美好 —— 往后余生，被爱眷顾，更被自己偏爱。"
+    }
+  },
+  "精神共鸣": {
+    type: "精神共鸣",
+    archetype: "灵魂旷野的寻觅者",
+    icon: <Eye className="w-8 h-8" />,
+    quote: "我们相遇在精神的旷野，无需言语便已相通。",
+    cardStyle: "from-purple-600/60 to-violet-900/60 shadow-[0_0_40px_-5px_rgba(147,51,234,0.5)] border-purple-200/40",
+    accentColor: "text-purple-700",
+    radarColor: "#9333ea",
+    tabs: {
+      base: `在亲密关系里，你最核心的需求从不是占有或依赖，甚至不是流于表面的陪伴，而是一种灵魂层面的同频共振 —— 思想被看见、观点被呼应、内心深处的褶皱被温柔抚平。\n\n日常寒暄的温暖固然是关系的养分，却永远替代不了 “你一句话戳中我未说出口的心事” 的心灵碰撞。你对浅层关系有着近乎本能的疏离感，没有精神交流的亲密，对你来说像一个缺了核心的空壳，再热闹也填不满内心的荒芜。\n\n你不是挑剔，而是太清楚自己要什么。一旦遇到那个能在思维深处与你同频的人 —— 能听懂你话里的潜台词，能接住你突如其来的奇思妙想，你便会卸下所有防备，毫无保留地深入投入。`,
+      lightShadow: [
+        { label: "思想共振的活力感 (光)", text: "你带对方的不只是爱情，更是共同成长的可能 —— 一起拓宽认知边界、探索世界，让关系始终保持向上的生命力。" },
+        { label: "深层共情的理解力 (光)", text: "你懂得 “倾听” 的真正意义，不只是听表面的话，更能读懂背后的想法与情绪，让对方真切感受到 “被完全懂了” 的安心。" },
+        { label: "持续焕新的新鲜感 (光)", text: "和你在一起从不会陷入枯燥重复，思维的碰撞、观点的交流，总能为关系注入新灵感，永远有聊不完的话题。" },
+        { label: "理性与感性的平衡感 (光)", text: "你既擅长深度思考，也能传递细腻的情绪支持，不会让关系只停留在 “聊得来”，更有温度与陪伴的厚度。" },
+        { label: "浅层关系的低耐受度 (影)", text: "如果一段关系长期只停留在 “吃了没”“在干嘛” 的琐事寒暄，没有深入的思想交流，你会慢慢失去存在感，想要抽离。" },
+        { label: "将“不理解”等同于“不在意” (影)", text: "对方未必不爱你，只是没能跟上你的思维深度，但这种 “聊不到一块” 的距离，在你心里会被放大成 “你不懂我，也不在乎我”。" },
+        { label: "精神错位的高敏感度 (影)", text: "一旦对方的观点、节奏、对世界的态度不再与你同频，你对这段关系的期待会迅速下降，很难再找回最初的热情。" },
+        { label: "忽略日常幸福的价值 (影)", text: "有时候你太执着于灵魂契合，反而会忽视相处中的小温暖 —— 比如默默的陪伴、笨拙的关心，这些普通的幸福其实也能滋养关系。" }
+      ],
+      partner: [
+        "1、TA 要的不只是日常报备，更是心里的真实回响\n如果长期只停留在表面寒暄，TA 会慢慢觉得自己的灵魂没被接住。",
+        "2、当TA和你聊起那些好似“无用”的话题时，不是为了争辩\n而是悄悄递来靠近的信号。那些抽象的探讨，本质上是 TA 想看看：你愿不愿意放下琐碎，在精神上陪 TA 站一会儿。",
+        "3、你不用懂多少深奥理论，但请别关闭对内心和世界的探索欲\nTA 从来没要求你成为 “思想家”，只是希望你别用 “想那么多干嘛” 敷衍 TA 的认真。"
+      ],
+      origins: `深度溯源：看见那个想得太多却没人懂的小孩\n\n你对精神共鸣的执着，从不是 “太复杂” 的矫情，而是核心关系动机在童年被悄悄塑形的结果 —— 那份 “心里有千言万语，却没人心能懂” 的孤独，早就在心底扎了根。\n\n小时候的你，或许总比同龄人多想一层：对世界有奇奇怪怪的疑问，对情绪有细腻难明的感知。你试着把这些想法说出口，却很少被真正倾听。久而久之，你慢慢学会了把话咽回去，把思考藏起来。但心底里，却悄悄埋下了一个执拗的期待：希望有个人能看穿你的 “与众不同”，能和你聊那些别人觉得 “无聊” 却让你兴奋的话题。\n\n这份童年里未被满足的 “被懂” 的渴望，慢慢变成了你对亲密关系的核心期待。你要的从来不是多热烈的陪伴，而是一份 “不用费力解释，你就懂我” 的笃定。`,
+      reshape: `重塑：允许自己的灵魂 “多元栖息”\n\n1. 接纳你的深度需求，它从不是缺点。\n你天生自带对深度连接的敏感，这份对意义、对共鸣、对思想碰撞的渴望，是你最独特的珍贵特质。\n\n2. 不把所有期待，都压在一个人身上。\n如果伴侣暂时跟不上你的思维节奏，不用焦虑。那些关于人生、理想、世界的深度思考，完全可以分给志同道合的朋友、书籍或创作。\n\n3. 学会在普通日子里，发现藏着的连接。\n试着放慢追逐 “灵魂契合” 的脚步，多留意日常相处里的小默契。这些看似浅层的互动，其实都在悄悄拉近距离。`,
+      blessing: "愿你这一生，既能遇见共享柴米油盐的人，也能遇见共赴精神旷野的伙伴。也愿你在无人完全懂你的时刻，依然坚信：你的思考、你的独特，本身就是最珍贵的礼物，无需向谁证明。"
+    }
+  },
+  "自由感": {
+    type: "自由感",
+    archetype: "守望星空的风之子",
+    icon: <Wind className="w-8 h-8" />,
+    quote: "我爱你，却不愿用爱束缚你。",
+    cardStyle: "from-sky-500/60 to-blue-700/60 shadow-[0_0_40px_-5px_rgba(14,165,233,0.5)] border-sky-200/40",
+    accentColor: "text-sky-600",
+    radarColor: "#0284c7",
+    tabs: {
+      base: `在亲密关系里，你最核心的需求从不是占有或依赖，而是 “在爱里守住自我” 的自由 —— 靠近不难，难的是不用时刻黏在一起、不用事事报备、不用为了迎合对方丢掉自己的节奏。\n\n你愿意真心投入，也喜欢分享生活里的喜怒哀乐，但必须保留一块完全属于自己的空间。只要这份空间被尊重，你的爱就会自然流淌；可一旦被过度关注、被实时追问，你的本能反应就是退一步。这份 “不吞没、不束缚” 的自在，才是你最踏实的亲密。`,
+      lightShadow: [
+        { label: "让人舒展的松弛感 (光)", text: "你从不会要求对方 “秒回消息”“事事报备”，也不会干涉他的社交圈、兴趣爱好，让对方觉得和你在一起不用紧绷，能安心做自己。" },
+        { label: "清晰坚定的边界感 (光)", text: "你懂得尊重自己的空间，也从不越界干涉别人的选择，不会用 “爱” 为名绑架对方的生活，这种分寸感让关系始终保持舒展。" },
+        { label: "自我负责的情绪力 (光)", text: "你很少把所有情绪都丢给对方消化，遇到压力、困惑时，更习惯自己先梳理、自己承担，不会过度依赖对方的安慰。" },
+        { label: "轻盈不沉重的爱意 (光)", text: "你不喜欢戏剧化的争吵、黏腻的捆绑，也不会提过度苛刻的要求，你的爱像春风一样自然 —— 不用刻意维系，却能让彼此在自在的氛围里感受到温暖。" },
+        { label: "对“过度靠近”的本能抗拒 (影)", text: "只要对方表现出过度依赖、频繁追问、或是试图掌控你的节奏，哪怕没有恶意，你也会下意识想后退，容易让对方误以为你 “不够爱”。" },
+        { label: "习惯“独自消化”的封闭性 (影)", text: "你太擅长自己处理情绪和问题，常常忘了对方也希望参与你的世界 —— 哪怕只是听你吐槽、陪你分担，你也会下意识说 “没事”。" },
+        { label: "对“束缚”的过度预判 (影)", text: "只要稍微感受到一点被期待、被要求的压力，你就会立刻警觉，甚至提前撤退，把 “可能被束缚” 的预判当成事实。" },
+        { label: "“清淡表达”的误解风险 (影)", text: "你在意一个人时，表达方式也不会太浓烈。这种清淡的态度，很容易让对方感受不到你的在意，陷入 “他到底爱不爱我” 的猜疑。" }
+      ],
+      partner: [
+        "1、我需要独处，从不是不爱你\n有时候我会暂时抽离去做自己的事，不是想冷落你，是独处的安静能让我沉淀好所有心绪，等我调整过来，就会带着更踏实的心意回到你身边。",
+        "2、别用时刻在线检验我的爱\n秒回消息、频繁报备、每天黏在一起，这些从来都不是我爱你的证明。",
+        "3、当我主动告诉你我的安排，其实是在把你放进我的生活节奏里\n比如今天想一个人待着、最近在忙一件喜欢的事，这些都不是在推开你，而是我愿意让你知道我当下的状态。"
+      ],
+      origins: `深度溯源：看见那个 “怕失去自我” 的小孩\n\n你对自由感的执着，从来不是 “不爱黏人” 的天性，而是早年成长体验刻进心底的本能渴望 —— 那些 “不能按自己的想法来、只能听话” 的压抑时刻，早就在心里埋下了对 “自我空间” 的极度珍视。\n\n小时候的你，总被 “听话” 的期待包裹：可能是想法刚说出口就被否定，想做的事总被大人安排好。慢慢的，你在心里划了一道线：只有守住自己的空间和节奏，才不会被别人的期待吞没。\n\n这份从小到大练出来的自我保护，让你在亲密关系里对 “被绑住” 的感觉特别敏锐。不是你不想靠近，是太怕重蹈覆辙，太怕在关系里再次弄丢那个真实的自己。`,
+      reshape: `重塑：在自由与亲密间找到平衡\n\n1. 接纳你的边界需求，它从不是冷漠。\n你对自由和边界的珍视，是保护真实自我的重要特质，从来不是缺点。你值得被爱，更值得被尊重本来的节奏。\n\n2. 温柔划定边界，不用刻意推开别人。\n不用等对方越界了才仓促后退，不如在关系里主动说清自己的节奏。清晰的边界从不是推开别人，而是给彼此一份安心的约定。\n\n3. 试着适度敞开，不用一直独自硬扛。\n你可以保留自己消化情绪的习惯，但不用逼自己把所有心事都藏在心里。适度的敞开不是失去自由，而是让对方知道：你不是不想靠近，只是需要一点时间整理自己。`,
+      blessing: "愿你始终保有做自己的勇气和节奏，不用为了爱妥协，不用为了自由假装冷漠。往后余生，你既是自由的风，也能拥有安稳的岸，在爱里自在呼吸，在自我里闪闪发光。"
+    }
+  },
+  "安全距离": {
+    type: "安全距离",
+    archetype: "迷雾中的试探者",
+    icon: <Shield className="w-8 h-8" />,
+    quote: "待人如执烛，太近灼手，太远暗生。",
+    cardStyle: "from-teal-600/60 to-emerald-800/60 shadow-[0_0_40px_-5px_rgba(13,148,136,0.5)] border-teal-200/40",
+    accentColor: "text-teal-700",
+    radarColor: "#0f766e",
+    tabs: {
+      base: `在亲密关系里，你最核心的需求从不是轰轰烈烈的奔赴，而是 “安全第一” 的踏实靠近 —— 你从不是冷淡，也不是慢热，只是心里自带一层 “安全缓冲带”，像洗手前慢慢试探水温，先确认没有刺痛，才敢再往前挪一步。\n\n你的亲密节奏里藏着独有的审慎：先悄悄观察、反复确认，直到笃定 “这个人值得托付”，才敢真正卸下防备。任何猛扑过来的热情，都会让你下意识启动自我保护。这不是推开，是怕步子迈太急反而摔得疼。\n\n你需要的，是一个能读懂 “你不是不上心，只是需要时间” 的人。你对关系的态度从来都是 “宁缺毋滥”—— 确定前有多审慎，确定后就有多坚定。`,
+      lightShadow: [
+        { label: "慎重长情的定心丸 (光)", text: "不轻易开启关系，一旦选择便全心投入、坚定不摇，从不会敷衍应付，是关系里最让人安心的 “定海神针”。" },
+        { label: "亲疏有度的平衡感 (光)", text: "既不会黏腻到让人窒息，也不会疏远到让人不安，总能精准拿捏 “刚刚好” 的距离，让彼此在亲密中保留独立，在独立中感知联结。" },
+        { label: "克制稳健的情绪力 (光)", text: "从不会把负面情绪随意甩给对方，也不会在冲动下做出伤害关系的决定，总能用理性稳住节奏，用审慎化解矛盾。" },
+        { label: "张弛有道的分寸感 (光)", text: "和你相处无需刻意迎合，也不必担心被忽略。那种 “不吞没、不冷落” 的舒适尺度，能让人卸下紧绷的防备。" },
+        { label: "节奏错位的孤独感 (影)", text: "你的 “慢试探” 总与他人的 “快节奏” 错位，不是不愿靠近，而是很少有人能读懂你 “需要时间确认” 的谨慎。" },
+        { label: "被催后的防御性退缩 (影)", text: "只要对方急于推进关系、用力催促，哪怕没有恶意，你也会下意识后退自保。可对方往往把这份退缩当成 “没兴趣”，误会层层叠加。" },
+        { label: "观察期的无限内耗 (影)", text: "总想着 “再确认一次”“再等等看”，越观察越不敢迈出关键一步，把关系困在原地。" },
+        { label: "情绪表达的信息断层 (影)", text: "习惯把想法、担忧、需求都藏在心里，从不轻易外露。对方猜不透你在想什么，也不知道该如何靠近，久而久之便会感到疲惫。" }
+      ],
+      partner: [
+        "1、我的慢，从来不是没感觉，是怕真心错付才不敢太快\n如果你催得太急、推得太猛，只会触发我的自我保护。你看到的 “慢半拍”，其实是我在认真掂量、想把关系走稳。",
+        "2、我很难在带着情绪的氛围里说心里话\n如果你能先放下评判，不着急反驳、不随便贴标签，我反而会慢慢卸下防备，把藏在心里的话都告诉你。",
+        "3、一直都靠谱的踏实感，比一次性的盛大更重要\n你不用费心思讨好，只要能保持稳定的可靠，让我感受到 “你一直都在”，我才敢真正放下所有顾虑，向你靠近。"
+      ],
+      origins: `深度溯源：看见那个怕受伤所以不敢靠近的小孩\n\n你对安全距离的执着，从来不是 “高冷”，而是早年成长里，一次次 “靠近 = 受伤” 的经历，悄悄在心里种下了一颗 “怕疼” 的种子。\n\n小时候的你，或许试过把最喜欢的玩具分享给伙伴，却被轻易弄坏；把藏在心里的小秘密告诉大人，却被当成玩笑调侃。一次次失望后，你慢慢摸清了规律：不轻易伸手，就不会被推开；不随便袒露，就不会被伤害。\n\n所以长大后的你，在亲密关系里才格外谨慎 —— 不是不想靠近，是太怕真心被敷衍，太怕投入被辜负。这份谨慎背后，藏着的其实是一颗渴望被认真对待，却又怕受伤的柔软的心。`,
+      reshape: `重塑：允许自己慢慢靠近，慢慢相信\n\n1. 接纳自己的节奏，不用自责太冷。\n你的慢，是对关系的认真，是对自己的保护，从来不是缺点。你有权利按自己的方式靠近想要的关系。\n\n2. 试着小步敞开心扉，不用一步到位。\n不用逼自己立刻全盘托出。可以从分享细微的情绪、简单的想法开始。一点点打开自己，既不会让你感到压力，也能让对方慢慢读懂你的心意。\n\n3. 直白说出你的需要，不用让对方猜。\n不用让对方一直揣摩你的想法，温柔地把需求说清楚就好。清晰的表达从来不是矫情，而是减少误会的钥匙。`,
+      blessing: "愿你遇见这样一个人：不催你交卷，不逼你前行，愿意陪着你慢慢来。更愿你往后的亲密、友情与合作里，不再被贴冷漠的标签。也愿你有一天，能在真正安全的关系里，轻轻告诉自己：这次，我可以试着比从前再靠近那么一点点。"
+    }
+  },
+  "秩序感": {
+    type: "秩序感",
+    archetype: "构建未来的建筑师",
+    icon: <Grid className="w-8 h-8" />,
+    quote: "好的关系，是一起把日子过成有章法的温柔。",
+    cardStyle: "from-slate-600/60 to-zinc-800/60 shadow-[0_0_40px_-5px_rgba(71,85,105,0.5)] border-slate-200/40",
+    accentColor: "text-slate-700",
+    radarColor: "#334155",
+    tabs: {
+      base: `在亲密关系里，你是主动和对方搭建关系框架的共建者，核心需求从不是模糊的浪漫悸动，而是两人共同打磨的秩序感 —— 清晰的边界不越界，明确的期待不猜度，可落地的沟通不内耗，这些才是你敢放心交付真心的底气。\n\n你打心底不信随缘式相处能走得远，认定长期关系的根基必须扎在坦诚沟通、明确共识的土壤里。当关系里出现模糊态度、不对齐的期待或不愿沟通的逃避，你会比谁都先感到焦虑。你需要的不是听话照做的伴侣，而是愿意一起共建规则的伙伴。\n\n对你来说，亲密不是情绪的随意流动，而是两人并肩把日子过稳的笃定。你要的从不是轰轰烈烈的激情，而是无论遇到什么，都有章法可依、有底气共渡的踏实。`,
+      lightShadow: [
+        { label: "化繁为简的秩序力 (光)", text: "擅长把混乱的相处捋顺，将模糊的边界、零散的期待转化为清晰共识，为关系避开无效内耗，少走很多弯路。" },
+        { label: "主动破局的沟通力 (光)", text: "遇事从不会逃避冷战，反而主动牵头沟通，愿意和对方一起拆解问题、寻找答案，不把矛盾留到隔夜。" },
+        { label: "长远共建的规划力 (光)", text: "自带长远视角，不沉溺当下甜蜜，更会从现实出发和对方共建未来规划，让关系在踏实步履中稳步扎根。" },
+        { label: "稳若磐石的可靠感 (光)", text: "你给的亲密从不是虚无承诺，而是实实在在的支撑 —— 明确的回应、稳定的态度，是关系里最让人安心的依靠。" },
+        { label: "对模糊状态零容忍 (影)", text: "只要对方态度暧昧、回避沟通，或是用顺其自然敷衍，心里就会立刻陷入焦虑，难以踏实下来。" },
+        { label: "急于解决却忽略情绪缓冲 (影)", text: "习惯遇事立刻推进解决，却忘了亲密关系需要情绪消化的空间，有时候对方要的是安慰，而非马上被梳理成条理。" },
+        { label: "重秩序易轻共情流动 (影)", text: "能快速看清问题本质给出方案，却容易忽略对方的情绪需求 —— 对方或许只是想吐槽发泄，这份理性反而让人觉得不被懂。" },
+        { label: "对回避沟通者易失耐心 (影)", text: "你的要求其实很简单，只是希望对方愿意坐下来坦诚聊聊，但这在很多关系里难实现，久而久之便会因反复消耗失去耐心。" }
+      ],
+      partner: [
+        "1、对我来说，坦诚本身就是最踏实的爱\n愿意和我一起商量相处规则、分工和彼此的期待，对我来说就是被尊重、被当成平等伙伴的最好证明。",
+        "2、长时间的模糊状态，会慢慢耗光我对关系的安全感\n如果你总用顺其自然、先这样吧回避聊关系本身，我只会越来越焦虑，最后不是想争吵，而是想抽身。",
+        "3、当我提议我们坐下来好好聊聊，请一定认真对待\n我不是要审判谁、指责谁，只是想把误会捋清、把委屈讲开。你如果愿意和我一起面对，我对这段关系的信心会成倍增加。"
+      ],
+      origins: `深度溯源：看见那个靠秩序保护自己的小孩\n\n小时候的你，最怕没个准数的慌。可能是家里的规矩朝令夕改，全看大人心情；也可能是遇事没人牵头，让你一个小孩站在原地手足无措。那种抓不住任何东西的无助，悄悄在心里压了一层又一层。\n\n你慢慢发现，只有自己给自己找章法才踏实：把玩具摆得整整齐齐，心里的乱就跟着少一点。这份秩序感，从来不是死板的坚持，而是你捂热不安的温柔方式 —— 用清晰的规则挡住突如其来的乱，用可控的流程抵消不知道怎么办的慌。\n\n长大后你把这份需求带进亲密关系，想要的从不是冷冰冰的条款，而是不用猜、不内耗的踏实。你要的秩序，本质上是有人和你一起稳住日子的安心。`,
+      reshape: `重塑：允许关系有温柔的留白\n\n1. 接纳自己的秩序需求，它从不是过度理性。\n你对秩序的渴求，是保护自己也守护关系的珍贵能力 —— 清晰的边界、坦诚的沟通本就是长期关系的基石。\n\n2. 分清问题和情绪，给彼此缓冲空间。\n下次遇到矛盾，别急着立刻推进解决。先问问自己：对方现在需要的是具体方案，还是只想被理解？试着先接住对方的情绪。\n\n3. 允许关系有暂时没答案的空白，但不接受逃避。\n你不用要求所有事都立刻有结果，也可以允许彼此有慢慢梳理的时间。只要能看到对方的诚意，偶尔慢一点、留白久一点，也没关系。`,
+      blessing: "愿你遇见这样的同行者：不回避问题，不敷衍沟通，愿意和你一起把话说透、把日子捋顺。让秩序不再是负担，而是彼此安心的底气。也愿你始终懂得：你的清晰、原则与不将就的坚持，从来都是珍贵的礼物。"
+    }
+  }
+};
 
-export default function SoulScan_MasterBedroom() {
+const ALL_DIMENSIONS = ["确定感", "被需要", "掌控感", "被偏爱", "精神共鸣", "自由感", "安全距离", "秩序感"];
+
+export default function SoulScan_StainedGlass() {
   const [step, setStep] = useState('landing');
   const [showInput, setShowInput] = useState(false);
   const [code, setCode] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [scores, setScores] = useState({});
   const [results, setResults] = useState({ primary: null });
   const [currentPart, setCurrentPart] = useState(null);
   
-  // 动画状态
+  // 动画与分享状态
   const [flipped, setFlipped] = useState(false);
-  const [isExploding, setIsExploding] = useState(false); // 爆炸白光
+  const [isShaking, setIsShaking] = useState(false);
+  const [isExploding, setIsExploding] = useState(false);
   const [showFinal, setShowFinal] = useState(false);
+  
   const [chartData, setChartData] = useState([]);
   const [activeTab, setActiveTab] = useState('base');
   const [saving, setSaving] = useState(false);
-  const [resultId, setResultId] = useState(null); // 存储存入数据库后的ID
 
-  // 弹窗状态
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [shareType, setShareType] = useState(null); // 'poster' | 'link'
+  // 解决 Hydration 报错
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  // --- 1. 登录交互 ---
+  // --- 1. 登录交互 (1次性码核销) ---
   const handleVerify = async () => {
     setErrorMsg('');
     const inputCode = code.trim();
@@ -172,7 +356,6 @@ export default function SoulScan_MasterBedroom() {
     setIsLoading(true);
 
     try {
-      // 检查兑换码
       const { data, error } = await supabase
         .from('codes')
         .select('*')
@@ -187,7 +370,6 @@ export default function SoulScan_MasterBedroom() {
         throw new Error('该兑换码已被使用，请购买新码');
       }
 
-      // 更新使用次数
       const { error: updateError } = await supabase
         .from('codes')
         .update({ used_count: data.used_count + 1 })
@@ -231,40 +413,16 @@ export default function SoulScan_MasterBedroom() {
     }
   };
 
-  const finishQuiz = async (finalScores) => {
+  const finishQuiz = (finalScores) => {
     setStep('analyzing');
-    
-    // 1. 算出最高分
     const sortedScores = Object.entries(finalScores).sort((a, b) => b[1] - a[1]);
     const primaryKey = sortedScores[0][0];
 
-    // 2. 准备雷达图数据
     const radarData = ALL_DIMENSIONS.map(type => ({
       subject: type,
       A: finalScores[type] || 0,
       fullMark: 8
     }));
-
-    // 3. 尝试同步到 Supabase (静默失败，不阻断流程)
-    try {
-      const { data, error } = await supabase
-        .from('test_results')
-        .insert([
-          { 
-            primary_type: primaryKey, 
-            scores: finalScores 
-          }
-        ])
-        .select()
-        .single();
-
-      if (data) {
-        console.log("Result saved:", data.id);
-        setResultId(data.id);
-      }
-    } catch (err) {
-      console.error("Save failed:", err);
-    }
 
     setTimeout(() => {
       setResults({ primary: primaryKey });
@@ -273,65 +431,62 @@ export default function SoulScan_MasterBedroom() {
     }, 2500);
   };
 
-  // 翻转卡牌动画逻辑：点击 -> 翻转 -> 摇晃 -> 爆炸 -> 切换页面
+  // 优化的卡牌转场动画 (分阶段执行，防止跳变)
   const handleCardClick = () => {
     if (flipped) return;
-    setFlipped(true); // 1. 开始翻转 (1s)
     
+    // 阶段1：优雅翻转 (0s -> 0.8s)
+    setFlipped(true);
+    
+    // 阶段2：剧烈震动 (0.8s -> 2.3s)
     setTimeout(() => {
-        // 2. 翻转结束后，开始摇晃蓄力
-        // 摇晃动画已经在 className 中通过 flipped 控制
-        
-        setTimeout(() => {
-            setIsExploding(true); // 3. 触发白光爆炸
-            
-            setTimeout(() => {
-                setShowFinal(true); // 4. 切换到结果页
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, 600); 
-        }, 1200); // 摇晃持续时间
-    }, 800); // 翻转大部分完成后
+      setIsShaking(true);
+    }, 800);
+
+    // 阶段3：白光炸裂 (2.3s -> 3.0s)
+    setTimeout(() => {
+      setIsExploding(true);
+      
+      // 阶段4：切换页面 (3.0s)
+      setTimeout(() => {
+        setShowFinal(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 700); // 白光持续时间
+    }, 2300);
   };
 
-  // 生成海报
+  // 1. 生成纯净海报 (左键)
   const handleSavePoster = async () => {
-    const element = document.getElementById('poster-area');
+    const element = document.getElementById('clean-poster-area');
     if (!element) return;
     
     setSaving(true);
     try {
       const canvas = await html2canvas(element, {
         useCORS: true,
-        scale: 2, 
-        backgroundColor: '#ffffff',
+        scale: 2, // 高清
+        backgroundColor: null,
       });
-      
       const link = document.createElement('a');
-      link.download = `我的情感欲望-${results.primary}.png`;
+      link.download = `我的欲望底色-${results.primary}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
-      
-      setShareType('poster');
-      setShowShareModal(true);
+      alert("✅ 结果卡片已保存！\n快去小红书评论区晒出你的结果吧~");
     } catch (err) {
-      console.error('Poster generation failed', err);
-      alert('保存失败，请尝试截屏分享');
+      console.error('Poster failed', err);
     }
     setSaving(false);
   };
 
-  // 复制链接
+  // 2. 复制信封链接 (右键)
   const handleCopyLink = () => {
-    if (!resultId) {
-        alert("正在生成专属链接，请稍等...");
-        return;
-    }
-    const shareUrl = `${window.location.origin}/share/${resultId}`;
-    navigator.clipboard.writeText(shareUrl).then(() => {
-        setShareType('link');
-        setShowShareModal(true);
+    const link = `${SITE_URL}/letter?type=${results.primary}`;
+    navigator.clipboard.writeText(link).then(() => {
+      alert("💌 心之密语已复制！\n\n请私发给微信/QQ好友，邀请TA拆开这封信。（请勿发到小红书哦）");
     });
   };
+
+  if (!mounted) return null;
 
   const progress = ((currentQIndex + 1) / QUESTIONS.length) * 100;
   const displayData = results.primary ? RESULTS[results.primary] : null;
@@ -339,6 +494,10 @@ export default function SoulScan_MasterBedroom() {
   return (
     <div className="min-h-screen bg-[#FDFBF9] text-[#4A4A4A] font-sans selection:bg-rose-100 flex flex-col overflow-x-hidden">
       
+      <Head>
+        <script src="https://cdn.tailwindcss.com"></script>
+      </Head>
+
       {/* 顶部栏 */}
       {step !== 'landing' && step !== 'partIntro' && !showFinal && (
         <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-stone-100 px-6 py-4 flex justify-between items-center">
@@ -354,7 +513,7 @@ export default function SoulScan_MasterBedroom() {
         </nav>
       )}
 
-      {/* --- Landing Page --- */}
+      {/* Landing Page */}
       {step === 'landing' && (
         <div className="flex-1 flex flex-col relative overflow-hidden">
           <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-rose-200/40 to-orange-100/40 blur-[80px]" />
@@ -364,66 +523,31 @@ export default function SoulScan_MasterBedroom() {
             <div className="mb-8 p-4 bg-white/50 backdrop-blur-sm rounded-2xl shadow-sm border border-white/60">
                <Lock className="w-8 h-8 text-stone-700 opacity-80" />
             </div>
-            
             <div className="text-center space-y-4 mb-12">
-              <h1 className="text-4xl font-serif font-bold text-stone-800 tracking-wide">
-                情感欲望图鉴
-              </h1>
-              <p className="text-sm font-light text-stone-500 tracking-[0.2em] uppercase">
-                Unlock Your Hidden Desires
-              </p>
-              <p className="text-sm text-stone-600 leading-relaxed max-w-xs mx-auto pt-4">
-                48道潜意识扫描，揭示你的双重欲望。<br/>
-                探索那些未被说出口的渴望。
-              </p>
+              <h1 className="text-4xl font-serif font-bold text-stone-800 tracking-wide">情感欲望图鉴</h1>
+              <p className="text-sm font-light text-stone-500 tracking-[0.2em] uppercase">Unlock Your Hidden Desires</p>
             </div>
 
             <div className="w-full max-w-xs space-y-4 min-h-[140px]">
               {!showInput ? (
-                <button 
-                  onClick={() => setShowInput(true)}
-                  className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold text-sm shadow-xl hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  <Key className="w-4 h-4" />
-                  我已有兑换码
+                <button onClick={() => setShowInput(true)} className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold text-sm shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
+                  <Key className="w-4 h-4" /> 我有兑换码
                 </button>
               ) : (
                 <div className="space-y-3 animate-slide-up">
-                  <input 
-                    type="text" 
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    placeholder="请输入你在小红书获得的兑换码"
-                    className="w-full p-4 bg-white/80 border border-stone-200 rounded-xl outline-none text-center focus:ring-2 focus:ring-rose-200 transition-all placeholder:text-xs"
-                  />
-                  <button 
-                    onClick={handleVerify}
-                    disabled={isLoading}
-                    className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold text-sm shadow-lg hover:bg-stone-800 transition-colors flex items-center justify-center gap-2"
-                  >
+                  <input type="text" value={code} onChange={(e) => setCode(e.target.value)} placeholder="请输入兑换码" className="w-full p-4 bg-white/80 border border-stone-200 rounded-xl outline-none text-center focus:ring-2 focus:ring-rose-200 transition-all placeholder:text-xs" />
+                  <button onClick={handleVerify} disabled={isLoading} className="w-full bg-stone-900 text-white py-4 rounded-xl font-bold text-sm shadow-lg hover:bg-stone-800 transition-colors flex items-center justify-center gap-2">
                     {isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : '开始解锁'}
                   </button>
-                  {errorMsg && (
-                    <p className="text-xs text-red-500 text-center bg-red-50 py-2 rounded-lg">
-                      {errorMsg}
-                    </p>
-                  )}
+                  {errorMsg && <p className="text-xs text-red-500 text-center bg-red-50 py-2 rounded-lg">{errorMsg}</p>}
                 </div>
               )}
-            </div>
-
-            <div className="mt-16 text-center">
-              <p className="text-xs text-stone-400 mb-2">如何获得兑换码？</p>
-              <div className="inline-flex items-center gap-1 text-xs text-rose-500 bg-rose-50 px-3 py-1.5 rounded-full cursor-pointer hover:bg-rose-100 transition-colors">
-                <Search className="w-3 h-3" />
-                <span>前往小红书搜索【柚子的心理小屋】</span>
-              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* --- Part Intro --- */}
+      {/* Part Intro */}
       {step === 'partIntro' && currentPart && (
         <div className="flex-1 bg-stone-900 flex flex-col justify-center items-center text-center p-8 animate-fade-in relative overflow-hidden">
            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10" />
@@ -431,54 +555,32 @@ export default function SoulScan_MasterBedroom() {
              <span className="text-rose-300/80 text-[10px] tracking-[0.4em] uppercase mb-6 block">Chapter</span>
              <h2 className="text-2xl font-serif font-bold mb-6 text-rose-50 tracking-wide">{currentPart.title}</h2>
              <div className="w-8 h-1 bg-rose-500/50 mx-auto mb-8 rounded-full"></div>
-             <p className="text-lg font-serif italic text-white/90 mb-8 leading-relaxed px-4">
-               {currentPart.quote}
-             </p>
-             <p className="text-xs text-stone-400 leading-6 mb-12 px-6">
-               {currentPart.desc}
-             </p>
-             <button 
-               onClick={() => setStep('quiz')}
-               className="group flex items-center gap-2 mx-auto text-rose-200 border border-rose-200/20 px-8 py-3 rounded-full hover:bg-rose-200/10 transition-all text-xs tracking-widest"
-             >
-               CONTINUE
-               <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+             <p className="text-lg font-serif italic text-white/90 mb-8 leading-relaxed px-4">{currentPart.quote}</p>
+             <p className="text-xs text-stone-400 leading-6 mb-12 px-6">{currentPart.desc}</p>
+             <button onClick={() => setStep('quiz')} className="group flex items-center gap-2 mx-auto text-rose-200 border border-rose-200/20 px-8 py-3 rounded-full hover:bg-rose-200/10 transition-all text-xs tracking-widest">
+               CONTINUE <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
              </button>
            </div>
         </div>
       )}
 
-      {/* --- Quiz --- */}
+      {/* Quiz */}
       {step === 'quiz' && (
         <div className="flex-1 flex flex-col pt-24 px-6 animate-slide-up max-w-md mx-auto w-full">
           <div className="w-full h-1 bg-stone-100 rounded-full mb-10 overflow-hidden">
-            <div 
-              className="h-full bg-rose-400 transition-all duration-500 ease-out"
-              style={{ width: `${progress}%` }}
-            />
+            <div className="h-full bg-rose-400 transition-all duration-500 ease-out" style={{ width: `${progress}%` }} />
           </div>
           <div className="flex-1 flex flex-col justify-center pb-20">
              <div className="mb-2">
-               <span className="text-[10px] font-bold tracking-widest uppercase text-rose-400 bg-rose-50 px-2 py-1 rounded inline-block mb-4">
-                 {currentQIndex < 16 ? 'Reality' : currentQIndex < 32 ? 'Emotion' : 'Soul'}
-               </span>
-               <h2 className="text-lg font-serif font-medium leading-relaxed text-stone-800">
-                 {QUESTIONS[currentQIndex].question}
-               </h2>
+               <span className="text-[10px] font-bold tracking-widest uppercase text-rose-400 bg-rose-50 px-2 py-1 rounded inline-block mb-4">{currentQIndex < 16 ? 'Reality' : currentQIndex < 32 ? 'Emotion' : 'Soul'}</span>
+               <h2 className="text-lg font-serif font-medium leading-relaxed text-stone-800">{QUESTIONS[currentQIndex].question}</h2>
              </div>
-             
              <div className="space-y-3 mt-8">
                {QUESTIONS[currentQIndex].options.map((opt, idx) => (
-                 <button
-                   key={idx}
-                   onClick={() => handleAnswer(opt.type)}
-                   className="w-full text-left p-5 bg-white border border-stone-100 rounded-2xl shadow-sm hover:border-rose-300 hover:shadow-md hover:bg-rose-50/30 transition-all duration-200 active:scale-[0.98] group relative overflow-hidden"
-                 >
+                 <button key={idx} onClick={() => handleAnswer(opt.type)} className="w-full text-left p-5 bg-white border border-stone-100 rounded-2xl shadow-sm hover:border-rose-300 hover:shadow-md hover:bg-rose-50/30 transition-all duration-200 active:scale-[0.98] group relative overflow-hidden">
                    <div className="relative z-10 flex items-start gap-3">
                      <div className="w-4 h-4 rounded-full border border-stone-300 mt-0.5 group-hover:border-rose-400 group-hover:bg-rose-400 flex-shrink-0 transition-colors" />
-                     <span className="text-sm text-stone-600 group-hover:text-stone-900 leading-relaxed">
-                       {opt.text}
-                     </span>
+                     <span className="text-sm text-stone-600 group-hover:text-stone-900 leading-relaxed">{opt.text}</span>
                    </div>
                  </button>
                ))}
@@ -487,309 +589,159 @@ export default function SoulScan_MasterBedroom() {
         </div>
       )}
 
-      {/* --- Analysis --- */}
+      {/* Analysis */}
       {step === 'analyzing' && (
         <div className="flex-1 flex flex-col justify-center items-center text-center bg-stone-900 text-white">
           <div className="relative w-24 h-24">
             <div className="absolute inset-0 border-2 border-stone-800 rounded-full" />
             <div className="absolute inset-0 border-2 border-rose-400 rounded-full border-t-transparent animate-spin" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-rose-300 animate-pulse" />
-            </div>
+            <div className="absolute inset-0 flex items-center justify-center"><Sparkles className="w-8 h-8 text-rose-300 animate-pulse" /></div>
           </div>
           <h3 className="mt-8 text-base font-serif font-bold text-rose-50 tracking-wide">生成欲望图谱...</h3>
-          <p className="text-[10px] text-stone-500 mt-2 font-mono tracking-widest uppercase">Calculating</p>
         </div>
       )}
 
-      {/* --- Result Step 1: Card Flip + Explosion --- */}
+      {/* Result Step 1: Card Flip + Crack */}
       {step === 'result_card' && !showFinal && (
-        <div className="flex-1 flex flex-col items-center justify-center animate-fade-in p-6 bg-stone-900 relative overflow-hidden h-screen">
-          
-          {/* 白光爆炸遮罩 */}
-          <div className={`absolute inset-0 z-50 bg-white pointer-events-none transition-opacity duration-500 ${isExploding ? 'opacity-100' : 'opacity-0'}`}></div>
-
-          <p className={`text-center text-[10px] text-stone-400 mb-8 tracking-[0.2em] uppercase transition-opacity duration-300 ${flipped ? 'opacity-0' : 'opacity-100'}`}>
-             Tap to Reveal
-          </p>
-          
-          <div 
-            className="relative w-full max-w-sm aspect-[4/5] perspective-1000 cursor-pointer"
-            onClick={handleCardClick}
-          >
-            {/* 卡牌容器 */}
-            <div className={`relative w-full h-full duration-1000 transform-style-3d transition-transform ${flipped ? 'rotate-y-180' : ''} ${flipped && !isExploding ? 'animate-violent-shake' : ''}`}>
-              
-              {/* Back (封面) */}
+        <div className="flex-1 flex flex-col items-center justify-center animate-fade-in p-6 bg-stone-900 relative overflow-hidden">
+          <div className={`absolute inset-0 z-50 bg-white pointer-events-none transition-opacity duration-700 ${isExploding ? 'opacity-100' : 'opacity-0'}`}></div>
+          <p className={`text-center text-[10px] text-stone-400 mb-8 tracking-[0.2em] uppercase transition-opacity ${flipped ? 'opacity-0' : 'opacity-100'}`}>Tap to Reveal</p>
+          <div className="relative w-full max-w-sm aspect-[4/5] perspective-1000 cursor-pointer group" onClick={handleCardClick}>
+            <div className={`relative w-full h-full duration-1000 transform-style-3d transition-transform 
+              ${flipped ? 'rotate-y-180' : ''} 
+              ${isShaking ? 'animate-violent-shake' : ''}`
+            }>
               <div className="absolute inset-0 backface-hidden bg-stone-800 rounded-[2rem] shadow-2xl border border-white/10 flex flex-col items-center justify-center">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20" />
                 <Sparkles className="w-16 h-16 text-rose-200/50 mb-6 animate-pulse" />
                 <h3 className="text-rose-100/90 text-lg font-serif tracking-widest">点击揭晓</h3>
               </div>
-
-              {/* Front (翻转后暂留，即将爆炸) */}
-              <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col justify-between text-white p-8 
-                bg-gradient-to-br ${RESULTS[results.primary].cardStyle} backdrop-blur-xl border border-white/30`}>
-                <div className="absolute inset-0 bg-white/10 mix-blend-overlay" />
-                
-                <div className="relative z-10 text-center mt-20">
-                    <div className="w-20 h-20 mx-auto mb-6 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
-                      {RESULTS[results.primary].icon}
-                    </div>
-                    <h2 className="text-4xl font-serif font-bold mb-2 drop-shadow-md">{results.primary}</h2>
-                </div>
+              <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col justify-between text-white p-8 bg-gradient-to-br ${displayData ? displayData.cardStyle : 'from-gray-800 to-black'} backdrop-blur-xl border border-white/30`}>
+                {displayData && (
+                  <div className="relative z-10 text-center mt-20">
+                      <div className="w-20 h-20 mx-auto mb-6 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">{displayData.icon}</div>
+                      <h2 className="text-4xl font-serif font-bold mb-2 drop-shadow-md">{results.primary}</h2>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* --- Result Step 2: Final Share Page (Poster) --- */}
+      {/* Result Step 2: Final Share Page */}
       {showFinal && displayData && (
-        <div className="flex-1 flex flex-col animate-fade-in bg-white pb-32">
+        <div className="flex-1 flex flex-col animate-fade-in bg-white pb-24">
           
-          {/* 这个区域会被截图 */}
-          <div id="poster-area" className="bg-white">
-              {/* Header Area with Radar */}
-              <div className={`pt-12 pb-10 px-6 rounded-b-[3rem] shadow-xl bg-gradient-to-b ${displayData.cardStyle} text-white relative overflow-hidden`}>
+          {/* 📸 专门用于生成【纯净海报】的区域 (无二维码) */}
+          <div id="clean-poster-area" className="bg-white relative">
+              {/* 海报卡牌区 */}
+              <div className={`pt-16 pb-12 px-6 rounded-b-[3rem] shadow-xl bg-gradient-to-b ${displayData.cardStyle} text-white relative overflow-hidden`}>
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10" />
                 <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full bg-white/10 blur-[60px]" />
                 
                 <div className="relative z-10 flex flex-col items-center">
-                  <p className="text-[10px] font-medium opacity-80 tracking-[0.3em] mb-3 uppercase border border-white/20 px-3 py-1 rounded-full bg-white/5 backdrop-blur-md">
-                    你的情感欲望是
-                  </p>
-                  <h1 className="text-5xl font-serif font-bold mb-2 drop-shadow-lg tracking-wider text-center">
-                    {results.primary}
-                  </h1>
-                  <p className="text-sm opacity-80 font-serif italic mb-8 tracking-widest">{displayData.archetype}</p>
-
-                  {/* Radar Chart */}
-                  <div className="w-full max-w-xs h-[300px] bg-white/10 backdrop-blur-sm rounded-3xl border border-white/20 p-4 shadow-inner relative">
-                      <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-3xl pointer-events-none"></div>
+                  <p className="text-[10px] font-medium opacity-80 tracking-[0.3em] mb-4 uppercase border border-white/20 px-3 py-1 rounded-full bg-white/5 backdrop-blur-md">你的情感欲望是</p>
+                  <h1 className="text-6xl font-serif font-bold mb-8 drop-shadow-lg tracking-wider text-center">{results.primary}</h1>
+                  
+                  {/* 雷达图 */}
+                  <div className="w-full max-w-xs h-[300px] bg-white/10 backdrop-blur-sm rounded-3xl border border-white/20 p-4 shadow-inner relative mb-8">
                       <ResponsiveContainer width="100%" height="100%">
                         <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
-                          <defs>
-                            <linearGradient id="radarFill" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor={displayData.radarColor || "#fff"} stopOpacity={0.8}/>
-                              <stop offset="95%" stopColor={displayData.radarColor || "#fff"} stopOpacity={0.1}/>
-                            </linearGradient>
-                          </defs>
                           <PolarGrid stroke="rgba(255,255,255,0.15)" />
                           <PolarAngleAxis dataKey="subject" tick={{ fill: 'white', fontSize: 10, fontWeight: 500 }} />
                           <PolarRadiusAxis angle={30} domain={[0, 8]} tick={false} axisLine={false} />
-                          <Radar
-                            name="My Desire"
-                            dataKey="A"
-                            stroke={displayData.radarColor || "#fff"}
-                            strokeWidth={2}
-                            fill="url(#radarFill)"
-                            fillOpacity={1}
-                          />
+                          <Radar name="My Desire" dataKey="A" stroke={displayData.radarColor || "#fff"} strokeWidth={2} fill={displayData.radarColor || "#fff"} fillOpacity={0.5} />
                         </RadarChart>
                       </ResponsiveContainer>
                   </div>
 
-                  {/* Verdict Quote */}
-                  <div className="mt-8 px-4 w-full">
-                    <div className="relative py-4 border-t border-white/20 border-b">
-                      <p className="text-sm font-serif italic text-center leading-7 opacity-95 px-4">
-                        {displayData.quote}
-                      </p>
+                  <div className="relative px-6">
+                    <span className="absolute -top-4 -left-0 text-5xl opacity-20 font-serif">“</span>
+                    <p className="text-base font-serif italic text-center leading-8 opacity-95 px-2">{displayData.quote}</p>
+                    <span className="absolute -bottom-6 -right-0 text-5xl opacity-20 font-serif">”</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-6 py-6 text-center bg-white">
+                  <p className="text-[10px] text-stone-300 tracking-[0.4em] uppercase">柚子的心理小屋 · 原创出品</p>
+              </div>
+          </div>
+
+          {/* 下方详细内容 (不截图) */}
+          <div className="px-6 py-2 relative z-20">
+             <div className="flex gap-2 overflow-x-auto pb-6 no-scrollbar">
+                {[{ id: 'base', label: '底色' }, { id: 'lightShadow', label: '光影' }, { id: 'partner', label: '致伴侣' }, { id: 'origins', label: '溯源' }, { id: 'reshape', label: '重塑' }].map(tab => (
+                  <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all shadow-sm ${activeTab === tab.id ? 'bg-stone-800 text-white ring-2 ring-stone-800 ring-offset-2' : 'bg-white text-stone-500 border border-stone-200'}`}>
+                    {tab.label}
+                  </button>
+                ))}
+             </div>
+
+             <div className="space-y-6 animate-fade-in pb-20">
+                
+                {activeTab === 'base' && <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100"><h4 className="font-bold text-sm mb-4 text-stone-800 flex items-center gap-2 uppercase tracking-wider"><BookOpen className="w-4 h-4" /> 亲密底色</h4><p className="text-sm text-stone-600 leading-7 text-justify whitespace-pre-line">{displayData.tabs.base}</p></div>}
+                
+                {/* 光影图谱 - 分离显示 */}
+                {activeTab === 'lightShadow' && (
+                  <div className="space-y-4">
+                    <div className="bg-amber-50/50 p-5 rounded-2xl border border-amber-100">
+                        <h4 className="text-xs font-bold mb-4 flex items-center gap-2 text-amber-700"><Sun className="w-4 h-4" /> 你的光 (天赋优势)</h4>
+                        <div className="space-y-4">
+                           {displayData.tabs.lightShadow.filter(i => i.label.includes('(光)')).map((item, idx) => (
+                             <div key={idx}>
+                               <span className="text-xs font-bold text-amber-800 block mb-1">{item.label.split(' ')[0]}</span>
+                               <p className="text-xs text-stone-600 leading-relaxed">{item.text}</p>
+                             </div>
+                           ))}
+                        </div>
+                    </div>
+                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                        <h4 className="text-xs font-bold mb-4 flex items-center gap-2 text-slate-600"><Moon className="w-4 h-4" /> 你的影 (成长挑战)</h4>
+                        <div className="space-y-4">
+                           {displayData.tabs.lightShadow.filter(i => i.label.includes('(影)')).map((item, idx) => (
+                             <div key={idx}>
+                               <span className="text-xs font-bold text-slate-700 block mb-1">{item.label.split(' ')[0]}</span>
+                               <p className="text-xs text-stone-600 leading-relaxed">{item.text}</p>
+                             </div>
+                           ))}
+                        </div>
                     </div>
                   </div>
+                )}
+
+                {activeTab === 'partner' && <div className="space-y-3">{displayData.tabs.partner.map((l,i)=><div key={i} className="bg-white p-4 rounded-xl border border-stone-100 text-sm text-stone-600 shadow-sm"><span className={`font-serif italic text-xl ${displayData.accentColor} mr-2`}>{i+1}.</span>{l}</div>)}</div>}
+                {activeTab === 'origins' && <div className="bg-white p-6 rounded-2xl border border-stone-100 text-sm text-stone-600 leading-7 text-justify whitespace-pre-line shadow-sm"><h4 className="font-bold text-sm mb-4 text-stone-800 flex items-center gap-2 uppercase tracking-wider"><Search className="w-4 h-4" /> 童年溯源</h4>{displayData.tabs.origins}</div>}
+                {activeTab === 'reshape' && <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 text-sm text-emerald-800 leading-7 whitespace-pre-line"><h4 className="font-bold text-sm mb-4 text-emerald-800 flex items-center gap-2 uppercase tracking-wider"><Zap className="w-4 h-4" /> 能量重塑</h4>{displayData.tabs.reshape}</div>}
+             
+                {/* 底部祝福 (所有Tabs下都显示) */}
+                <div className="mt-12 mb-8 text-center">
+                   <Feather className="w-5 h-5 text-stone-300 mx-auto mb-4" />
+                   <p className="font-serif italic text-stone-500 text-sm leading-8 px-4 whitespace-pre-line">{displayData.blessing}</p>
+                   <div className="w-12 h-[1px] bg-stone-200 mx-auto mt-6"></div>
                 </div>
-              </div>
-
-              {/* Bookmark Tabs & Content */}
-              <div className="px-6 py-6 -mt-4 relative z-20">
-                {/* Tabs */}
-                <div className="flex gap-2 overflow-x-auto no-scrollbar mb-6 pb-2">
-                    {RESULT_TABS.map(tab => {
-                        const Icon = tab.icon;
-                        const isActive = activeTab === tab.id;
-                        return (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-300
-                                ${isActive 
-                                    ? `bg-stone-900 text-white shadow-lg scale-105` 
-                                    : 'bg-white text-stone-500 border border-stone-100'}`}
-                            >
-                                <Icon className="w-3 h-3" />
-                                {tab.label}
-                            </button>
-                        )
-                    })}
-                </div>
-
-                {/* Content Area */}
-                <div className="min-h-[300px]">
-                    {/* 1. 亲密底色 */}
-                    {activeTab === 'base' && (
-                        <div className="bg-white p-6 rounded-2xl border border-stone-100 shadow-sm animate-fade-in">
-                            <h4 className="font-serif font-bold text-lg mb-4 text-stone-800 flex items-center gap-2">
-                                <BookOpen className="w-5 h-5 text-rose-500" />
-                                你的亲密底色
-                            </h4>
-                            <p className="text-sm text-stone-600 leading-7 text-justify whitespace-pre-line">
-                                {displayData.base}
-                            </p>
-                        </div>
-                    )}
-
-                    {/* 2. 光影图谱 */}
-                    {activeTab === 'lightShadow' && (
-                        <div className="space-y-4 animate-fade-in">
-                            <div className="bg-amber-50/50 p-5 rounded-2xl border border-amber-100">
-                                <h4 className="text-sm font-bold mb-4 flex items-center gap-2 text-amber-700">
-                                    <Sun className="w-4 h-4" /> 你的光（天赋优势）
-                                </h4>
-                                <div className="space-y-3">
-                                    {displayData.lightShadow.filter(i => i.type === 'light').map((item, idx) => (
-                                        <div key={idx} className="bg-white p-3 rounded-xl border border-amber-100/50 shadow-sm">
-                                            <span className="text-xs font-bold block mb-1 text-amber-800">{item.label}</span>
-                                            <span className="text-xs text-stone-500 leading-relaxed block">{item.text}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                                <h4 className="text-sm font-bold mb-4 flex items-center gap-2 text-slate-700">
-                                    <Moon className="w-4 h-4" /> 你的影（隐性挑战）
-                                </h4>
-                                <div className="space-y-3">
-                                    {displayData.lightShadow.filter(i => i.type === 'shadow').map((item, idx) => (
-                                        <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
-                                            <span className="text-xs font-bold block mb-1 text-slate-700">{item.label}</span>
-                                            <span className="text-xs text-stone-500 leading-relaxed block">{item.text}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 3. 伴侣指南 */}
-                    {activeTab === 'partner' && (
-                        <div className="bg-rose-50/30 p-6 rounded-2xl border border-rose-100 animate-fade-in">
-                            <h4 className="font-serif font-bold text-lg mb-6 text-stone-800 flex items-center gap-2">
-                                <Heart className="w-5 h-5 text-rose-500" />
-                                给他/她的说明书
-                            </h4>
-                            <div className="space-y-4">
-                                {displayData.partner.map((text, idx) => (
-                                    <div key={idx} className="flex gap-3 items-start">
-                                        <div className="w-6 h-6 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
-                                            {idx + 1}
-                                        </div>
-                                        <p className="text-sm text-stone-600 leading-6">{text}</p>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="mt-6 pt-6 border-t border-rose-100 text-center">
-                                <p className="text-xs text-rose-400 italic">“把这段发给TA，减少你们80%的争吵”</p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 4. 自我重塑 */}
-                    {activeTab === 'reshape' && (
-                        <div className="space-y-4 animate-fade-in">
-                            <div className="bg-white p-6 rounded-2xl border border-stone-100 shadow-sm">
-                                <h4 className="font-bold text-sm mb-3 text-stone-800 flex items-center gap-2">
-                                    <Search className="w-4 h-4 text-purple-500" /> 深度溯源
-                                </h4>
-                                <p className="text-sm text-stone-600 leading-7 whitespace-pre-line">
-                                    {displayData.self.origins}
-                                </p>
-                            </div>
-                            <div className="bg-gradient-to-br from-purple-50 to-white p-6 rounded-2xl border border-purple-100 shadow-sm">
-                                <h4 className="font-bold text-sm mb-3 text-purple-900 flex items-center gap-2">
-                                    <Feather className="w-4 h-4 text-purple-600" /> 能量重塑
-                                </h4>
-                                <p className="text-sm text-stone-700 leading-7 whitespace-pre-line">
-                                    {displayData.self.reshape}
-                                </p>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                <div className="mt-12 text-center pb-8">
-                    <p className="font-serif italic text-stone-500 text-sm leading-8 max-w-xs mx-auto">
-                      {displayData.blessing}
-                    </p>
-                    <div className="w-12 h-[1px] bg-stone-200 mx-auto mt-8"></div>
-                    <p className="text-[10px] text-stone-300 mt-4 tracking-widest uppercase">柚子的心理小屋 · 原创出品</p>
-                </div>
-              </div>
+             </div>
           </div>
 
-          {/* 底部悬浮操作栏 */}
-          <div className="fixed bottom-0 left-0 w-full p-6 bg-white/90 backdrop-blur-lg border-t border-stone-100 z-50 flex gap-3 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-            {/* 按钮 1: 生成海报 */}
+          {/* 双按钮悬浮栏 */}
+          <div className="fixed bottom-0 left-0 w-full px-4 py-4 bg-white/90 backdrop-blur-md border-t border-stone-100 z-50 flex gap-3">
             <button 
               onClick={handleSavePoster}
-              disabled={saving}
-              className="flex-1 py-3.5 bg-stone-900 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-lg active:scale-95"
+              className="flex-1 py-3 bg-stone-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-xl active:scale-95 transition-transform"
             >
-              {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
-              {saving ? '生成中...' : '生成结果海报'}
+              <Download className="w-4 h-4" />
+              生成结果卡片 (防折叠)
             </button>
-
-            {/* 按钮 2: 复制链接 */}
+            
             <button 
               onClick={handleCopyLink}
-              className="flex-1 py-3.5 bg-white text-stone-900 border border-stone-200 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-stone-50 transition-colors shadow-sm active:scale-95"
+              className="flex-1 py-3 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
             >
-              <Share2 className="w-4 h-4" />
-              复制分享链接
+              <Mail className="w-4 h-4" />
+              复制心之密语 (微信用)
             </button>
           </div>
-
-          {/* Share Modal 弹窗 */}
-          {showShareModal && (
-              <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center p-6 animate-fade-in">
-                  <div className="bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl scale-100 animate-slide-up relative">
-                      <button 
-                          onClick={() => setShowShareModal(false)}
-                          className="absolute top-4 right-4 p-1 bg-stone-100 rounded-full text-stone-400 hover:bg-stone-200"
-                      >
-                          <X className="w-4 h-4" />
-                      </button>
-
-                      {shareType === 'poster' ? (
-                          <div className="text-center">
-                              <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-500">
-                                  <ImageIcon className="w-6 h-6" />
-                              </div>
-                              <h3 className="font-bold text-lg text-stone-900 mb-2">海报已生成！</h3>
-                              <p className="text-sm text-stone-500 leading-relaxed mb-6">
-                                  海报已保存到相册。这张海报不含二维码和链接，非常适合发布到 <span className="font-bold text-rose-500">小红书</span> 笔记中，安全不违规 ✨
-                              </p>
-                              <button onClick={() => setShowShareModal(false)} className="w-full py-3 bg-stone-900 text-white rounded-xl font-bold text-sm">
-                                  好的，去发笔记
-                              </button>
-                          </div>
-                      ) : (
-                          <div className="text-center">
-                              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-500">
-                                  <Copy className="w-6 h-6" />
-                              </div>
-                              <h3 className="font-bold text-lg text-stone-900 mb-2">链接已复制！</h3>
-                              <p className="text-sm text-stone-500 leading-relaxed mb-6">
-                                  你可以发送给 <span className="font-bold text-blue-500">微信/QQ好友</span>。好友点开后能看到更精美的动态结果页，但他看不到你的详细深度分析（那是你的隐私）🔒
-                              </p>
-                              <button onClick={() => setShowShareModal(false)} className="w-full py-3 bg-stone-900 text-white rounded-xl font-bold text-sm">
-                                  好的，去分享
-                              </button>
-                          </div>
-                      )}
-                  </div>
-              </div>
-          )}
 
         </div>
       )}
@@ -802,33 +754,17 @@ export default function SoulScan_MasterBedroom() {
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* 剧烈晃动动画 - 优化版 */
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes violent-shake {
           0% { transform: rotateY(180deg) translate(0, 0) rotate(0deg); }
-          10% { transform: rotateY(180deg) translate(-2px, -2px) rotate(-1deg); }
-          20% { transform: rotateY(180deg) translate(2px, 2px) rotate(1deg); }
-          30% { transform: rotateY(180deg) translate(-3px, 1px) rotate(-1deg); }
-          40% { transform: rotateY(180deg) translate(3px, -1px) rotate(1deg); }
-          50% { transform: rotateY(180deg) translate(-2px, 2px) rotate(-1deg); }
-          60% { transform: rotateY(180deg) translate(2px, -2px) rotate(1deg); }
-          70% { transform: rotateY(180deg) translate(1px, 1px) rotate(-1deg); }
-          80% { transform: rotateY(180deg) translate(-1px, -1px) rotate(1deg); }
-          90% { transform: rotateY(180deg) translate(1px, 1px) rotate(0deg); }
+          25% { transform: rotateY(180deg) translate(5px, 5px) rotate(2deg); }
+          50% { transform: rotateY(180deg) translate(-5px, -5px) rotate(-2deg); }
+          75% { transform: rotateY(180deg) translate(5px, -5px) rotate(2deg); }
           100% { transform: rotateY(180deg) translate(0, 0) rotate(0deg); }
         }
-
         .animate-slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-fade-in { animation: slideUp 0.8s ease-out forwards; }
-        
-        /* 延迟触发摇晃，配合翻转 */
-        .animate-violent-shake {
-          animation: violent-shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-        }
+        .animate-violent-shake { animation: violent-shake 0.5s infinite; }
       `}</style>
     </div>
   );
