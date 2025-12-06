@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, Lock, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, ChevronRight, BookOpen, Key, Feather, Search, X, Camera, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Lock, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye, Sun, Moon, ChevronRight, BookOpen, Key, Feather, Search, X, Camera, CheckCircle2, ArrowLeft, ArrowRight, AlertCircle } from 'lucide-react';
 import Head from 'next/head';
 import { createClient } from '@supabase/supabase-js';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
@@ -12,11 +12,11 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// 章节配置
+// 章节配置 (定义每个Part的起始和结束索引)
 const PARTS_CONFIG = [
-  { startIndex: 0, title: "Part 1：现实切片", quote: "“爱不仅仅是誓言，更是下意识的本能。”", desc: "先让我们从生活的琐碎里，捕捉你在亲密关系中那些最真实的条件反射。" },
-  { startIndex: 16, title: "Part 2：情绪暗涌", quote: "“日常的表象之下，藏着我们未曾说出口的渴望。”", desc: "现在的你，已经脱去了社交伪装。让我们再往下潜一点，去触碰那些让你感到不安、委屈或满足的瞬间。" },
-  { startIndex: 32, title: "Part 3：灵魂图腾", quote: "“语言无法抵达的地方，直觉可以。”", desc: "欢迎来到你内心的最深处。接下来的问题不需要逻辑，仅凭直觉，选出你第一眼看到的那个答案。" }
+  { id: 1, startIndex: 0, endIndex: 15, title: "Part 1：现实切片", quote: "“爱不仅仅是誓言，更是下意识的本能。”", desc: "先让我们从生活的琐碎里，捕捉你在亲密关系中那些最真实的条件反射。" },
+  { id: 2, startIndex: 16, endIndex: 31, title: "Part 2：情绪暗涌", quote: "“日常的表象之下，藏着我们未曾说出口的渴望。”", desc: "现在的你，已经脱去了社交伪装。让我们再往下潜一点，去触碰那些让你感到不安、委屈或满足的瞬间。" },
+  { id: 3, startIndex: 32, endIndex: 47, title: "Part 3：灵魂图腾", quote: "“语言无法抵达的地方，直觉可以。”", desc: "欢迎来到你内心的最深处。接下来的问题不需要逻辑，仅凭直觉，选出你第一眼看到的那个答案。" }
 ];
 
 // --- 题目数据 (完整48题) ---
@@ -37,6 +37,7 @@ const QUESTIONS = [
   { id: 14, question: "在一起久了，关系进入平淡模式，每天除了吃饭睡觉没别的话题。你会觉得？", options: [{ text: "慢性死亡。没有思想交流，只剩空壳。", type: "精神共鸣" }, { text: "有点失落。好像我这个人在不在家对他没差别了。", type: "被需要" }, { text: "求之不得。不用费劲维系激情，各干各的最舒服。", type: "自由感" }, { text: "这很正常。稳定的、可预测的生活节奏让我踏实。", type: "秩序感" }] },
   { id: 15, question: "你有一个非常痴迷的小爱好，但伴侣完全不感兴趣。你希望他的态度是？", options: [{ text: "别干涉我。这是我的自留地，请离远点。", type: "安全距离" }, { text: "尊重我的投入。别总质疑我不务正业。", type: "掌控感" }, { text: "试着懂我一点。明白为什么这个东西能打动我。", type: "精神共鸣" }, { text: "陪我一起玩。哪怕不喜欢，也希望能为了我参与一下。", type: "被偏爱" }] },
   { id: 16, question: "大吵一架终于和好了。为了让这页彻底翻过去，你最需要的一个“收尾动作”是？", options: [{ text: "反复确认。“你真的不生气了吗？我们真的没事了吗？”", type: "确定感" }, { text: "某种补偿行为。比如给他做顿好吃的。", type: "被需要" }, { text: "彻底不提。赶紧回归正常，把这尴尬的一页揭过去。", type: "安全距离" }, { text: "得到一个小惊喜。买个礼物或者带我吃顿好的。", type: "被偏爱" }] },
+  // Part 2
   { id: 17, question: "在一段关系里，最让你感到心慌、不踏实的那种时刻，其实是？", options: [{ text: "不知道下一秒会发生什么。内心悬空的感觉最折磨人。", type: "确定感" }, { text: "感觉透不过气。那种被严密包裹的窒息感，让我只想逃。", type: "自由感" }, { text: "事情脱离了轨迹。局面完全乱套，无法把握方向。", type: "掌控感" }, { text: "像在演独角戏。面对面心却连不上的孤独感。", type: "精神共鸣" }] },
   { id: 18, question: "当你在感情里觉得特别委屈时，脑海里那个挥之不去的念头是？", options: [{ text: "“好像我没什么价值。” 觉得自己很多余。", type: "被需要" }, { text: "“我就知道会受伤。” 本能地想立刻缩回去。", type: "安全距离" }, { text: "“这不公平。” 为什么总是我在妥协？", type: "秩序感" }, { text: "“原来我和别人没区别。” 我并没有被放在例外的位置上。", type: "被偏爱" }] },
   { id: 19, question: "你理想中最好的爱，给你的直接感觉应该是？", options: [{ text: "轻松。没有压力，没有强制要求。", type: "自由感" }, { text: "踏实。不管发生什么，都知道你不会走。", type: "确定感" }, { text: "默契。不用费劲解释，你也懂。", type: "精神共鸣" }, { text: "清晰。一切都在计划中稳步推进。", type: "掌控感" }] },
@@ -53,6 +54,7 @@ const QUESTIONS = [
   { id: 30, question: "如果给你自己写一份“恋爱使用说明书”，你最希望标注的核心法则是？", options: [{ text: "“请坚定地选择我。” 别犹豫，别摇摆。", type: "确定感" }, { text: "“请允许我做自己。” 别打着为我好的名义改造我。", type: "自由感" }, { text: "“请看见我的付出。” 别把一切都当成空气。", type: "被需要" }, { text: "“请给我一点时间。” 别一上来就掏心掏肺。", type: "安全距离" }] },
   { id: 31, question: "如果让你用一个词来定义你理想中的“关系形态”，你希望你们是？", options: [{ text: "合伙人。账目分明，分工明确，高效努力。", type: "秩序感" }, { text: "船长与领航员。有明确方向，有问题迅速解决。", type: "掌控感" }, { text: "灵魂伴侣。不用磨合的默契，眼神一对就知道。", type: "精神共鸣" }, { text: "两条平行的河。有交集，又互不吞没。", type: "自由感" }] },
   { id: 32, question: "在你看来，一个人爱你的最高级表现是？", options: [{ text: "例外。他对世界冷漠，唯独对我不一样。", type: "被偏爱" }, { text: "托底。无论我变成什么样，他永远站在我身后。", type: "确定感" }, { text: "依赖。愿意把最脆弱的一面给我看，只让我照顾。", type: "被需要" }, { text: "尊重。懂得站在安全线以外守护我。", type: "安全距离" }] },
+  // Part 3
   { id: 33, question: "如果要把你向往的亲密关系画成一幅画，它最像什么？", options: [{ text: "深深扎进土里的树根。地下紧紧纠缠。", type: "确定感" }, { text: "两朵飘在天上的云。聚散都随风。", type: "自由感" }, { text: "一条笔直的高速公路。全速驶向同一个终点。", type: "掌控感" }, { text: "两面互相照映的镜子。看着你就能看见自己。", type: "精神共鸣" }] },
   { id: 34, question: "如果要把自己比喻成一种动物，在爱人面前，你更像？", options: [{ text: "温顺的大金毛。你感受到陪伴我就满足。", type: "被需要" }, { text: "被驯服的小狐狸。我只认你这一个“驯养员”。", type: "被偏爱" }, { text: "屯松果的松鼠。未雨绸缪，规划好过冬。", type: "秩序感" }, { text: "林间的小鹿。生性敏感，试探着靠近。", type: "安全距离" }] },
   { id: 35, question: "闭上眼，你觉得最让你感到安稳的那个空间是？", options: [{ text: "暴雨夜的屋子。你在身边，门窗紧闭。", type: "确定感" }, { text: "巨大的落地窗。视野通透，没有围栏。", type: "自由感" }, { text: "深夜书房。安静私密，只有书和思想。", type: "精神共鸣" }, { text: "私有王国。关上门，这里就是我们的国度。", type: "掌控感" }] },
@@ -78,13 +80,12 @@ const RESULTS = {
     archetype: "风暴中的守夜人",
     icon: <Anchor className="w-8 h-8" />,
     quote: "万物皆流变，而我只要一种绝对的定数。",
-    // 背景：稍微提高亮度和通透度
     cardStyle: "from-blue-800 to-slate-900 shadow-[0_0_50px_-10px_rgba(30,58,138,0.4)] border-blue-800/30",
     accentColor: "text-blue-800",
     radarColor: "#1e40af",
-    // 撞色书签：深蓝配香槟金
     tabActiveColor: "bg-amber-100 text-blue-900 border-amber-200",
     tabInactiveColor: "bg-white/80 text-blue-900/50",
+    themeColor: "bg-blue-800",
     content: {
       base: `在亲密关系中，你核心的情感诉求是 “稳定与可预期”，始终坚守着对长期联结的极致追求。相较于外在条件的光鲜或浪漫形式的轰轰烈烈，你更看重关系中的确定性—— 凡事有交代、件件有着落、事事有回音，这种清晰、可靠的互动模式，是你构建情感安全感的基石。\n\n你的情感底色厚重且带着强烈的契约精神，对感情的投入从不浅尝辄止，而是带着 “认定即终身” 的郑重。只要对方传递的态度足够明确、信号足够清晰，你便会毫无保留地深度投入，愿意为关系的长久发展付出耐心与精力，包容差异、共担责任，将长期承诺作为情感的核心导向，而非一时的情绪冲动。\n\n这份对关系的厚重期待背后，潜藏着你对不确定性的极度敏感与对被抛弃的深层恐惧。你对关系中的距离变化、态度波动有着本能的警觉，任何模糊的信号、延迟的回应，都可能触发你内心的不安。你并非刻意试探或控制，所有看似执着的追问与确认，本质上都是为了在不确定的关系流动中，寻找一个稳定的情感锚点，反复确认自身在对方心中的重要性与不可替代性。`,
       light: [
@@ -112,13 +113,12 @@ const RESULTS = {
     archetype: "以付出为锚的守护者",
     icon: <Heart className="w-8 h-8" />,
     quote: "没有你，我只是一片废墟。",
-    // 暖色系：琥珀色调
     cardStyle: "from-amber-500 to-orange-700 shadow-[0_0_50px_-10px_rgba(245,158,11,0.4)] border-amber-500/30",
     accentColor: "text-amber-700",
     radarColor: "#d97706",
-    // 撞色书签：暖橙配青黛色
     tabActiveColor: "bg-teal-50 text-orange-800 border-teal-200",
     tabInactiveColor: "bg-white/80 text-orange-800/50",
+    themeColor: "bg-amber-600",
     content: {
       base: `在亲密关系里，你最核心的需求是靠被对方依赖来确认自己的价值。对别人来说，爱可能是鲜花、情话和浪漫仪式，但对你而言，爱从来都是实打实的联结 —— 是“我能为你做什么”，是 “我的存在能让你少操心”。\n\n你的情感底色里，藏着一种付出才值得被爱的本能认知。你会本能地盯着对方的生活细节：他加班晚了，你会提前煮好热饭；他遇到麻烦了，你会第一时间凑上去帮忙。这些付出不是刻意讨好，只是真心想成为他生活里离不了的人。\n\n可这份对 “被需要” 的执念背后，藏着你最怕的事 —— 怕自己是可有可无的。要是对方凡事都自己扛，你心里会悄悄空落落的：“原来没有我，他也能过得挺好”。你不是想控制谁，只是需要通过一次次被他需要的小事，反复确认自己在他心里的分量。`,
       light: [
@@ -146,13 +146,12 @@ const RESULTS = {
     archetype: "为关系掌舵的同行者",
     icon: <Zap className="w-8 h-8" />,
     quote: "我抛开了所有理智，只求你结束我的痛苦。",
-    // 勃艮第红
     cardStyle: "from-red-800 to-slate-900 shadow-[0_0_50px_-10px_rgba(159,18,57,0.4)] border-rose-900/30",
     accentColor: "text-rose-900",
     radarColor: "#881337",
-    // 撞色书签：深红配冷灰白
     tabActiveColor: "bg-slate-100 text-rose-900 border-slate-200",
     tabInactiveColor: "bg-white/80 text-rose-900/50",
+    themeColor: "bg-rose-900",
     content: {
       base: `在亲密关系里，你最核心的需求从不是控制对方，而是关系的可预期、可沟通、可协同。亲密更像两人共掌舵的船，得提前校准航向、明确规则、同步节奏，你才能放下顾虑，放心交付自己。\n\n你对关系章法的执念，藏着对无序失控的恐惧。模糊的界限、反复的态度、没说清的期待，在你眼里都是隐患。如果对方凭情绪做事，你不会觉得是性格不合，反而会格外孤独 —— 像独自驾着没罗盘的船，既要稳住方向，又要拉扯对方节奏。\n\n你真正想要的是双向协作：不用你单方面提要求，而是对方愿意主动对齐目标。你要的从不是掌控权，而是我们始终站在同一边的笃定。`,
       light: [
@@ -181,13 +180,12 @@ const RESULTS = {
     archetype: "渴求例外的驯养者",
     icon: <Sparkles className="w-8 h-8" />,
     quote: "你要永远为你驯服的东西负责。",
-    // 玫瑰金 & 浪漫粉
     cardStyle: "from-pink-400 to-rose-600 shadow-[0_0_50px_-10px_rgba(244,114,182,0.4)] border-pink-400/30",
     accentColor: "text-pink-600",
     radarColor: "#db2777",
-    // 撞色书签：粉色配冷调银
     tabActiveColor: "bg-slate-50 text-pink-700 border-slate-200",
     tabInactiveColor: "bg-white/80 text-pink-700/50",
+    themeColor: "bg-pink-500",
     content: {
       base: `你愿意毫无保留地付出，也能带着真心耐心经营，但这份投入有个隐形前提 —— 你的爱意需要被 “特殊对待” 来回应。如果有一天，你发现他的温柔开始平均分配，对别人的在意不比对你少，你的情绪会瞬间绷紧。这不是嫉妒，也不是小气，是你赖以生存的 “例外感” 被稀释了。\n\n你比谁都能精准捕捉感情里的温度波动，哪怕是一丝一毫的冷淡、敷衍或疏忽，都能触动你内心最敏感的神经。这份敏锐让你爱得格外深沉，但也让你格外脆弱，因为你所有的安全感，都扎根在 “我是你独一份的偏爱” 这个锚点上。`,
       light: [
@@ -217,13 +215,12 @@ const RESULTS = {
     archetype: "灵魂旷野的寻觅者",
     icon: <Eye className="w-8 h-8" />,
     quote: "我们相遇在精神的旷野，无需言语便已相通。",
-    // 极光紫 & 靛蓝
     cardStyle: "from-violet-600 to-indigo-900 shadow-[0_0_50px_-10px_rgba(124,58,237,0.4)] border-purple-500/30",
     accentColor: "text-purple-700",
     radarColor: "#9333ea",
-    // 撞色书签：紫色配亮黄
     tabActiveColor: "bg-yellow-50 text-purple-900 border-yellow-200",
     tabInactiveColor: "bg-white/80 text-purple-900/50",
+    themeColor: "bg-purple-600",
     content: {
       base: `在亲密关系里，你最核心的需求从不是占有或依赖，甚至不是流于表面的陪伴，而是一种灵魂层面的同频共振 —— 思想被看见、观点被呼应、内心深处的褶皱被温柔抚平。\n\n日常寒暄的温暖固然是关系的养分，却永远替代不了 “你一句话戳中我未说出口的心事” 的心灵碰撞。你对浅层关系有着近乎本能的疏离感，没有精神交流的亲密，对你来说像一个缺了核心的空壳，再热闹也填不满内心的荒芜。\n\n你不是挑剔，而是太清楚自己要什么。一旦遇到那个能在思维深处与你同频的人 —— 能听懂你话里的潜台词，能接住你突如其来的奇思妙想，你便会卸下所有防备，毫无保留地深入投入。`,
       light: [
@@ -253,13 +250,12 @@ const RESULTS = {
     archetype: "守望星空的风之子",
     icon: <Wind className="w-8 h-8" />,
     quote: "我爱你，却不愿用爱束缚你。",
-    // 天空蓝 & 纯净青
     cardStyle: "from-sky-400 to-blue-600 shadow-[0_0_50px_-10px_rgba(14,165,233,0.4)] border-sky-300/30",
     accentColor: "text-sky-600",
     radarColor: "#0284c7",
-    // 撞色书签：天蓝配纯白
     tabActiveColor: "bg-white text-sky-600 border-sky-100",
     tabInactiveColor: "bg-white/60 text-sky-800/50",
+    themeColor: "bg-sky-500",
     content: {
       base: `在亲密关系里，你最核心的需求从不是占有或依赖，而是 “在爱里守住自我” 的自由 —— 靠近不难，难的是不用时刻黏在一起、不用事事报备、不用为了迎合对方丢掉自己的节奏。\n\n你愿意真心投入，也喜欢分享生活里的喜怒哀乐，但必须保留一块完全属于自己的空间。只要这份空间被尊重，你的爱就会自然流淌；可一旦被过度关注、被实时追问，你的本能反应就是退一步。这份 “不吞没、不束缚” 的自在，才是你最踏实的亲密。`,
       light: [
@@ -289,13 +285,12 @@ const RESULTS = {
     archetype: "迷雾中的试探者",
     icon: <Shield className="w-8 h-8" />,
     quote: "待人如执烛，太近灼手，太远暗生。",
-    // 森林绿 & 墨绿
     cardStyle: "from-emerald-600 to-teal-800 shadow-[0_0_50px_-10px_rgba(5,150,105,0.4)] border-emerald-600/30",
     accentColor: "text-emerald-700",
     radarColor: "#059669",
-    // 撞色书签：墨绿配米色
     tabActiveColor: "bg-orange-50 text-emerald-800 border-orange-100",
     tabInactiveColor: "bg-white/80 text-emerald-800/50",
+    themeColor: "bg-emerald-700",
     content: {
       base: `在亲密关系里，你最核心的需求从不是轰轰烈烈的奔赴，而是 “安全第一” 的踏实靠近 —— 你从不是冷淡，也不是慢热，只是心里自带一层 “安全缓冲带”，像洗手前慢慢试探水温，先确认没有刺痛，才敢再往前挪一步。\n\n你的亲密节奏里藏着独有的审慎：先悄悄观察、反复确认，直到笃定 “这个人值得托付”，才敢真正卸下防备。任何猛扑过来的热情，都会让你下意识启动自我保护。这不是推开，是怕步子迈太急反而摔得疼。\n\n你需要的，是一个能读懂 “你不是不上心，只是需要时间” 的人。你对关系的态度从来都是 “宁缺毋滥”—— 确定前有多审慎，确定后就有多坚定。`,
       light: [
@@ -325,13 +320,12 @@ const RESULTS = {
     archetype: "构建未来的建筑师",
     icon: <Grid className="w-8 h-8" />,
     quote: "好的关系，是一起把日子过成有章法的温柔。",
-    // 普鲁士蓝灰 & 钢蓝
     cardStyle: "from-slate-700 to-gray-900 shadow-[0_0_50px_-10px_rgba(51,65,85,0.4)] border-slate-600/30",
     accentColor: "text-slate-700",
     radarColor: "#475569",
-    // 撞色书签：深灰配纯黑白
     tabActiveColor: "bg-white text-slate-800 border-gray-300",
     tabInactiveColor: "bg-white/70 text-slate-600/50",
+    themeColor: "bg-slate-700",
     content: {
       base: `在亲密关系里，你是主动和对方搭建关系框架的共建者，核心需求从不是模糊的浪漫悸动，而是两人共同打磨的秩序感 —— 清晰的边界不越界，明确的期待不猜度，可落地的沟通不内耗，这些才是你敢放心交付真心的底气。\n\n你打心底不信随缘式相处能走得远，认定长期关系的根基必须扎在坦诚沟通、明确共识的土壤里。当关系里出现模糊态度、不对齐的期待或不愿沟通的逃避，你会比谁都先感到焦虑。你需要的不是听话照做的伴侣，而是愿意一起共建规则的伙伴。\n\n对你来说，亲密不是情绪的随意流动，而是两人并肩把日子过稳的笃定。你要的从不是轰轰烈烈的激情，而是无论遇到什么，都有章法可依、有底气共渡的踏实。`,
       light: [
@@ -378,12 +372,13 @@ export default function SoulScan_StainedGlass() {
   const [isLoading, setIsLoading] = useState(false);
   
   const [currentQIndex, setCurrentQIndex] = useState(0);
-  const [scores, setScores] = useState({});
+  const [answers, setAnswers] = useState({}); // 记录每一题的选择: { qId: 'type' }
   const [results, setResults] = useState({ primary: null });
   const [currentPart, setCurrentPart] = useState(null);
+  const [showPartModal, setShowPartModal] = useState(false);
   
   // 动画状态
-  const [cardState, setCardState] = useState('idle'); // idle, flipped, pausing, shaking, exploding
+  const [cardState, setCardState] = useState('idle'); 
   const [showFinal, setShowFinal] = useState(false);
   const [chartData, setChartData] = useState([]);
   const [activeTab, setActiveTab] = useState('base');
@@ -438,8 +433,13 @@ export default function SoulScan_StainedGlass() {
   };
 
   const handlePartTransition = (index) => {
-    const part = PARTS_CONFIG.find(p => p.startIndex === index);
-    if (part) {
+    // 查找当前题目属于哪个 Part
+    const part = PARTS_CONFIG.find(p => index >= p.startIndex && index <= p.endIndex);
+    
+    // 如果是新 Part 的第一题，且之前没有进入过这个 Part 介绍页
+    const isPartStart = part && index === part.startIndex;
+    
+    if (isPartStart) {
       setCurrentPart(part);
       setStep('partIntro');
     } else {
@@ -447,22 +447,67 @@ export default function SoulScan_StainedGlass() {
     }
   };
 
-  const handleAnswer = (type) => {
-    const newScores = { ...scores, [type]: (scores[type] || 0) + 1 };
-    setScores(newScores);
+  // 选中答案（不自动跳转）
+  const handleSelectOption = (type) => {
+    setAnswers(prev => ({
+      ...prev,
+      [currentQIndex]: type
+    }));
+  };
 
-    const nextIndex = currentQIndex + 1;
-    if (nextIndex < QUESTIONS.length) {
-      setCurrentQIndex(nextIndex);
-      handlePartTransition(nextIndex);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+  // 下一题逻辑
+  const handleNext = () => {
+    // 必须先选择答案
+    if (!answers[currentQIndex]) return;
+
+    // 检查是否是 Part 的最后一题
+    const currentPartConfig = PARTS_CONFIG.find(p => currentQIndex >= p.startIndex && currentQIndex <= p.endIndex);
+    const isEndOfPart = currentPartConfig && currentQIndex === currentPartConfig.endIndex;
+
+    if (isEndOfPart) {
+      setShowPartModal(true); // 触发 Part 确认弹窗
     } else {
-      finishQuiz(newScores);
+      const nextIndex = currentQIndex + 1;
+      setCurrentQIndex(nextIndex);
+      // 只有在新 Part 开始时才触发介绍页，普通题目切换不需要
+      // 已经在 handlePartTransition 处理了 Part 逻辑，但这里是普通题目切换
+      // 普通题目切换不需要特殊处理，直接滚动置顶
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
-  const finishQuiz = (finalScores) => {
+  // 确认进入下一 Part
+  const confirmNextPart = () => {
+    setShowPartModal(false);
+    const nextIndex = currentQIndex + 1;
+    
+    if (nextIndex < QUESTIONS.length) {
+      setCurrentQIndex(nextIndex);
+      handlePartTransition(nextIndex); // 这里会检测是否展示新 Part 介绍页
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      finishQuiz();
+    }
+  };
+
+  // 上一题逻辑
+  const handlePrev = () => {
+    // 获取当前 Part 的起始索引，不允许跨越 Part 返回
+    const currentPartConfig = PARTS_CONFIG.find(p => currentQIndex >= p.startIndex && currentQIndex <= p.endIndex);
+    if (currentPartConfig && currentQIndex > currentPartConfig.startIndex) {
+      setCurrentQIndex(currentQIndex - 1);
+    }
+  };
+
+  const finishQuiz = () => {
     setStep('analyzing');
+    
+    // 统计分数
+    const finalScores = {};
+    Object.values(answers).forEach(type => {
+      finalScores[type] = (finalScores[type] || 0) + 1;
+    });
+
     const sortedScores = Object.entries(finalScores).sort((a, b) => b[1] - a[1]);
     const primaryKey = sortedScores[0][0];
 
@@ -483,37 +528,31 @@ export default function SoulScan_StainedGlass() {
   const handleCardClick = () => {
     if (cardState !== 'idle') return;
     
-    // 1. 翻转 (Flip)
     setCardState('flipped');
     
-    // 2. 停顿 (Pause) - 1秒翻转动画结束，停留呼吸
     setTimeout(() => {
        setCardState('pausing');
        
-       // 3. 剧烈抖动 (Shake) - 停留2秒后开始
        setTimeout(() => {
          setCardState('shaking');
-         // 触发手机震动 (部分设备支持)
          if (typeof navigator !== 'undefined' && navigator.vibrate) {
              navigator.vibrate([50, 50, 100, 50, 200, 100, 500]);
          }
 
-         // 4. 白光爆发 (Explode) - 抖动2秒后开始
          setTimeout(() => {
             setCardState('exploding');
             
-            // 5. 切换到结果页 - 白光炸开瞬间切换
             setTimeout(() => {
                 setShowFinal(true);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }, 800);
-         }, 2000);
+         }, 1200); // 震动时间缩短
 
        }, 2000);
     }, 1000);
   };
 
-  // 结果页自动弹窗：3秒后出现
+  // 结果页自动弹窗：屏幕绝对居中
   useEffect(() => {
     if (showFinal) {
         const timer = setTimeout(() => {
@@ -525,6 +564,8 @@ export default function SoulScan_StainedGlass() {
 
   const progress = ((currentQIndex + 1) / QUESTIONS.length) * 100;
   const displayData = RESULTS[results.primary];
+  const currentPartConfig = PARTS_CONFIG.find(p => currentQIndex >= p.startIndex && currentQIndex <= p.endIndex);
+  const isPartFirstQuestion = currentPartConfig && currentQIndex === currentPartConfig.startIndex;
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] text-[#4A4A4A] font-sans selection:bg-rose-100 flex flex-col overflow-x-hidden">
@@ -552,7 +593,6 @@ export default function SoulScan_StainedGlass() {
       {/* --- Landing Page --- */}
       {step === 'landing' && (
         <div className="flex-1 flex flex-col relative overflow-hidden">
-          {/* 背景光斑 */}
           <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-rose-200/40 to-orange-100/40 blur-[80px]" />
           <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-gradient-to-tl from-blue-200/40 to-purple-100/40 blur-[80px]" />
 
@@ -616,7 +656,6 @@ export default function SoulScan_StainedGlass() {
               </div>
             </div>
             
-            {/* 版权声明 - Landing */}
             <div className="absolute bottom-6 left-0 w-full text-center">
                <p className="text-[10px] text-stone-300 tracking-widest opacity-60">柚子的心理小屋 · 原创出品</p>
             </div>
@@ -658,7 +697,7 @@ export default function SoulScan_StainedGlass() {
               style={{ width: `${progress}%` }}
             />
           </div>
-          <div className="flex-1 flex flex-col justify-center pb-20">
+          <div className="flex-1 flex flex-col justify-center pb-28">
              <div className="mb-2">
                <span className="text-[10px] font-bold tracking-widest uppercase text-rose-400 bg-rose-50 px-2 py-1 rounded inline-block mb-4">
                  {currentQIndex < 16 ? 'Reality' : currentQIndex < 32 ? 'Emotion' : 'Soul'}
@@ -669,25 +708,87 @@ export default function SoulScan_StainedGlass() {
              </div>
              
              <div className="space-y-3 mt-8">
-               {QUESTIONS[currentQIndex].options.map((opt, idx) => (
-                 <button
-                   key={`q${currentQIndex}-${idx}`}
-                   onClick={() => handleAnswer(opt.type)}
-                   className="w-full text-left p-5 bg-white border border-stone-100 rounded-2xl shadow-sm hover:border-rose-300 hover:shadow-md hover:bg-rose-50/30 transition-all duration-200 active:scale-[0.98] group relative overflow-hidden"
-                 >
-                   <div className="relative z-10 flex items-start gap-3">
-                     <div className="w-4 h-4 rounded-full border border-stone-300 mt-0.5 group-hover:border-rose-400 group-hover:bg-rose-400 flex-shrink-0 transition-colors" />
-                     <span className="text-sm text-stone-600 group-hover:text-stone-900 leading-relaxed">
-                       {opt.text}
-                     </span>
-                   </div>
-                 </button>
-               ))}
+               {QUESTIONS[currentQIndex].options.map((opt, idx) => {
+                 const isSelected = answers[currentQIndex] === opt.type;
+                 return (
+                   <button
+                     key={`${currentQIndex}-${idx}`} // 使用 currentQIndex 作为 key 的一部分，强制重新渲染，清除残留状态
+                     onClick={() => handleSelectOption(opt.type)}
+                     className={`w-full text-left p-5 border rounded-2xl shadow-sm transition-all duration-200 active:scale-[0.98] group relative overflow-hidden
+                       ${isSelected 
+                         ? 'bg-rose-50 border-rose-400 shadow-md' 
+                         : 'bg-white border-stone-100 hover:border-rose-200'}`}
+                   >
+                     <div className="relative z-10 flex items-start gap-3">
+                       <div className={`w-4 h-4 rounded-full border mt-0.5 flex-shrink-0 transition-colors 
+                         ${isSelected ? 'border-rose-500 bg-rose-500' : 'border-stone-300'}`} 
+                       />
+                       <span className={`text-sm leading-relaxed ${isSelected ? 'text-rose-900 font-medium' : 'text-stone-600'}`}>
+                         {opt.text}
+                       </span>
+                     </div>
+                   </button>
+                 );
+               })}
              </div>
           </div>
-          <div className="absolute bottom-6 left-0 w-full text-center">
-             <p className="text-[9px] text-stone-300 tracking-wider">柚子的心理小屋 · 原创出品</p>
+
+          {/* 底部导航栏 */}
+          <div className="fixed bottom-0 left-0 w-full bg-white border-t border-stone-100 p-4 pb-8 z-40">
+             <div className="flex gap-4 max-w-md mx-auto">
+               <button
+                 onClick={handlePrev}
+                 disabled={isPartFirstQuestion}
+                 className={`flex-1 py-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-colors
+                   ${isPartFirstQuestion 
+                     ? 'bg-stone-50 text-stone-300 border-stone-100 cursor-not-allowed' 
+                     : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'}`}
+               >
+                 <ArrowLeft className="w-4 h-4" /> 上一题
+               </button>
+               
+               <button
+                 onClick={handleNext}
+                 disabled={!answers[currentQIndex]}
+                 className={`flex-1 py-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all
+                   ${!answers[currentQIndex]
+                     ? 'bg-stone-200 text-white cursor-not-allowed'
+                     : 'bg-stone-900 text-white active:scale-[0.98]'}`}
+               >
+                 下一题 <ArrowRight className="w-4 h-4" />
+               </button>
+             </div>
           </div>
+
+          {/* Part 确认弹窗 */}
+          {showPartModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center px-6 animate-fade-in">
+               <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+               <div className="bg-white w-full max-w-sm rounded-2xl p-6 relative z-10 shadow-2xl animate-slide-up text-center">
+                  <div className="w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-500">
+                    <AlertCircle className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-bold text-lg text-stone-800 mb-2">确认提交本章节？</h3>
+                  <p className="text-xs text-stone-500 mb-6 leading-relaxed">
+                    提交后将无法返回修改本章节的答案。<br/>即将进入下一阶段的深度探索。
+                  </p>
+                  <div className="flex gap-3">
+                    <button 
+                      onClick={() => setShowPartModal(false)}
+                      className="flex-1 py-3 rounded-xl border border-stone-200 text-stone-600 text-xs font-bold"
+                    >
+                      再检查一下
+                    </button>
+                    <button 
+                      onClick={confirmNextPart}
+                      className="flex-1 py-3 rounded-xl bg-stone-900 text-white text-xs font-bold shadow-lg"
+                    >
+                      确认提交
+                    </button>
+                  </div>
+               </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -710,7 +811,6 @@ export default function SoulScan_StainedGlass() {
       {step === 'result_card' && !showFinal && (
         <div className="flex-1 flex flex-col items-center justify-center animate-fade-in p-6 bg-stone-900 relative overflow-hidden">
           
-          {/* 白光爆炸遮罩 - 强度极高 */}
           <div className={`absolute inset-0 z-50 bg-white pointer-events-none transition-opacity duration-[800ms] ease-in ${cardState === 'exploding' ? 'opacity-100' : 'opacity-0'}`}></div>
 
           <p className={`text-center text-[10px] text-stone-400 mb-8 tracking-[0.2em] uppercase transition-opacity ${cardState !== 'idle' ? 'opacity-0' : 'opacity-100'}`}>
@@ -721,15 +821,12 @@ export default function SoulScan_StainedGlass() {
             className="relative w-full max-w-sm aspect-[3/5] perspective-1000 cursor-pointer group"
             onClick={handleCardClick}
           >
-            {/* 3D 容器 */}
             <div className={`relative w-full h-full transform-style-3d 
                 ${cardState !== 'idle' ? 'rotate-y-180' : ''} 
                 ${cardState === 'shaking' ? 'animate-violent-shake' : ''}
                `}
                style={{ transition: 'transform 1.0s cubic-bezier(0.6, -0.28, 0.735, 0.045)' }}
             >
-              
-              {/* Back (封面) */}
               <div className="absolute inset-0 backface-hidden bg-stone-800 rounded-[2rem] shadow-2xl border border-white/10 flex flex-col items-center justify-center h-full w-full">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20" />
                 <Sparkles className="w-16 h-16 text-rose-200/50 mb-6 animate-pulse" />
@@ -737,12 +834,9 @@ export default function SoulScan_StainedGlass() {
                 <p className="absolute bottom-8 text-[10px] text-white/20">柚子的心理小屋</p>
               </div>
 
-              {/* Front (结果页 - 翻转后预览) */}
               <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col justify-between text-white p-8 
                 bg-gradient-to-br ${RESULTS[results.primary].cardStyle} backdrop-blur-xl border border-white/30 relative h-full w-full`}>
-                
                 <div className="absolute inset-0 bg-white/10 mix-blend-overlay" />
-                
                 <div className="relative z-10 text-center mt-20">
                     <div className="w-20 h-20 mx-auto mb-6 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
                       {RESULTS[results.primary].icon}
@@ -760,8 +854,6 @@ export default function SoulScan_StainedGlass() {
         <div className="flex-1 flex flex-col animate-fade-in-slow bg-[#FAFAFA] pb-12">
           
           <div id="poster-area" className="bg-[#FAFAFA] relative">
-              
-              {/* 顶部主卡片 - 电影级质感 (更通透) */}
               <div className={`pt-14 pb-16 px-6 rounded-b-[3.5rem] shadow-2xl bg-gradient-to-b ${displayData.cardStyle} text-white relative overflow-hidden`}>
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/noise.png')] opacity-[0.03]" />
                 <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full bg-white/10 blur-[80px]" />
@@ -774,7 +866,6 @@ export default function SoulScan_StainedGlass() {
                     {results.primary}
                   </h1>
                   
-                  {/* 判词装饰 */}
                   <div className="w-full max-w-sm text-center px-4 mb-8 relative">
                      <span className="absolute -top-4 left-4 text-4xl font-serif opacity-20">“</span>
                      <p className="font-serif italic text-white/95 text-base leading-relaxed py-2 inline-block relative z-10">
@@ -783,7 +874,6 @@ export default function SoulScan_StainedGlass() {
                      <span className="absolute -bottom-8 right-4 text-4xl font-serif opacity-20">”</span>
                   </div>
 
-                  {/* 雷达图 - 高亮优化版 */}
                   <div className="w-full max-w-xs h-[260px] bg-white/10 backdrop-blur-sm rounded-[2rem] border border-white/20 p-4 shadow-inner relative mt-4">
                       <ResponsiveContainer width="100%" height="100%">
                         <RadarChart cx="50%" cy="50%" outerRadius="65%" data={chartData}>
@@ -796,7 +886,7 @@ export default function SoulScan_StainedGlass() {
                             stroke="#fff" 
                             strokeWidth={3}
                             fill="#fff"
-                            fillOpacity={0.6} // 半透明高亮填充
+                            fillOpacity={0.6} 
                           />
                         </RadarChart>
                       </ResponsiveContainer>
@@ -804,9 +894,7 @@ export default function SoulScan_StainedGlass() {
                 </div>
               </div>
 
-              {/* 内容区域 */}
               <div className="px-5 -mt-10 relative z-20">
-                {/* 书签栏 - 撞色设计 */}
                 <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 pl-2">
                    {RESULT_TABS.map((tab) => (
                      <button
@@ -822,12 +910,9 @@ export default function SoulScan_StainedGlass() {
                    ))}
                 </div>
 
-                {/* 内容卡片 */}
                 <div className="bg-white/90 backdrop-blur-xl rounded-[2rem] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] border border-white p-7 min-h-[340px] mt-4 relative overflow-hidden">
-                    {/* 装饰性背景光晕 */}
                     <div className={`absolute top-0 right-0 w-32 h-32 ${displayData.themeColor} opacity-[0.05] rounded-full blur-3xl pointer-events-none`}></div>
 
-                    {/* 1. 亲密底色 */}
                     {activeTab === 'base' && (
                       <div className="animate-fade-in space-y-5">
                         <div className="flex items-center gap-3 mb-2">
@@ -844,7 +929,6 @@ export default function SoulScan_StainedGlass() {
                       </div>
                     )}
 
-                    {/* 2. 光影图谱 */}
                     {activeTab === 'light_shadow' && (
                       <div className="animate-fade-in space-y-8">
                          <div>
@@ -876,7 +960,6 @@ export default function SoulScan_StainedGlass() {
                       </div>
                     )}
 
-                    {/* 3. 给爱人 */}
                     {activeTab === 'partner' && (
                       <div className="animate-fade-in">
                         <div className="bg-rose-50 border border-rose-100 rounded-xl p-4 mb-6 text-center">
@@ -899,7 +982,6 @@ export default function SoulScan_StainedGlass() {
                       </div>
                     )}
 
-                    {/* 4. 爱自己 */}
                     {activeTab === 'self' && (
                       <div className="animate-fade-in space-y-4">
                         <div className="flex items-center gap-3 mb-4">
@@ -914,7 +996,6 @@ export default function SoulScan_StainedGlass() {
                       </div>
                     )}
 
-                    {/* 5. 重塑 */}
                     {activeTab === 'reshape' && (
                       <div className="animate-fade-in space-y-4">
                          <div className="flex items-center gap-3 mb-4">
@@ -932,7 +1013,6 @@ export default function SoulScan_StainedGlass() {
                     )}
                 </div>
 
-                {/* 底部版权 - 优化版 */}
                 <div className="mt-12 mb-8 text-center px-6">
                     <p className="font-serif italic text-stone-400/80 text-xs mb-6">
                       {displayData.blessing}
@@ -945,24 +1025,31 @@ export default function SoulScan_StainedGlass() {
               </div>
           </div>
 
-          {/* 截图提示弹窗 (顶部滑出 + 高级磨砂) */}
+          {/* 截图提示弹窗 (绝对居中) */}
           {showScreenshotTip && (
-             <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-slide-down w-[90%] max-w-sm">
-                <div className="bg-white/80 backdrop-blur-xl border border-white/40 px-5 py-4 rounded-2xl shadow-xl flex items-center justify-between gap-4">
-                   <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center flex-shrink-0 text-rose-500">
-                        <CheckCircle2 className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-stone-800">测试已完成</h4>
-                        <p className="text-[10px] text-stone-500 mt-0.5">长按屏幕或截图保存你的结果海报</p>
-                      </div>
+             <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
+                {/* 遮罩，点击可关闭 */}
+                <div 
+                  className="absolute inset-0 bg-black/30 backdrop-blur-sm animate-fade-in"
+                  onClick={() => setShowScreenshotTip(false)}
+                />
+                
+                {/* 弹窗主体 */}
+                <div className="bg-white/90 backdrop-blur-xl border border-white/60 px-6 py-5 rounded-2xl shadow-2xl flex flex-col items-center gap-4 animate-slide-up relative z-10 w-full max-w-xs text-center">
+                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center text-rose-500 shadow-sm">
+                     <Camera className="w-6 h-6 animate-pulse" />
+                   </div>
+                   <div>
+                     <h4 className="text-sm font-bold text-stone-800 mb-1">测试已完成</h4>
+                     <p className="text-xs text-stone-500 leading-relaxed">
+                       请长按屏幕或截图<br/>保存你的专属结果海报
+                     </p>
                    </div>
                    <button 
                      onClick={() => setShowScreenshotTip(false)}
-                     className="p-2 text-stone-400 hover:text-stone-600 bg-stone-100 rounded-full"
+                     className="mt-2 text-stone-400 hover:text-stone-600 p-2 bg-stone-100 rounded-full transition-colors"
                    >
-                     <X className="w-3 h-3" />
+                     <X className="w-4 h-4" />
                    </button>
                 </div>
              </div>
@@ -983,13 +1070,7 @@ export default function SoulScan_StainedGlass() {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
 
-        /* 剧烈震动动画 - 增强版 */
         @keyframes violent-shake {
           0% { transform: rotateY(180deg) translate(0, 0) rotate(0deg); }
           10% { transform: rotateY(180deg) translate(-5px, -5px) rotate(-3deg); }
@@ -1005,7 +1086,6 @@ export default function SoulScan_StainedGlass() {
         }
         
         .animate-slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .animate-slide-down { animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-fade-in { animation: slideUp 0.8s ease-out forwards; }
         .animate-fade-in-slow { animation: slideUp 1.2s ease-out forwards; }
         .animate-violent-shake { animation: violent-shake 0.5s infinite; }
