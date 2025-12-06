@@ -5,6 +5,7 @@ import { Sparkles, Lock, RefreshCw, Zap, Heart, Shield, Anchor, Wind, Grid, Eye,
 import Head from 'next/head';
 import { createClient } from '@supabase/supabase-js';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
+import html2canvas from 'html2canvas';
 
 // --- 初始化 Supabase ---
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -18,7 +19,7 @@ const PARTS_CONFIG = [
   { startIndex: 32, title: "Part 3：灵魂图腾", quote: "“语言无法抵达的地方，直觉可以。”", desc: "欢迎来到你内心的最深处。接下来的问题不需要逻辑，仅凭直觉，选出你第一眼看到的那个答案。" }
 ];
 
-// --- 题目数据 ---
+// --- 题目数据 (完整48题) ---
 const QUESTIONS = [
   { id: 1, question: "周末下午，伴侣突然失联了3个小时，发消息也没回。那一刻，你最真实的反应是？", options: [{ text: "下意识地去翻之前的聊天记录，看是不是我说错话了？", type: "确定感" }, { text: "挺好的，刚好没人管我。专心做自己的事。", type: "自由感" }, { text: "推测原因，准备联系上后问清楚去向，防止下次再这样。", type: "掌控感" }, { text: "心里堵得慌。如果他够在意我，怎么舍得让我空等？", type: "被偏爱" }] },
   { id: 2, question: "伴侣最近工作压力极大，回家情绪低落一言不发。此时你心里的念头是？", options: [{ text: "看着心疼。倒杯水、切水果，让他知道有人照顾。", type: "被需要" }, { text: "他应该很烦。那我就识趣点躲远点，等他缓过来。", type: "安全距离" }, { text: "这种死气沉沉的沉默很难受。希望能聊聊。", type: "精神共鸣" }, { text: "在意接下来的安排：今晚怎么吃？计划还作数吗？", type: "秩序感" }] },
@@ -64,23 +65,24 @@ const QUESTIONS = [
   { id: 42, question: "如果你闭上眼触摸“爱”，手感应该是？", options: [{ text: "晒热的石头。厚实、干燥、有分量。", type: "确定感" }, { text: "湿软的陶泥。柔软、依恋，填满空隙。", type: "被需要" }, { text: "流动的溪水。清凉、无重力，不带来负担。", type: "安全距离" }, { text: "紧绷的缰绳。粗糙有力，握住就能控制。", type: "掌控感" }] },
   { id: 43, question: "你觉得一段好的亲密关系，闻起来应该像？", options: [{ text: "薄荷或海盐。清冽透气，肺部扩张。", type: "自由感" }, { text: "草莓尖尖。第一口咬下去的甜，特供的。", type: "被偏爱" }, { text: "刚晒干的棉被。干净干燥，井井有条。", type: "秩序感" }, { text: "旧书页/焚香。沉静悠长，闻到时间。", type: "精神共鸣" }] },
   { id: 44, question: "你希望爱人是哪种光源？", options: [{ text: "壁炉里的火。需要我添柴，但照亮屋子。", type: "被需要" }, { text: "灯塔。固定的。无论去哪回头都在。", type: "确定感" }, { text: "月光。温柔清冷，不灼伤我。", type: "安全距离" }, { text: "手里的火把。靠我亲手点燃，劈开黑暗。", type: "掌控感" }] },
-  { id: 45, question: "如果把与爱人的相处节奏比作一段旋律，你希望它是？", options: [{ text: "时钟的声音。滴答滴答，精准规律。", type: "秩序感" }, { text: "随口的哼唱。没固定曲调，轻轻松松。", type: "自由感" }, { text: "山谷里的回音。微弱声音也能得到回应。", type: "精神共鸣" }, { text: "为你独奏。全世界是背景，只有我们。", type: "被偏爱" }] },
-  { id: 46, question: "如果爱必须伴随一种痛，你宁愿是？", options: [{ text: "生长痛。骨骼拉伸，关系是成长的。", type: "被需要" }, { text: "钝痛。好过“不知道明天你还在不在”的撕裂。", type: "确定感" }, { text: "幻痛。宁愿隔着距离怀念，也不愿互相伤害。", type: "安全距离" }, { text: "剥离痛。撕开伪装，暴露软肋。", type: "精神共鸣" }] },
-  { id: 47, question: "如果要把你们共度的时间比作一样东西，它应该是？", options: [{ text: "流沙。抓越紧流越快，不如摊开手。", type: "自由感" }, { text: "沙漏。时间可控，流完也能倒过来。", type: "掌控感" }, { text: "琥珀。封存最美瞬间，不被侵蚀。", type: "被偏爱" }, { text: "年轮。一圈一圈，扎扎实实。", type: "秩序感" }] },
+  { id: 45, question: "如果把与爱人的相处节奏比作一段旋律，你希望它是？", options: [{ text: "时钟的声音。滴答滴答，精准规律。", type: "秩序感" }, { text: "随口的哼唱。没固定曲调，轻轻松松。", type: "自由感" }, { text: "山谷里的回音。微弱声音也能得到回应。", type: "精神共鸣" }] },
+  { id: 46, question: "如果爱必须伴随一种痛，你宁愿是？", options: [{ text: "生长痛。骨骼拉伸，关系是成长的。", type: "被需要" }, { text: "钝痛。好过“不知道明天你还在不在”的撕裂。", type: "确定感" }, { text: "幻痛。宁愿隔着距离怀念，也不愿互相伤害。", type: "安全距离" }] },
+  { id: 47, question: "如果要把你们共度的时间比作一样东西，它应该是？", options: [{ text: "流沙。抓越紧流越快，不如摊开手。", type: "自由感" }, { text: "沙漏。时间可控，流完也能倒过来。", type: "掌控感" }, { text: "琥珀。封存最美瞬间，不被侵蚀。", type: "被偏爱" }] },
   { id: 48, question: "最后，请凭直觉填空：爱是______。", options: [{ text: "定数。唯一不会更改的答案。", type: "确定感" }, { text: "认出。茫茫人海辨认出彼此是同类。", type: "精神共鸣" }, { text: "成全。不捆绑，拥有更广阔天空。", type: "自由感" }, { text: "治愈。看见你的破碎，甘愿做药。", type: "被需要" }] }
 ];
 
-// --- 结果数据 ---
+// --- 结果配置 (全面升级配色) ---
 const RESULTS = {
   "确定感": {
     type: "确定感",
     archetype: "风暴中的守夜人",
     icon: <Anchor className="w-8 h-8" />,
     quote: "万物皆流变，而我只要一种绝对的定数。",
-    cardStyle: "from-blue-700/60 to-indigo-900/60 shadow-[0_0_40px_-5px_rgba(59,130,246,0.5)] border-blue-200/40",
-    accentColor: "text-blue-700",
-    radarColor: "#3b82f6",
-    themeColor: "bg-blue-600",
+    // 深海蓝 & 星空蓝 - 稳重、深邃
+    cardStyle: "from-blue-900 via-slate-800 to-slate-900 shadow-[0_0_50px_-10px_rgba(30,58,138,0.6)] border-blue-800/50",
+    accentColor: "text-blue-800",
+    radarColor: "#1e40af",
+    themeColor: "bg-blue-800",
     content: {
       base: `在亲密关系中，你核心的情感诉求是 “稳定与可预期”，始终坚守着对长期联结的极致追求。相较于外在条件的光鲜或浪漫形式的轰轰烈烈，你更看重关系中的确定性—— 凡事有交代、件件有着落、事事有回音，这种清晰、可靠的互动模式，是你构建情感安全感的基石。\n\n你的情感底色厚重且带着强烈的契约精神，对感情的投入从不浅尝辄止，而是带着 “认定即终身” 的郑重。只要对方传递的态度足够明确、信号足够清晰，你便会毫无保留地深度投入，愿意为关系的长久发展付出耐心与精力，包容差异、共担责任，将长期承诺作为情感的核心导向，而非一时的情绪冲动。\n\n这份对关系的厚重期待背后，潜藏着你对不确定性的极度敏感与对被抛弃的深层恐惧。你对关系中的距离变化、态度波动有着本能的警觉，任何模糊的信号、延迟的回应，都可能触发你内心的不安。你并非刻意试探或控制，所有看似执着的追问与确认，本质上都是为了在不确定的关系流动中，寻找一个稳定的情感锚点，反复确认自身在对方心中的重要性与不可替代性。`,
       light: [
@@ -108,10 +110,11 @@ const RESULTS = {
     archetype: "以付出为锚的守护者",
     icon: <Heart className="w-8 h-8" />,
     quote: "没有你，我只是一片废墟。",
-    cardStyle: "from-orange-600/60 to-red-800/60 shadow-[0_0_40px_-5px_rgba(234,88,12,0.5)] border-orange-200/40",
-    accentColor: "text-orange-700",
-    radarColor: "#ea580c",
-    themeColor: "bg-orange-600",
+    // 琥珀金 & 暖橙 - 温暖、治愈
+    cardStyle: "from-amber-500 via-orange-600 to-amber-700 shadow-[0_0_50px_-10px_rgba(245,158,11,0.6)] border-amber-500/50",
+    accentColor: "text-amber-700",
+    radarColor: "#d97706",
+    themeColor: "bg-amber-600",
     content: {
       base: `在亲密关系里，你最核心的需求是靠被对方依赖来确认自己的价值。对别人来说，爱可能是鲜花、情话和浪漫仪式，但对你而言，爱从来都是实打实的联结 —— 是“我能为你做什么”，是 “我的存在能让你少操心”。\n\n你的情感底色里，藏着一种付出才值得被爱的本能认知。你会本能地盯着对方的生活细节：他加班晚了，你会提前煮好热饭；他遇到麻烦了，你会第一时间凑上去帮忙。这些付出不是刻意讨好，只是真心想成为他生活里离不了的人。\n\n可这份对 “被需要” 的执念背后，藏着你最怕的事 —— 怕自己是可有可无的。要是对方凡事都自己扛，你心里会悄悄空落落的：“原来没有我，他也能过得挺好”。你不是想控制谁，只是需要通过一次次被他需要的小事，反复确认自己在他心里的分量。`,
       light: [
@@ -139,10 +142,11 @@ const RESULTS = {
     archetype: "为关系掌舵的同行者",
     icon: <Zap className="w-8 h-8" />,
     quote: "我抛开了所有理智，只求你结束我的痛苦。",
-    cardStyle: "from-rose-700/60 to-red-900/60 shadow-[0_0_40px_-5px_rgba(225,29,72,0.5)] border-rose-200/40",
-    accentColor: "text-rose-700",
-    radarColor: "#be123c",
-    themeColor: "bg-rose-700",
+    // 勃艮第红 & 墨红 - 权威、力量
+    cardStyle: "from-red-900 via-rose-900 to-slate-900 shadow-[0_0_50px_-10px_rgba(159,18,57,0.6)] border-rose-900/50",
+    accentColor: "text-rose-900",
+    radarColor: "#881337",
+    themeColor: "bg-rose-900",
     content: {
       base: `在亲密关系里，你最核心的需求从不是控制对方，而是关系的可预期、可沟通、可协同。亲密更像两人共掌舵的船，得提前校准航向、明确规则、同步节奏，你才能放下顾虑，放心交付自己。\n\n你对关系章法的执念，藏着对无序失控的恐惧。模糊的界限、反复的态度、没说清的期待，在你眼里都是隐患。如果对方凭情绪做事，你不会觉得是性格不合，反而会格外孤独 —— 像独自驾着没罗盘的船，既要稳住方向，又要拉扯对方节奏。\n\n你真正想要的是双向协作：不用你单方面提要求，而是对方愿意主动对齐目标。你要的从不是掌控权，而是我们始终站在同一边的笃定。`,
       light: [
@@ -171,10 +175,11 @@ const RESULTS = {
     archetype: "渴求例外的驯养者",
     icon: <Sparkles className="w-8 h-8" />,
     quote: "你要永远为你驯服的东西负责。",
-    cardStyle: "from-pink-600/60 to-fuchsia-800/60 shadow-[0_0_40px_-5px_rgba(219,39,119,0.5)] border-pink-200/40",
+    // 玫瑰金 & 浪漫粉 - 梦幻、独特
+    cardStyle: "from-pink-400 via-rose-500 to-pink-600 shadow-[0_0_50px_-10px_rgba(244,114,182,0.6)] border-pink-400/50",
     accentColor: "text-pink-600",
     radarColor: "#db2777",
-    themeColor: "bg-pink-600",
+    themeColor: "bg-pink-500",
     content: {
       base: `你愿意毫无保留地付出，也能带着真心耐心经营，但这份投入有个隐形前提 —— 你的爱意需要被 “特殊对待” 来回应。如果有一天，你发现他的温柔开始平均分配，对别人的在意不比对你少，你的情绪会瞬间绷紧。这不是嫉妒，也不是小气，是你赖以生存的 “例外感” 被稀释了。\n\n你比谁都能精准捕捉感情里的温度波动，哪怕是一丝一毫的冷淡、敷衍或疏忽，都能触动你内心最敏感的神经。这份敏锐让你爱得格外深沉，但也让你格外脆弱，因为你所有的安全感，都扎根在 “我是你独一份的偏爱” 这个锚点上。`,
       light: [
@@ -204,7 +209,8 @@ const RESULTS = {
     archetype: "灵魂旷野的寻觅者",
     icon: <Eye className="w-8 h-8" />,
     quote: "我们相遇在精神的旷野，无需言语便已相通。",
-    cardStyle: "from-purple-600/60 to-violet-900/60 shadow-[0_0_40px_-5px_rgba(147,51,234,0.5)] border-purple-200/40",
+    // 极光紫 & 靛蓝 - 神秘、灵性
+    cardStyle: "from-violet-600 via-purple-700 to-indigo-900 shadow-[0_0_50px_-10px_rgba(124,58,237,0.6)] border-purple-500/50",
     accentColor: "text-purple-700",
     radarColor: "#9333ea",
     themeColor: "bg-purple-600",
@@ -237,10 +243,11 @@ const RESULTS = {
     archetype: "守望星空的风之子",
     icon: <Wind className="w-8 h-8" />,
     quote: "我爱你，却不愿用爱束缚你。",
-    cardStyle: "from-sky-500/60 to-blue-700/60 shadow-[0_0_40px_-5px_rgba(14,165,233,0.5)] border-sky-200/40",
+    // 天空蓝 & 纯净青 - 广阔、通透
+    cardStyle: "from-sky-400 via-cyan-500 to-blue-600 shadow-[0_0_50px_-10px_rgba(14,165,233,0.6)] border-sky-300/50",
     accentColor: "text-sky-600",
     radarColor: "#0284c7",
-    themeColor: "bg-sky-600",
+    themeColor: "bg-sky-500",
     content: {
       base: `在亲密关系里，你最核心的需求从不是占有或依赖，而是 “在爱里守住自我” 的自由 —— 靠近不难，难的是不用时刻黏在一起、不用事事报备、不用为了迎合对方丢掉自己的节奏。\n\n你愿意真心投入，也喜欢分享生活里的喜怒哀乐，但必须保留一块完全属于自己的空间。只要这份空间被尊重，你的爱就会自然流淌；可一旦被过度关注、被实时追问，你的本能反应就是退一步。这份 “不吞没、不束缚” 的自在，才是你最踏实的亲密。`,
       light: [
@@ -270,10 +277,11 @@ const RESULTS = {
     archetype: "迷雾中的试探者",
     icon: <Shield className="w-8 h-8" />,
     quote: "待人如执烛，太近灼手，太远暗生。",
-    cardStyle: "from-teal-600/60 to-emerald-800/60 shadow-[0_0_40px_-5px_rgba(13,148,136,0.5)] border-teal-200/40",
-    accentColor: "text-teal-700",
-    radarColor: "#0f766e",
-    themeColor: "bg-teal-600",
+    // 森林绿 & 墨绿 - 幽静、安稳
+    cardStyle: "from-emerald-600 via-teal-700 to-emerald-900 shadow-[0_0_50px_-10px_rgba(5,150,105,0.6)] border-emerald-600/50",
+    accentColor: "text-emerald-700",
+    radarColor: "#059669",
+    themeColor: "bg-emerald-700",
     content: {
       base: `在亲密关系里，你最核心的需求从不是轰轰烈烈的奔赴，而是 “安全第一” 的踏实靠近 —— 你从不是冷淡，也不是慢热，只是心里自带一层 “安全缓冲带”，像洗手前慢慢试探水温，先确认没有刺痛，才敢再往前挪一步。\n\n你的亲密节奏里藏着独有的审慎：先悄悄观察、反复确认，直到笃定 “这个人值得托付”，才敢真正卸下防备。任何猛扑过来的热情，都会让你下意识启动自我保护。这不是推开，是怕步子迈太急反而摔得疼。\n\n你需要的，是一个能读懂 “你不是不上心，只是需要时间” 的人。你对关系的态度从来都是 “宁缺毋滥”—— 确定前有多审慎，确定后就有多坚定。`,
       light: [
@@ -303,10 +311,11 @@ const RESULTS = {
     archetype: "构建未来的建筑师",
     icon: <Grid className="w-8 h-8" />,
     quote: "好的关系，是一起把日子过成有章法的温柔。",
-    cardStyle: "from-slate-600/60 to-zinc-800/60 shadow-[0_0_40px_-5px_rgba(71,85,105,0.5)] border-slate-200/40",
+    // 普鲁士蓝灰 & 钢蓝 - 结构、高级
+    cardStyle: "from-slate-700 via-gray-800 to-indigo-950 shadow-[0_0_50px_-10px_rgba(51,65,85,0.6)] border-slate-600/50",
     accentColor: "text-slate-700",
-    radarColor: "#334155",
-    themeColor: "bg-slate-600",
+    radarColor: "#475569",
+    themeColor: "bg-slate-700",
     content: {
       base: `在亲密关系里，你是主动和对方搭建关系框架的共建者，核心需求从不是模糊的浪漫悸动，而是两人共同打磨的秩序感 —— 清晰的边界不越界，明确的期待不猜度，可落地的沟通不内耗，这些才是你敢放心交付真心的底气。\n\n你打心底不信随缘式相处能走得远，认定长期关系的根基必须扎在坦诚沟通、明确共识的土壤里。当关系里出现模糊态度、不对齐的期待或不愿沟通的逃避，你会比谁都先感到焦虑。你需要的不是听话照做的伴侣，而是愿意一起共建规则的伙伴。\n\n对你来说，亲密不是情绪的随意流动，而是两人并肩把日子过稳的笃定。你要的从不是轰轰烈烈的激情，而是无论遇到什么，都有章法可依、有底气共渡的踏实。`,
       light: [
@@ -358,7 +367,7 @@ export default function SoulScan_StainedGlass() {
   const [currentPart, setCurrentPart] = useState(null);
   
   // 动画状态
-  const [cardState, setCardState] = useState('idle'); // idle, flipped, pausing, shaking, cracking, exploding
+  const [cardState, setCardState] = useState('idle'); // idle, flipped, pausing, shaking, exploding
   const [showFinal, setShowFinal] = useState(false);
   const [chartData, setChartData] = useState([]);
   const [activeTab, setActiveTab] = useState('base');
@@ -461,23 +470,23 @@ export default function SoulScan_StainedGlass() {
     // 1. 翻转 (Flip)
     setCardState('flipped');
     
-    // 2. 停顿 (Pause) - 1秒翻转动画结束，停留2秒
+    // 2. 停顿 (Pause) - 1秒翻转动画结束，停留呼吸
     setTimeout(() => {
        setCardState('pausing');
        
-       // 3. 剧烈抖动 + 裂纹 (Shake + Crack) - 停留2秒后开始
+       // 3. 剧烈抖动 (Shake) - 停留2秒后开始
        setTimeout(() => {
          setCardState('shaking');
          // 触发手机震动 (部分设备支持)
          if (typeof navigator !== 'undefined' && navigator.vibrate) {
-             navigator.vibrate([100, 50, 100, 50, 200]);
+             navigator.vibrate([50, 50, 100, 50, 200, 100, 500]);
          }
 
          // 4. 白光爆发 (Explode) - 抖动2秒后开始
          setTimeout(() => {
             setCardState('exploding');
             
-            // 5. 切换到结果页 - 白光持续1秒后切换
+            // 5. 切换到结果页 - 白光炸开瞬间切换
             setTimeout(() => {
                 setShowFinal(true);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -488,12 +497,15 @@ export default function SoulScan_StainedGlass() {
     }, 1000);
   };
 
-  // 监听 Tab 切换，如果是最后一个，显示提示
+  // 结果页自动弹窗：3秒后出现
   useEffect(() => {
-    if (activeTab === 'reshape') {
-        setShowScreenshotTip(true);
+    if (showFinal) {
+        const timer = setTimeout(() => {
+            setShowScreenshotTip(true);
+        }, 3000);
+        return () => clearTimeout(timer);
     }
-  }, [activeTab]);
+  }, [showFinal]);
 
   const progress = ((currentQIndex + 1) / QUESTIONS.length) * 100;
   const displayData = RESULTS[results.primary];
@@ -713,14 +725,6 @@ export default function SoulScan_StainedGlass() {
               <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-[2rem] overflow-hidden flex flex-col justify-between text-white p-8 
                 bg-gradient-to-br ${RESULTS[results.primary].cardStyle} backdrop-blur-xl border border-white/30 relative`}>
                 
-                {/* 裂纹光效 - 仅在 shaking 阶段显示 */}
-                {cardState === 'shaking' && (
-                    <div className="absolute inset-0 z-20 pointer-events-none animate-cracking">
-                       <div className="absolute top-1/2 left-1/2 w-full h-[2px] bg-white shadow-[0_0_20px_10px_rgba(255,255,255,0.8)] -translate-x-1/2 rotate-45" />
-                       <div className="absolute top-1/2 left-1/2 w-full h-[2px] bg-white shadow-[0_0_20px_10px_rgba(255,255,255,0.8)] -translate-x-1/2 -rotate-12" />
-                    </div>
-                )}
-                
                 <div className="absolute inset-0 bg-white/10 mix-blend-overlay" />
                 
                 <div className="relative z-10 text-center mt-20">
@@ -741,7 +745,7 @@ export default function SoulScan_StainedGlass() {
           
           <div id="poster-area" className="bg-[#FAFAFA] relative">
               
-              {/* 顶部主卡片 - 更有质感的杂志风 */}
+              {/* 顶部主卡片 - 电影级质感 */}
               <div className={`pt-14 pb-16 px-6 rounded-b-[3.5rem] shadow-2xl bg-gradient-to-b ${displayData.cardStyle} text-white relative overflow-hidden`}>
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/noise.png')] opacity-[0.03]" />
                 <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full bg-white/10 blur-[80px]" />
@@ -928,12 +932,12 @@ export default function SoulScan_StainedGlass() {
               </div>
           </div>
 
-          {/* 截图提示弹窗 (仅在最后一步出现) */}
+          {/* 截图提示弹窗 (3秒后自动出现) */}
           {showScreenshotTip && (
              <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-slide-up">
                 <div className="bg-stone-900/90 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 backdrop-blur-md border border-white/10">
                    <Camera className="w-4 h-4 text-rose-300 animate-pulse" />
-                   <span className="text-xs font-medium tracking-wide">已浏览完毕，请截图保存测试结果</span>
+                   <span className="text-xs font-medium tracking-wide">已生成报告，请截图保存</span>
                    <button 
                      onClick={() => setShowScreenshotTip(false)}
                      className="ml-2 text-stone-400 hover:text-white"
@@ -960,7 +964,7 @@ export default function SoulScan_StainedGlass() {
           to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 剧烈震动动画 */
+        /* 剧烈震动动画 - 增强版 */
         @keyframes violent-shake {
           0% { transform: rotateY(180deg) translate(0, 0) rotate(0deg); }
           10% { transform: rotateY(180deg) translate(-5px, -5px) rotate(-3deg); }
@@ -974,18 +978,11 @@ export default function SoulScan_StainedGlass() {
           90% { transform: rotateY(180deg) translate(1px, 1px) rotate(0deg); }
           100% { transform: rotateY(180deg) translate(0, 0) rotate(0deg); }
         }
-
-        /* 裂纹光效闪烁 */
-        @keyframes cracking {
-           0%, 100% { opacity: 0.2; }
-           50% { opacity: 1; }
-        }
         
         .animate-slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-fade-in { animation: slideUp 0.8s ease-out forwards; }
         .animate-fade-in-slow { animation: slideUp 1.2s ease-out forwards; }
         .animate-violent-shake { animation: violent-shake 0.5s infinite; }
-        .animate-cracking { animation: cracking 0.2s infinite; }
       `}</style>
     </div>
   );
