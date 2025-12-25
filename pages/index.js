@@ -588,13 +588,13 @@ export default function SoulScan_StainedGlass() {
               
               <div className="text-center space-y-4 mb-12">
                 <h1 className="text-4xl font-serif font-bold text-stone-800 tracking-wide">
-                  情感欲望图鉴
+                  情感欲望测评
                 </h1>
                 <p className="text-sm font-light text-stone-500 tracking-[0.2em] uppercase">
                   Unlock Your Hidden Desires
                 </p>
                 <p className="text-sm text-stone-600 leading-relaxed max-w-xs mx-auto pt-4">
-                  48道潜意识扫描，揭示你的双重欲望。<br/>
+                  48项核心动机拆解，揭示你的情感欲望。<br/>
                   探索那些未被说出口的渴望。
                 </p>
               </div>
