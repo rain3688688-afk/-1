@@ -58,7 +58,7 @@ const QUESTIONS = [
   { id: 33, question: "如果要把你向往的亲密关系画成一幅画，它最像什么？", options: [{ text: "深扎的树根，根脉永不离散。", type: "确定感" }, { text: "并行的云朵，聚散各自自由。", type: "自主权" }, { text: "循轨的星辰，一切尽在预判。", type: "掌控感" }, { text: "对望的山谷，声息悉数回响。", type: "精神共鸣" }] },
   { id: 34, question: "如果要把自己比喻成一种动物，在爱人面前，你更像？", options: [{ text: "温顺的大金毛。你感受到温暖我就满足。", type: "被需要" }, { text: "被驯服的小狐狸。我只认你这一个驯养员。", type: "被偏爱" }, { text: "屯松果的松鼠。未雨绸缪，规划好过冬。", type: "秩序感" }, { text: "林间的小鹿。生性敏感，试探着靠近。", type: "安全距离" }] },
   { id: 35, question: "闭上眼，你觉得最让你感到安稳的那个空间是？", options: [{ text: "避风的暖屋。门窗紧闭，你就在我身旁。", type: "确定感" }, { text: "辽阔的荒原。极目远望，没有任何围栏。", type: "自主权" }, { text: "深谧的书斋。相对无言，灵魂亦能同频。", type: "精神共鸣" }, { text: "整饬的园林。一草一木，皆能如我所愿。", type: "掌控感" }] },
-  { id: 36, question: "如果这段爱意走向最终的崩塌，你觉得那个最让你心碎的画面像？", options: [{ text: "枯竭的深井。倾尽所有，再多付出也无回响。", type: "被需要" }, { text: "渐窄的峡谷。步步逼近，被你逼到退无可退。", type: "安全距离" }, { text: "倾塌的廊柱。逻辑崩坏，所有体面悉数碎裂。", type: "秩序感" }, { text: "入海的溪流。泯然众人，再无半分特别。", type: "被偏爱" }] },
+  { id: 36, question: "如果这段爱意走向最终的崩塌，你觉得那个最让你心碎的画面像？", options: [{ text: "枯竭的深井。倾尽所有，再多付出也无回响。", type: "被需要" }, { text: "渐窄的峡谷。步步逼近，被你逼到退无可退。", type: "安全距离" }, { text: "倾塌的廊柱。逻辑崩坏，所有体面悉数碎裂。", type: "秩序感" }, { text: "入海的溪流。泯然众人，原来我们如此平庸。", type: "被偏爱" }] },
   { id: 37, question: "如果“誓言”是一个具体的物品，你希望它是什么？", options: [{ text: "磐石。够重够硬，镇住所有变数。", type: "确定感" }, { text: "风铃。风来时响，风走时静，不束缚。", type: "自主权" }, { text: "契约。白纸黑字，不可违背的守则。", type: "掌控感" }, { text: "潮汐。是引力，不言自明的必然性。", type: "精神共鸣" }] },
   { id: 38, question: "你最喜欢的亲密关系，它的“温度”应该是？", options: [{ text: "滚烫的 100°C。沸腾的热情，全心全意。", type: "被需要" }, { text: "微凉的 20°C。清爽不黏人才长久。", type: "安全距离" }, { text: "恒温的 26°C。永远稳定如初，不会忽冷忽热。", type: "秩序感" }, { text: "偏私的 37°C。隐秘私有，只我有资格触碰。", type: "被偏爱" }] },
   { id: 39, question: "如果爱是一件必须随身携带的物品，你觉得它最像？", options: [{ text: "贴身的护身符。握紧它，熨平内心躁动。", type: "确定感" }, { text: "降噪耳机。戴上它，世界嘈杂消失。", type: "精神共鸣" }, { text: "瑞士军刀。掌控它，帮我解决所有难题。", type: "掌控感" }, { text: "一张空白机票。拥有它，奔向任何自由。", type: "自主权" }] },
@@ -361,7 +361,7 @@ const RESULT_TABS = [
   { id: 'base', label: '亲密底色' },
   { id: 'light_shadow', label: '光影图谱' },
   { id: 'partner', label: '给爱人' },
-  { id: 'self', label: '爱自己' },
+  { id: 'self', label: '溯源' },
   { id: 'reshape', label: '重塑' },
 ];
 
@@ -906,7 +906,7 @@ export default function SoulScan_StainedGlass() {
                         <div className="animate-fade-in">
                           <div className="bg-rose-50 border border-rose-100 rounded-xl p-4 mb-6 text-center">
                              <p className="text-xs text-rose-600 font-bold">
-                               💡 截图发给TA，能减少80%的争吵
+                               💡 截图发给TA，提升你们的恋爱质量
                              </p>
                           </div>
                           <div className="space-y-6">
@@ -930,7 +930,7 @@ export default function SoulScan_StainedGlass() {
                              <div className="p-2 bg-rose-100 rounded-lg">
                                <Heart className="w-5 h-5 text-rose-500" />
                              </div>
-                             <h3 className="font-bold text-stone-800">如何更温柔地爱自己</h3>
+                             <h3 className="font-bold text-stone-800">深度溯源</h3>
                           </div>
                           <p className="text-[13px] text-stone-600 leading-7 text-justify whitespace-pre-line p-5 bg-stone-50 rounded-2xl border border-stone-100">
                             {displayData.content.self}
@@ -944,7 +944,7 @@ export default function SoulScan_StainedGlass() {
                              <div className="p-2 bg-emerald-100 rounded-lg">
                                <Zap className="w-5 h-5 text-emerald-600" />
                              </div>
-                             <h3 className="font-bold text-stone-800">能量重塑建议</h3>
+                             <h3 className="font-bold text-stone-800">给你的建议</h3>
                           </div>
                           <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100">
                              <p className="text-[13px] text-emerald-900/80 leading-7 text-justify whitespace-pre-line">
